@@ -25,12 +25,12 @@ Class `Map` implements the associative array and takes `HashTrie*` and `LabelSto
 That is to say, there are implementations of six classes.
 But, you can easily get the implementations since `poplar.hpp` provides the following aliases:
 
-- `MapPP`: `HashTriePR` + `LabelStorePM` (fastest)
-- `MapPE`: `HashTriePR` + `LabelStoreEM`
-- `MapPG`: `HashTriePR` + `LabelStoreGM`
-- `MapCP`: `HashTrieCR` + `LabelStorePM`
-- `MapCE`: `HashTrieCR` + `LabelStoreEM`
-- `MapCG`: `HashTrieCR` + `LabelStoreGM` (smallest)
+- `MapPP` = `Map` + `HashTriePR` + `LabelStorePM` (fastest)
+- `MapPE` = `Map` + `HashTriePR` + `LabelStoreEM`
+- `MapPG` = `Map` + `HashTriePR` + `LabelStoreGM`
+- `MapCP` = `Map` + `HashTrieCR` + `LabelStorePM`
+- `MapCE` = `Map` + `HashTrieCR` + `LabelStoreEM`
+- `MapCG` = `Map` + `HashTrieCR` + `LabelStoreGM` (smallest)
 
 
 
