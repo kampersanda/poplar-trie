@@ -42,7 +42,7 @@ using BijectiveHashTypes = ::testing::Types<
 TYPED_TEST_CASE(BijectiveHashTest, BijectiveHashTypes);
 
 TYPED_TEST(BijectiveHashTest, Tiny) {
-  for (uint32_t i = 1; i <= 64; ++i) {
+  for (uint32_t i = 1; i < 64; ++i) {
     bijective_hash_test::check_bijection<TypeParam>(i);
   }
 }
