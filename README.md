@@ -125,14 +125,14 @@ And, search time for the same strings was measured.
 
 | Implementation | Space (MiB) | Insertion (micros / key) | Search (micros / key) |
 |----------------|------------:|----------------------------:|-------------------------:|
-| `MapPP` | 80.4 | 0.68 | 0.48 |
+| `MapPP` | 80.4 | **0.68** | 0.48 |
 | `MapPE` | 75.6 | 0.91 | 0.57 |
 | `MapPG` | 47.2 | 1.71 | 0.80 |
 | `MapCP` | 65.5 | 0.81 | 0.54 |
 | `MapCE` | 61.6 | 1.00 | 0.61 |
-| `MapCG` | 42.3 | 1.62 | 0.85 |
+| `MapCG` | **42.3** | 1.62 | 0.85 |
 | [JudySL](http://judy.sourceforge.net) | 72.7 | 0.73 | 0.49 |
-| [hat-trie](https://github.com/dcjones/hat-trie) | 74.5 | 0.97 | 0.25 |
+| [hat-trie](https://github.com/dcjones/hat-trie) | 74.5 | 0.97 | **0.25** |
 | [cedarpp](http://www.tkl.iis.u-tokyo.ac.jp/~ynaga/cedar/) | 94.7 | 0.69 | 0.42 |
 
 ## Todo
