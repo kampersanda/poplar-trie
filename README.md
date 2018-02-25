@@ -2,11 +2,12 @@
 
 Poplar-trie is a C++17 library of associative arrays with string keys based on a dynamic path-decomposed trie described in the paper [*Practical implementation of space-efficient dynamic keyword dictionaries*](https://link.springer.com/chapter/10.1007%2F978-3-319-67428-5_19), published in SPIRE 2017 [[paper](https://sites.google.com/site/shnskknd/SPIRE2017.pdf)] [[slide](https://www.slideshare.net/ShunsukeKanda1/practical-implementation-of-spaceefficient-dynamic-keyword-dictionaries)].
 However, the implementation of this library is enhanced from the conference version.
+
 The technical details are now being written.
 
 ## Implementation overview
 
-This library implements an associative array mapping key strings to values of any type and supporting dynamic update like `std::map<std::string,V>`.
+This library implements an associative array giving a mapping from key strings to values of any type and supporting dynamic update like `std::map<std::string,V>`.
 The data structure is based on a dynamic path-decomposed trie.
 The nodes are located on a hash table.
 The library implements the hash table of the two classes:
@@ -119,6 +120,7 @@ The main advantage of Poplar-trie is high space efficiency as can be seen in the
 The experiments were carried out on Intel Xeon E5 @3.5 GHz CPU, with 32 GB of RAM, running Mac OS X 10.12.
 The codes were compiled using Apple LLVM version 8 (clang-8) with optimization -O3.
 The dictionaries were constructed by inserting all page titles from Japanese Wikipedia (32.3 MiB) in random order.
+The value type is `int`.
 The maximum resident set size during construction was measured using the `/usr/bin/time` command.
 The insertion time was also measured using `std::chrono::duration_cast`.
 And, search time for the same strings was measured.
