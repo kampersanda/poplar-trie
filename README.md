@@ -10,7 +10,7 @@ The technical details are now being written.
 Poplar-trie implements an associative array giving a mapping from key strings to values of any type and supporting dynamic update like `std::map<std::string,V>`.
 The underlying data structure is the DynPDT.
 
-A property of DynPDTs is that the edge labels are drawn from an integer set larger than that of normal tries represented in one byte, so it is important that searching a child can be performed in constant time.
+A property of the DynPDT is that the edge labels are drawn from an integer set larger than that of normal tries represented in one byte, so it is important that searching a child can be performed in constant time.
 Poplar-trie solves the task using hash-based trie implementations of the following two classes:
 
 - `HashTriePR` is a plain representation of a hash table.
@@ -34,6 +34,10 @@ But, you can easily get the implementations since `poplar.hpp` provides the foll
 - `MapCE` = `Map` + `HashTrieCR` + `LabelStoreEM`
 - `MapCG` = `Map` + `HashTrieCR` + `LabelStoreGM` (smallest)
 
+These have template argument `t_lambda = 16` in common.
+This is a parameter depending on lengths of given strings.
+From previous experimental results, the value 16 (default) would be good for natural language words.
+For long strings such as URLs, the value 32 or 64 would be good.
 
 
 ## Build instructions
@@ -143,7 +147,6 @@ And, search time for the same strings was measured.
 - Support the deletion operation
 - Add comments to the codes
 - Create the API document
-- Implement string set classes
 
 ## Related work
 
