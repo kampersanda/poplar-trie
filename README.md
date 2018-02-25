@@ -1,22 +1,23 @@
 # Poplar-trie
 
-Poplar-trie is a C++17 library of associative arrays with string keys based on a dynamic path-decomposed trie described in the paper [*Practical implementation of space-efficient dynamic keyword dictionaries*](https://link.springer.com/chapter/10.1007%2F978-3-319-67428-5_19), published in SPIRE 2017 [[paper](https://sites.google.com/site/shnskknd/SPIRE2017.pdf)] [[slide](https://www.slideshare.net/ShunsukeKanda1/practical-implementation-of-spaceefficient-dynamic-keyword-dictionaries)].
+Poplar-trie is a C++17 library of associative arrays with string keys based on a dynamic path-decomposed trie (DynPDT) described in the paper [*Practical implementation of space-efficient dynamic keyword dictionaries*](https://link.springer.com/chapter/10.1007%2F978-3-319-67428-5_19), published in SPIRE 2017 [[paper](https://sites.google.com/site/shnskknd/SPIRE2017.pdf)] [[slide](https://www.slideshare.net/ShunsukeKanda1/practical-implementation-of-spaceefficient-dynamic-keyword-dictionaries)].
 However, the implementation of this library is enhanced from the conference version.
 
 The technical details are now being written.
 
 ## Implementation overview
 
-This library implements an associative array giving a mapping from key strings to values of any type and supporting dynamic update like `std::map<std::string,V>`.
-The data structure is based on a dynamic path-decomposed trie.
-The nodes are located on a hash table.
-The library implements the hash table of the two classes:
+Poplar-trie implements an associative array giving a mapping from key strings to values of any type and supporting dynamic update like `std::map<std::string,V>`.
+The underlying data structure is the DynPDT.
+
+A property of DynPDTs is that the edge labels are drawn from an integer set larger than that of normal tries represented in one byte, so it is important that searching a child can be performed in constant time.
+Poplar-trie solves the task using hash-based trie implementations of the following two classes:
 
 - `HashTriePR` is a plain representation of a hash table.
 - `HashTrieCR` is a compact representation of a hash table based on [m-Bonsai](https://arxiv.org/abs/1704.05682).
 
-And the trie has string labels for each node, so their pointers have to be stored.
-The library includes the three management methods:
+Another property is that the trie has string labels for each node, so their pointers have to be stored.
+This library includes the three management methods:
 
 - `LabelStorePM` simply stores all pointers to string labels.
 - `LabelStoreEM` embeds short string labels into spaces of pointers.
@@ -49,7 +50,7 @@ $ make
 $ make install
 ```
 
-This library needs C++17, so please install g++ 7.0 (or greater) or clang 4.0 (or greater).
+This library uses C++17, so please install g++ 7.0 (or greater) or clang 4.0 (or greater).
 As can be seen in the above commands, CMake 3.8 (or greater) has to be installed to compile the library.
 You can use the SSE4.2 POPCNT instruction by adding `-DPOPLAR_USE_POPCNT=ON`.
 
@@ -142,10 +143,11 @@ And, search time for the same strings was measured.
 - Support the deletion operation
 - Add comments to the codes
 - Create the API document
+- Implement string set classes
 
-## Related software
+## Related work
 
-- [compact\_sparse\_hash](https://github.com/tudocomp/compact_sparse_hash) is an implementation of a compact associative array with integer keys.
+- [compact\_sparse\_hash](https://github.com/tudocomp/compact_sparse_hash) is an efficient implementation of a compact associative array with integer keys.
 - [mBonsai](https://github.com/Poyias/mBonsai) is the original implementation of succinct dynamic tries.
 - [tudocomp](https://github.com/tudocomp/tudocomp) includes many dynamic trie implementations for LZ factorization.
  
