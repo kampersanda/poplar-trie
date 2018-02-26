@@ -16,15 +16,17 @@ int main() {
     }
     for (int i = 0; i < keys.size(); ++i) {
       const int* ptr = map.find(keys[i]);
+      if (ptr == nullptr) {
+        return 1;
+      }
       std::cout << keys[i] << ": " << *ptr << std::endl;
     }
     {
       const int* ptr = map.find("Hotaru");
-      if (ptr == nullptr) {
-        std::cout << "Hotaru: " << -1 << std::endl;
-      } else {
+      if (ptr != nullptr) {
         return 1;
       }
+      std::cout << "Hotaru: " << -1 << std::endl;
     }
   } catch (const poplar::Exception& ex) {
     std::cerr << ex.what() << std::endl;
