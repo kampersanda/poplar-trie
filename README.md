@@ -81,7 +81,7 @@ int main() {
     }
     for (int i = 0; i < keys.size(); ++i) {
       const int* ptr = map.find(keys[i]);
-      if (ptr == nullptr) {
+      if (ptr == nullptr || *ptr != i + 1) {
         return 1;
       }
       std::cout << keys[i] << ": " << *ptr << std::endl;
