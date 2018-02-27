@@ -94,7 +94,7 @@ public:
     label_store_.show_stat(os);
   }
 
-  // Swaps
+  // Swaps the maps.
   void swap(Map& rhs) {
     std::swap(is_ready_, rhs.is_ready_);
     std::swap(hash_trie_, rhs.hash_trie_);
@@ -137,8 +137,8 @@ private:
   )
 
   const value_type* find_(ustr_view&& key) const {
-    POPLAR_THROW_IF(key.empty(), "");
-    POPLAR_THROW_IF(key.back() != '\0', "");
+    POPLAR_THROW_IF(key.empty(), "key must be a non-empty string.");
+    POPLAR_THROW_IF(key.back() != '\0', "The last character of key must be the null terminator.");
 
     if (!is_ready_ || hash_trie_.size() == 0) {
       return nullptr;
@@ -179,9 +179,8 @@ private:
   }
 
   value_type* update_(ustr_view&& key) {
-    if (key.empty() || key.back() != '\0') {
-      POPLAR_THROW("The query key is an invalid format.");
-    }
+    POPLAR_THROW_IF(key.empty(), "key must be a non-empty string.");
+    POPLAR_THROW_IF(key.back() != '\0', "The last character of key must be the null terminator.");
 
     if (hash_trie_.size() == 0) {
       if (!is_ready_) {
