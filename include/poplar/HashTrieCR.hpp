@@ -117,7 +117,7 @@ public:
   }
 
   std::pair<uint64_t, uint64_t> get_parent_and_symb(uint64_t node_id) const {
-    assert(node_id <= capa_size_.mask());
+    assert(node_id < capa_size_.size());
 
     if (compare_dsp_(node_id, 0)) {
       // root or not exist
@@ -128,7 +128,7 @@ public:
     uint64_t init_id = dist <= node_id ? node_id - dist : table_.size() - (dist - node_id);
     uint64_t orig_key = hash_.hash_inv(get_quo_(node_id) << capa_size_.bits() | init_id);
 
-    // Returns pair <parent, label>
+    // Returns pair (parent, label)
     return std::make_pair(orig_key >> symb_size_.bits(), orig_key & symb_size_.mask());
   }
 
@@ -233,19 +233,17 @@ public:
       uint64_t node_id = i;
 
       do {
-        auto ps = get_parent_and_symb(node_id);
-        assert(ps.first != NIL_ID);
-        path.emplace_back(std::make_pair(node_id, ps.second));
-        node_id = ps.first; // set parent
+        auto [parent, label] = get_parent_and_symb(node_id);
+        assert(parent != NIL_ID);
+        path.emplace_back(std::make_pair(node_id, label));
+        node_id = parent;
       } while (!done_flags[node_id]);
 
       uint64_t new_node_id = get_mapping(node_id);
 
       for (auto rit = std::rbegin(path); rit != std::rend(path); ++rit) {
         int ret = new_ht.add_child(new_node_id, rit->second);
-        if (ret != 1) {
-          POPLAR_THROW("New allocation is too small.");
-        }
+        POPLAR_THROW_IF(ret != 1, "New allocation space is too small.");
         set_mapping(rit->first, new_node_id);
         done_flags.set(rit->first);
       }
