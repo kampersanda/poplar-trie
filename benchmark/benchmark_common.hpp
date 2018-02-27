@@ -6,6 +6,7 @@
 #include <chrono>
 #include <fstream>
 #include <iomanip>
+
 #include <poplar.hpp>
 
 namespace poplar::benchmark {
@@ -33,39 +34,36 @@ private:
 template <typename T>
 inline std::string realname() {
   int status;
-  const auto& id = typeid(T);
-  return abi::__cxa_demangle(id.name(), 0, 0, &status);
+  return abi::__cxa_demangle(typeid(T).name(), nullptr, nullptr, &status);
 }
 
-using value_type = int;
-static constexpr uint64_t LAMBDA = 16;
-
+template <typename t_value = int, uint64_t t_lambda = 16>
 using map_types = std::tuple<
-  poplar::MapPP<value_type, LAMBDA>,
-  poplar::MapPE<value_type, LAMBDA>,
-  poplar::MapPG<value_type, 8, LAMBDA>,
-  poplar::MapPG<value_type, 16, LAMBDA>,
-  poplar::MapPG<value_type, 32, LAMBDA>,
-  poplar::MapPG<value_type, 64, LAMBDA>,
-  poplar::MapCP<value_type, LAMBDA>,
-  poplar::MapCE<value_type, LAMBDA>,
-  poplar::MapCG<value_type, 8, LAMBDA>,
-  poplar::MapCG<value_type, 16, LAMBDA>,
-  poplar::MapCG<value_type, 32, LAMBDA>,
-  poplar::MapCG<value_type, 64, LAMBDA>
+  poplar::MapPP<t_value, t_lambda>,
+  poplar::MapPE<t_value, t_lambda>,
+  poplar::MapPG<t_value, 8, t_lambda>,
+  poplar::MapPG<t_value, 16, t_lambda>,
+  poplar::MapPG<t_value, 32, t_lambda>,
+  poplar::MapPG<t_value, 64, t_lambda>,
+  poplar::MapCP<t_value, t_lambda>,
+  poplar::MapCE<t_value, t_lambda>,
+  poplar::MapCG<t_value, 8, t_lambda>,
+  poplar::MapCG<t_value, 16, t_lambda>,
+  poplar::MapCG<t_value, 32, t_lambda>,
+  poplar::MapCG<t_value, 64, t_lambda>
 >;
 
-constexpr size_t NUM_MAPS = std::tuple_size<map_types>::value;
+constexpr size_t NUM_MAPS = std::tuple_size<map_types<>>::value;
 
 template<size_t N = NUM_MAPS>
 inline void maps_list_all(const char* pfx, std::ostream& os) {
   maps_list_all<N - 1>(pfx, os);
-  using map_type = std::tuple_element_t<N - 1, map_types>;
+  using map_type = std::tuple_element_t<N - 1, map_types<>>;
   os << pfx << std::setw(2) << N << ": " << realname<map_type>() << "\n";
 }
 template<>
 inline void maps_list_all<1>(const char* pfx, std::ostream& os) {
-  using map_type = std::tuple_element_t<0, map_types>;
+  using map_type = std::tuple_element_t<0, map_types<>>;
   os << pfx << std::setw(2) << 1 << ": " << realname<map_type>() << "\n";
 }
 

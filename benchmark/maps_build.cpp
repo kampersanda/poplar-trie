@@ -51,7 +51,7 @@ template<size_t N = 0>
 std::enable_if_t<N < NUM_MAPS, int>
 build_for_id(int id, const char* key_name, uint32_t capa_bits) {
   if (id - 1 == N) {
-    using map_type = std::tuple_element_t<N, map_types>;
+    using map_type = std::tuple_element_t<N, map_types<>>;
     return build<map_type>(key_name, capa_bits);
   }
   return build_for_id<N + 1>(id, key_name, capa_bits);
