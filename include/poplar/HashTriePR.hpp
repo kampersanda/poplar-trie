@@ -112,7 +112,7 @@ public:
       return {NIL_ID, 0};
     }
 
-    // Returns pair <parent, label>
+    // Returns pair (parent, label)
     return std::make_pair(key >> symb_size_.bits(), key & symb_size_.mask());
   };
 
@@ -178,7 +178,7 @@ public:
     // 0 is empty, 1 is root
     for (uint64_t i = 2; i < table_.size(); ++i) {
       if (done_flags[i] || table_[i] == 0) {
-        // skip empty or already processed
+        // skip already processed or empty elements
         continue;
       }
 
@@ -186,19 +186,17 @@ public:
       uint64_t node_id = i;
 
       do {
-        auto ps = get_parent_and_symb(node_id);
-        assert(ps.first != NIL_ID);
-        path.emplace_back(std::make_pair(node_id, ps.second));
-        node_id = ps.first; // set parent
+        auto [parent, label] = get_parent_and_symb(node_id);
+        assert(parent != NIL_ID);
+        path.emplace_back(std::make_pair(node_id, label));
+        node_id = parent;
       } while (!done_flags[node_id]);
 
       uint64_t new_node_id = table_[node_id];
 
       for (auto rit = std::rbegin(path); rit != std::rend(path); ++rit) {
         int ret = new_ht.add_child(new_node_id, rit->second);
-        if (ret != 1) {
-          POPLAR_THROW("New allocation is too small.");
-        }
+        POPLAR_THROW_IF(ret != 1, "New allocation space is too small.");
         table_.set(rit->first, new_node_id);
         done_flags.set(rit->first);
       }
