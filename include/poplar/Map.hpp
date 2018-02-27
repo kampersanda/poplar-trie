@@ -87,7 +87,7 @@ public:
     os << " - size: " << size() << "\n";
     os << " - capa_size: " << capa_size() << "\n";
     POPLAR_EX_STATS(
-      os << " - num_steps: " << num_steps_ << "\n";
+      os << " - rate_steps: " << double(num_steps_) / hash_trie_.size() << "\n";
       os << " - num_resize: " << num_resize_ << "\n";
     )
     hash_trie_.show_stat(os);

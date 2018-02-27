@@ -196,7 +196,7 @@ public:
 
       for (auto rit = std::rbegin(path); rit != std::rend(path); ++rit) {
         int ret = new_ht.add_child(new_node_id, rit->second);
-        POPLAR_THROW_IF(ret != 1, "New allocation space is too small.");
+        assert(ret == 1);
         table_.set(rit->first, new_node_id);
         done_flags.set(rit->first);
       }

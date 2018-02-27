@@ -243,7 +243,7 @@ public:
 
       for (auto rit = std::rbegin(path); rit != std::rend(path); ++rit) {
         int ret = new_ht.add_child(new_node_id, rit->second);
-        POPLAR_THROW_IF(ret != 1, "New allocation space is too small.");
+        assert(ret == 1);
         set_mapping(rit->first, new_node_id);
         done_flags.set(rit->first);
       }
@@ -291,9 +291,9 @@ public:
     os << " - symb_bits: " << symb_bits() << "\n";
     POPLAR_EX_STATS(
       os << " - num_resize: " << num_resize_ << "\n";
-      os << " - 1st_dsp_%: " << double(num_dsps_[0]) / size() << "\n";
-      os << " - 2nd_dsp_%: " << double(num_dsps_[1]) / size() << "\n";
-      os << " - 3rd_dsp_%: " << double(num_dsps_[2]) / size() << "\n";
+      os << " - rate_dsp1st: " << double(num_dsps_[0]) / size() << "\n";
+      os << " - rate_dsp2nd: " << double(num_dsps_[1]) / size() << "\n";
+      os << " - rate_dsp3rd: " << double(num_dsps_[2]) / size() << "\n";
     )
     hash_.show_stat(os);
     aux_cht_.show_stat(os);
