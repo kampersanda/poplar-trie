@@ -15,7 +15,7 @@ template<
   uint32_t t_factor = 80,
   uint32_t t_dsp_bits = 3,
   typename t_cht = CompactHashTable<7>,
-  typename t_hash = bijective_hash::Xorshift
+  typename t_hash = bijective_hash::SplitMix
 >
 class HashTrieCR {
 private:

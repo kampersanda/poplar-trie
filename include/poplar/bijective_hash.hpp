@@ -73,11 +73,11 @@ constexpr uint64_t PRIME_TABLE[][2][3] = {
   {{9223372036854775291ULL, 9223372036854775279ULL, 9223372036854775181ULL}, {3657236494304118067ULL, 2545580940228350223ULL, 3339243145719352645ULL}} // 63
 };
 
-class Xorshift {
+class SplitMix {
 public:
-  Xorshift() = default;
+  SplitMix() = default;
 
-  explicit Xorshift(uint32_t univ_bits) {
+  explicit SplitMix(uint32_t univ_bits) {
     assert(0 < univ_bits && univ_bits < 64);
 
     shift_ = univ_bits / 2 + 1;
@@ -109,7 +109,7 @@ public:
   }
 
   void show_stat(std::ostream& os, std::string&& level = "") const {
-    os << level << "stat:bijective_Xorshift\n";
+    os << level << "stat:bijective_SplitMix\n";
     os << level << "\tsize:" << size() << "\n";
     os << level << "\tbits:" << bits() << "\n";
   }

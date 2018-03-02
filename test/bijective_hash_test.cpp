@@ -36,7 +36,7 @@ template<typename>
 class BijectiveHashTest : public ::testing::Test {};
 
 using BijectiveHashTypes = ::testing::Types<
-  bijective_hash::Xorshift
+  bijective_hash::SplitMix
 >;
 
 TYPED_TEST_CASE(BijectiveHashTest, BijectiveHashTypes);

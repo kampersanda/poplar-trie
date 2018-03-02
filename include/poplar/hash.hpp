@@ -5,8 +5,8 @@
 
 namespace poplar::hash {
 
-// http://xorshift.di.unimi.it/splitmix64.c
-struct Xorshift {
+// http://xoroshiro.di.unimi.it/splitmix64.c
+struct SplitMix {
   static uint64_t hash(uint64_t x) {
     x = (x ^ (x >> 30)) * 0xbf58476d1ce4e5b9ULL;
     x = (x ^ (x >> 27)) * 0x94d049bb133111ebULL;

@@ -11,7 +11,7 @@ namespace poplar {
 template<
   uint32_t t_val_bits,
   uint32_t t_factor = 80,
-  typename t_hash = bijective_hash::Xorshift
+  typename t_hash = bijective_hash::SplitMix
 >
 class CompactHashTable {
 private:

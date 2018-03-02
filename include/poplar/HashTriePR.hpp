@@ -8,7 +8,7 @@
 
 namespace poplar {
 
-template <uint32_t t_factor = 80, typename t_hash = hash::Xorshift>
+template <uint32_t t_factor = 80, typename t_hash = hash::SplitMix>
 class HashTriePR {
 private:
   static_assert(0 < t_factor && t_factor < 100);
