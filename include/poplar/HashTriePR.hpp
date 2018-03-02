@@ -232,16 +232,16 @@ public:
     return symb_size_.bits();
   }
 
-  void show_stat(std::ostream& os) const {
-    os << "Statistics of HashTriePR\n";
-    os << " - factor: " << t_factor << "\n";
-    os << " - size: " << size() << "\n";
-    os << " - capa_size: " << capa_size() << "\n";
-    os << " - capa_bits: " << capa_bits() << "\n";
-    os << " - symb_size: " << symb_size() << "\n";
-    os << " - symb_bits: " << symb_bits() << "\n";
+  void show_stat(std::ostream& os, std::string&& level = "") const {
+    os << level << "stat:HashTriePR\n";
+    os << level << "\tfactor:" << t_factor << "\n";
+    os << level << "\tsize:" << size() << "\n";
+    os << level << "\tcapa_size:" << capa_size() << "\n";
+    os << level << "\tcapa_bits:" << capa_bits() << "\n";
+    os << level << "\tsymb_size:" << symb_size() << "\n";
+    os << level << "\tsymb_bits:" << symb_bits() << "\n";
     POPLAR_EX_STATS(
-      os << " - num_resize: " << num_resize_ << "\n";
+      os << level << "\tnum_resize:" << num_resize_ << "\n";
     )
   }
 

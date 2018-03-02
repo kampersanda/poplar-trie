@@ -85,13 +85,13 @@ int speed_test(const char* key_name, const char* query_name, uint32_t capa_bits)
     find_time = get_average(times);
   }
 
-  std::cout << "results for " << realname<t_map>() << "\n";
-  std::cout << " - #keys: " << num_keys << "\n";
-  std::cout << " - #queries: " << num_queries << "\n";
-  std::cout << " - update_us_key: " << update_time << "\n";
-  std::cout << " - find_us_key: " << find_time << "\n";
-  std::cout << " - OK: " << ok << "\n";
-  std::cout << " - NG: " << ng << "\n";
+  std::cout << "name:" << short_realname<t_map>() << "\n";
+  std::cout << "keys:" << num_keys << "\n";
+  std::cout << "queries:" << num_queries << "\n";
+  std::cout << "update_us_key:" << update_time << "\n";
+  std::cout << "find_us_query:" << find_time << "\n";
+  std::cout << "ok:" << ok << "\n";
+  std::cout << "ng:" << ng << "\n";
 
   return 0;
 }
@@ -114,7 +114,7 @@ bench_for_id(int id, const char* key_name, const char* query_name, uint32_t capa
 void show_usage(const char* exe, std::ostream& os) {
   os << exe << " <type> <key> <query> <capa>\n";
   os << "<type>   type ID of maps\n";
-  maps_list_all("    ", os);
+  maps_list_all("  ", os);
   os << "<key>    path of input keywords\n";
   os << "<query>  path of input queries (optional)\n";
   os << "<capa>   #bits of initial capacity (optional)\n";

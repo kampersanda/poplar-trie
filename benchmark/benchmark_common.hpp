@@ -6,6 +6,7 @@
 #include <chrono>
 #include <fstream>
 #include <iomanip>
+#include <regex>
 
 #include <poplar.hpp>
 
@@ -37,6 +38,14 @@ inline std::string realname() {
   return abi::__cxa_demangle(typeid(T).name(), nullptr, nullptr, &status);
 }
 
+template <typename T>
+inline std::string short_realname() {
+  auto name = realname<T>();
+  name = std::regex_replace(name, std::regex{R"( |poplar::)"}, "");
+  name = std::regex_replace(name, std::regex{R"((\d+)ul{0,2})"}, "$1");
+  return name;
+}
+
 template <typename t_value = int, uint64_t t_lambda = 16>
 using map_types = std::tuple<
   poplar::MapPP<t_value, t_lambda>,
@@ -59,12 +68,12 @@ template<size_t N = NUM_MAPS>
 inline void maps_list_all(const char* pfx, std::ostream& os) {
   maps_list_all<N - 1>(pfx, os);
   using map_type = std::tuple_element_t<N - 1, map_types<>>;
-  os << pfx << std::setw(2) << N << ": " << realname<map_type>() << "\n";
+  os << pfx << std::setw(2) << N << ": " << short_realname<map_type>() << "\n";
 }
 template<>
 inline void maps_list_all<1>(const char* pfx, std::ostream& os) {
   using map_type = std::tuple_element_t<0, map_types<>>;
-  os << pfx << std::setw(2) << 1 << ": " << realname<map_type>() << "\n";
+  os << pfx << std::setw(2) << 1 << ": " << short_realname<map_type>() << "\n";
 }
 
 template <size_t N>

@@ -108,10 +108,10 @@ public:
     return univ_size_.bits();
   }
 
-  void show_stat(std::ostream& os) const {
-    os << "Statistics of Xorshift\n";
-    os << " - size: " << size() << "\n";
-    os << " - bits: " << bits() << "\n";
+  void show_stat(std::ostream& os, std::string&& level = "") const {
+    os << level << "stat:bijective_Xorshift\n";
+    os << level << "\tsize:" << size() << "\n";
+    os << level << "\tbits:" << bits() << "\n";
   }
 
 private:

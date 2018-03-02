@@ -185,7 +185,8 @@ public:
   }
 
   NodeMap expand() {
-    HashTrieCR new_ht{capa_bits() + 1, symb_size_.bits(), aux_cht_.capa_bits()};
+//    HashTrieCR new_ht{capa_bits() + 1, symb_size_.bits(), aux_cht_.capa_bits()};
+    HashTrieCR new_ht{capa_bits() + 1, symb_size_.bits()};
     new_ht.add_root();
 
     POPLAR_EX_STATS(
@@ -279,24 +280,24 @@ public:
     return symb_size_.bits();
   }
 
-  void show_stat(std::ostream& os) const {
-    os << "Statistics of HashTrieCR\n";
-    os << " - factor: " << t_factor << "\n";
-    os << " - 1st_dsp_bits: " << DSP1_BITS << "\n";
-    os << " - 2nd_dsp_bits: " << DSP2_BITS << "\n";
-    os << " - size: " << size() << "\n";
-    os << " - capa_size: " << capa_size() << "\n";
-    os << " - capa_bits: " << capa_bits() << "\n";
-    os << " - symb_size: " << symb_size() << "\n";
-    os << " - symb_bits: " << symb_bits() << "\n";
+  void show_stat(std::ostream& os, std::string&& level = "") const {
+    os << level << "stat:HashTrieCR\n";
+    os << level << "\tfactor:" << t_factor << "\n";
+    os << level << "\tdsp1st_bits:" << DSP1_BITS << "\n";
+    os << level << "\tdsp2nd_bits:" << DSP2_BITS << "\n";
+    os << level << "\tsize:" << size() << "\n";
+    os << level << "\tcapa_size:" << capa_size() << "\n";
+    os << level << "\tcapa_bits:" << capa_bits() << "\n";
+    os << level << "\tsymb_size:" << symb_size() << "\n";
+    os << level << "\tsymb_bits:" << symb_bits() << "\n";
     POPLAR_EX_STATS(
-      os << " - num_resize: " << num_resize_ << "\n";
-      os << " - rate_dsp1st: " << double(num_dsps_[0]) / size() << "\n";
-      os << " - rate_dsp2nd: " << double(num_dsps_[1]) / size() << "\n";
-      os << " - rate_dsp3rd: " << double(num_dsps_[2]) / size() << "\n";
+      os << level << "\tnum_resize:" << num_resize_ << "\n";
+      os << level << "\trate_dsp1st:" << double(num_dsps_[0]) / size() << "\n";
+      os << level << "\trate_dsp2nd:" << double(num_dsps_[1]) / size() << "\n";
+      os << level << "\trate_dsp3rd:" << double(num_dsps_[2]) / size() << "\n";
     )
-    hash_.show_stat(os);
-    aux_cht_.show_stat(os);
+    hash_.show_stat(os, level + "\t");
+    aux_cht_.show_stat(os, level + "\t");
   }
 
   void swap(HashTrieCR& rhs) {

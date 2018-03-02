@@ -34,9 +34,9 @@ int build(const char* key_name, uint32_t capa_bits) {
     std::cerr << ex.what() << std::endl;
   }
 
-  std::cout << "results for " << realname<t_map>() << "\n";
-  std::cout << " - #keys: " << num_keys << "\n";
-  std::cout << " - elapsed_sec: " << elapsed_sec << "\n";
+  std::cout << "name:" << short_realname<t_map>() << "\n";
+  std::cout << "keys:" << num_keys << "\n";
+  std::cout << "elapsed_sec:" << elapsed_sec << "\n";
   map.show_stat(std::cout);
 
   return 0;
@@ -60,7 +60,7 @@ build_for_id(int id, const char* key_name, uint32_t capa_bits) {
 void show_usage(const char* exe, std::ostream& os) {
   os << exe << " <type> <key> <capa>\n";
   os << "<type>  type ID of maps\n";
-  maps_list_all("    ", os);
+  maps_list_all("  ", os);
   os << "<key>   path of input keywords\n";
   os << "<capa>  #bits of initial capacity (optional)\n";
   os.flush();

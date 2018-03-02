@@ -148,16 +148,18 @@ public:
     return capa_size_.bits();
   }
 
-  void show_stat(std::ostream& os) const {
-    os << "Statistics of CompactHashTable\n";
-    os << " - factor: " << t_factor << "\n";
-    os << " - size: " << size() << "\n";
-    os << " - univ_size: " << univ_size() << "\n";
-    os << " - capa_size: " << capa_size() << "\n";
+  void show_stat(std::ostream& os, std::string&& level = "") const {
+    os << level << "stat:CompactHashTable\n";
+    os << level << "\tfactor:" << t_factor << "\n";
+    os << level << "\tsize:" << size() << "\n";
+    os << level << "\tuniv_size:" << univ_size() << "\n";
+    os << level << "\tuniv_bits:" << univ_bits() << "\n";
+    os << level << "\tcapa_size:" << capa_size() << "\n";
+    os << level << "\tcapa_bits:" << capa_bits() << "\n";
     POPLAR_EX_STATS(
-      os << " - num_resize: " << num_resize_ << "\n";
+      os << level << "\tnum_resize:" << num_resize_ << "\n";
     )
-    hash_.show_stat(os);
+    hash_.show_stat(os, level + "\t");
   }
 
   void swap(CompactHashTable& rhs) {

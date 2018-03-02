@@ -81,17 +81,17 @@ public:
   }
 
   // Shows the statistics.
-  void show_stat(std::ostream& os) const {
-    os << "Statistics of Map\n";
-    os << " - lambda: " << t_lambda << "\n";
-    os << " - size: " << size() << "\n";
-    os << " - capa_size: " << capa_size() << "\n";
+  void show_stat(std::ostream& os, std::string&& level = "") const {
+    os << level << "stat:Map\n";
+    os << level << "\tlambda:" << t_lambda << "\n";
+    os << level << "\tsize:" << size() << "\n";
+    os << level << "\tcapa_size:" << capa_size() << "\n";
     POPLAR_EX_STATS(
-      os << " - rate_steps: " << double(num_steps_) / hash_trie_.size() << "\n";
-      os << " - num_resize: " << num_resize_ << "\n";
+      os << level << "\trate_steps:" << double(num_steps_) / hash_trie_.size() << "\n";
+      os << level << "\tnum_resize:" << num_resize_ << "\n";
     )
-    hash_trie_.show_stat(os);
-    label_store_.show_stat(os);
+    hash_trie_.show_stat(os, level + "\t");
+    label_store_.show_stat(os, level + "\t");
   }
 
   // Swaps the maps.

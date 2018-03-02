@@ -149,14 +149,14 @@ public:
     return ptrs_.size();
   }
 
-  void show_stat(std::ostream& os) const {
-    os << "Statistics of LabelStoreEM\n";
-    os << " - chunk_size: " << CHUNK_SIZE << "\n";
-    os << " - size: " << size() << "\n";
-    os << " - capa_size: " << capa_size() << "\n";
+  void show_stat(std::ostream& os, std::string&& level = "") const {
+    os << level << "stat:LabelStoreEM\n";
+    os << level << "\tchunk_size:" << CHUNK_SIZE << "\n";
+    os << level << "\tsize:" << size() << "\n";
+    os << level << "\tcapa_size:" << capa_size() << "\n";
     POPLAR_EX_STATS(
-      os << " - max_length: " << max_length_ << "\n";
-      os << " - ave_length: " << double(sum_length_) / size() << "\n";
+      os << level << "\tmax_length:" << max_length_ << "\n";
+      os << level << "\tave_length:" << double(sum_length_) / size() << "\n";
     )
   }
 
