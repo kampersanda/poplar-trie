@@ -34,7 +34,7 @@ But, you can easily get the implementations since `poplar.hpp` provides the foll
 - `MapCE` = `Map` + `HashTrieCR` + `LabelStoreEM`
 - `MapCG` = `Map` + `HashTrieCR` + `LabelStoreGM` (smallest)
 
-These have template argument `t_lambda = 16` in common.
+These have template argument `t_lambda` in common.
 This is a parameter depending on lengths of given strings.
 From previous experimental results, the value 16 (default) would be good for natural language words.
 For long strings such as URLs, the value 32 or 64 would be good.
@@ -49,14 +49,16 @@ $ git clone https://github.com/kampersanda/poplar-trie.git
 $ cd poplar-trie
 $ mkdir build
 $ cd build
-$ cmake .. -DPOPLAR_USE_POPCNT=ON
+$ cmake ..
 $ make
 $ make install
 ```
 
-This library uses C++17, so please install g++ 7.0 (or greater) or clang 4.0 (or greater).
-As can be seen in the above commands, CMake 3.8 (or greater) has to be installed to compile the library.
-You can use the SSE4.2 POPCNT instruction by adding `-DPOPLAR_USE_POPCNT=ON`.
+The library uses C++17, so please install g++ 7.0 (or greater) or clang 4.0 (or greater).
+In addition, CMake 3.8 (or greater) has to be installed to compile the library.
+
+On the default setting, the library tries to use `SSE4.2` for popcount operations.
+If you do not want to use it, please set `DISABLE_SSE4_2` at build time, e.g., `cmake .. -DDISABLE_SSE4_2=1`.
 
 ## Easy example
 
