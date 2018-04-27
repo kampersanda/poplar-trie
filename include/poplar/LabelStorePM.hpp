@@ -1,20 +1,20 @@
 #ifndef POPLAR_TRIE_LABEL_STORE_PM_HPP
 #define POPLAR_TRIE_LABEL_STORE_PM_HPP
 
-#include <vector>
 #include <memory>
+#include <vector>
 
-#include "basics.hpp"
 #include "IntVector.hpp"
+#include "basics.hpp"
 
 namespace poplar {
 
 template <typename t_value>
 class LabelStorePM {
-public:
+ public:
   using value_type = t_value;
 
-public:
+ public:
   LabelStorePM() = default;
 
   explicit LabelStorePM(uint32_t capa_bits) : ptrs_(1ULL << capa_bits) {}
@@ -49,10 +49,10 @@ public:
     auto ptr = ptrs_[pos].get();
     copy_bytes(ptr, key.data(), length);
 
-    POPLAR_EX_STATS(
-      max_length_ = std::max(max_length_, length);
-      sum_length_ += length;
-    )
+#ifdef POPLAR_ENABLE_EX_STATS
+    max_length_ = std::max(max_length_, length);
+    sum_length_ += length;
+#endif
 
     auto ret = reinterpret_cast<t_value*>(ptr + length);
     *ret = static_cast<t_value>(0);
@@ -78,23 +78,24 @@ public:
     return ptrs_.size();
   }
 
-  void show_stat(std::ostream& os, std::string&& level = "") const {
-    os << level << "stat:LabelStorePM\n";
-    os << level << "\tsize:" << size() << "\n";
-    os << level << "\tcapa_size:" << capa_size() << "\n";
-    POPLAR_EX_STATS(
-      os << level << "\tmax_length:" << max_length_ << "\n";
-      os << level << "\tave_length:" << double(sum_length_) / size() << "\n";
-    )
+  void show_stat(std::ostream& os, int level = 0) const {
+    std::string indent(level, '\t');
+    os << indent << "stat:LabelStorePM\n";
+    os << indent << "\tsize:" << size() << "\n";
+    os << indent << "\tcapa_size:" << capa_size() << "\n";
+#ifdef POPLAR_ENABLE_EX_STATS
+    os << indent << "\tmax_length:" << max_length_ << "\n";
+    os << indent << "\tave_length:" << double(sum_length_) / size() << "\n";
+#endif
   }
 
   void swap(LabelStorePM& rhs) {
     std::swap(ptrs_, rhs.ptrs_);
     std::swap(size_, rhs.size_);
-    POPLAR_EX_STATS(
-      std::swap(max_length_, rhs.max_length_);
-      std::swap(sum_length_, rhs.sum_length_);
-    )
+#ifdef POPLAR_ENABLE_EX_STATS
+    std::swap(max_length_, rhs.max_length_);
+    std::swap(sum_length_, rhs.sum_length_);
+#endif
   }
 
   LabelStorePM(const LabelStorePM&) = delete;
@@ -108,16 +109,15 @@ public:
     return *this;
   }
 
-private:
+ private:
   std::vector<std::unique_ptr<uint8_t[]>> ptrs_{};
   uint64_t size_{};
-
-  POPLAR_EX_STATS(
-    uint64_t max_length_{};
-    uint64_t sum_length_{};
-  )
+#ifdef POPLAR_ENABLE_EX_STATS
+  uint64_t max_length_{};
+  uint64_t sum_length_{};
+#endif
 };
 
-} //ns - poplar
+}  // namespace poplar
 
-#endif //POPLAR_TRIE_LABEL_STORE_PM_HPP
+#endif  // POPLAR_TRIE_LABEL_STORE_PM_HPP

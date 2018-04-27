@@ -1,23 +1,23 @@
 #ifndef POPLAR_TRIE_HASH_TRIE_PR_HPP
 #define POPLAR_TRIE_HASH_TRIE_PR_HPP
 
-#include "bit_tools.hpp"
 #include "BitVector.hpp"
 #include "IntVector.hpp"
+#include "bit_tools.hpp"
 #include "hash.hpp"
 
 namespace poplar {
 
 template <uint32_t t_factor = 80, typename t_hash = hash::SplitMix>
 class HashTriePR {
-private:
+ private:
   static_assert(0 < t_factor && t_factor < 100);
 
-public:
+ public:
   static constexpr uint64_t NIL_ID = UINT64_MAX;
   static constexpr uint32_t MIN_CAPA_BITS = 16;
 
-public:
+ public:
   HashTriePR() = default;
 
   HashTriePR(uint32_t capa_bits, uint32_t symb_bits) {
@@ -88,12 +88,12 @@ public:
       if (table_[i] == 0) {
         // this slot is empty
         if (size_ == max_size_) {
-          return 2; // fail to register because of full
+          return 2;  // fail to register because of full
         }
         ++size_;
         table_.set(i, key);
         node_id = i;
-        return 1; // success to register
+        return 1;  // success to register
       }
       if (table_[i] == key) {
         node_id = i;
@@ -117,12 +117,12 @@ public:
   };
 
   class NodeMap {
-  public:
+   public:
     //!
     NodeMap() = default;
 
     NodeMap(IntVector&& map, BitVector&& done_flags)
-      : map_{std::move(map)}, done_flags_{std::move(done_flags)} {}
+        : map_{std::move(map)}, done_flags_{std::move(done_flags)} {}
 
     ~NodeMap() = default;
 
@@ -150,7 +150,7 @@ public:
       return *this;
     }
 
-  private:
+   private:
     IntVector map_{};
     BitVector done_flags_{};
   };
@@ -163,9 +163,9 @@ public:
     HashTriePR new_ht{capa_bits() + 1, symb_size_.bits()};
     new_ht.add_root();
 
-    POPLAR_EX_STATS(
-      new_ht.num_resize_ = num_resize_ + 1;
-    )
+#ifdef POPLAR_ENABLE_EX_STATS
+    new_ht.num_resize_ = num_resize_ + 1;
+#endif
 
     BitVector done_flags(capa_size());
     done_flags.set(get_root());
@@ -232,17 +232,18 @@ public:
     return symb_size_.bits();
   }
 
-  void show_stat(std::ostream& os, std::string&& level = "") const {
-    os << level << "stat:HashTriePR\n";
-    os << level << "\tfactor:" << t_factor << "\n";
-    os << level << "\tsize:" << size() << "\n";
-    os << level << "\tcapa_size:" << capa_size() << "\n";
-    os << level << "\tcapa_bits:" << capa_bits() << "\n";
-    os << level << "\tsymb_size:" << symb_size() << "\n";
-    os << level << "\tsymb_bits:" << symb_bits() << "\n";
-    POPLAR_EX_STATS(
-      os << level << "\tnum_resize:" << num_resize_ << "\n";
-    )
+  void show_stat(std::ostream& os, int level = 0) const {
+    std::string indent(level, '\t');
+    os << indent << "stat:HashTriePR\n";
+    os << indent << "\tfactor:" << t_factor << "\n";
+    os << indent << "\tsize:" << size() << "\n";
+    os << indent << "\tcapa_size:" << capa_size() << "\n";
+    os << indent << "\tcapa_bits:" << capa_bits() << "\n";
+    os << indent << "\tsymb_size:" << symb_size() << "\n";
+    os << indent << "\tsymb_bits:" << symb_bits() << "\n";
+#ifdef POPLAR_ENABLE_EX_STATS
+    os << level << "\tnum_resize:" << num_resize_ << "\n";
+#endif
   }
 
   void swap(HashTriePR& rhs) {
@@ -251,9 +252,9 @@ public:
     std::swap(max_size_, rhs.max_size_);
     std::swap(capa_size_, rhs.capa_size_);
     std::swap(symb_size_, rhs.symb_size_);
-    POPLAR_EX_STATS(
-      std::swap(num_resize_, rhs.num_resize_);
-    )
+#ifdef POPLAR_ENABLE_EX_STATS
+    std::swap(num_resize_, rhs.num_resize_);
+#endif
   }
 
   HashTriePR(const HashTriePR&) = delete;
@@ -267,16 +268,15 @@ public:
     return *this;
   }
 
-private:
+ private:
   IntVector table_{};
-  uint64_t size_{}; // # of registered nodes
-  uint64_t max_size_{}; // t_factor% of the capacity
+  uint64_t size_{};      // # of registered nodes
+  uint64_t max_size_{};  // t_factor% of the capacity
   size_p2_t capa_size_{};
   size_p2_t symb_size_{};
-
-  POPLAR_EX_STATS(
-    uint64_t num_resize_{};
-  )
+#ifdef POPLAR_ENABLE_EX_STATS
+  uint64_t num_resize_{};
+#endif
 
   uint64_t make_key_(uint64_t node_id, uint64_t symb) const {
     return (node_id << symb_size_.bits()) | symb;
@@ -286,6 +286,6 @@ private:
   }
 };
 
-} //ns - poplar
+}  // namespace poplar
 
-#endif //POPLAR_TRIE_HASH_TRIE_PR_HPP
+#endif  // POPLAR_TRIE_HASH_TRIE_PR_HPP

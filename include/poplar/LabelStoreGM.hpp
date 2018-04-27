@@ -11,18 +11,18 @@ namespace poplar {
 
 template <typename t_value, typename t_chunk>
 class LabelStoreGM {
-public:
+ public:
   using ls_type = LabelStoreGM<t_value, t_chunk>;
   using value_type = t_value;
   using chunk_type = t_chunk;
 
   static constexpr uint64_t CHUNK_SIZE = chunk_type::SIZE;
 
-public:
+ public:
   LabelStoreGM() = default;
 
   explicit LabelStoreGM(uint32_t capa_bits)
-    : ptrs_((1ULL << capa_bits) / CHUNK_SIZE), chunks_(ptrs_.size()) {}
+      : ptrs_((1ULL << capa_bits) / CHUNK_SIZE), chunks_(ptrs_.size()) {}
 
   ~LabelStoreGM() = default;
 
@@ -69,10 +69,10 @@ public:
 
     ++size_;
 
-    POPLAR_EX_STATS(
-      max_length_ = std::max<uint64_t>(max_length_, key.length());
-      sum_length_ += key.length();
-    )
+#ifdef POPLAR_ENABLE_EX_STATS
+    max_length_ = std::max<uint64_t>(max_length_, key.length());
+    sum_length_ += key.length();
+#endif
 
     if (!ptrs_[pos_c.quo]) {
       // First association in the group
@@ -142,10 +142,11 @@ public:
     }
 
     new_ls.size_ = size_;
-    POPLAR_EX_STATS(
-      new_ls.max_length_ = max_length_;
-      new_ls.sum_length_ = sum_length_;
-    )
+#ifdef POPLAR_ENABLE_EX_STATS
+    new_ls.max_length_ = max_length_;
+    new_ls.sum_length_ = sum_length_;
+#endif
+
     *this = std::move(new_ls);
   }
 
@@ -156,25 +157,26 @@ public:
     return ptrs_.size() * CHUNK_SIZE;
   }
 
-  void show_stat(std::ostream& os, std::string&& level = "") const {
-    os << level << "stat:LabelStoreGM\n";
-    os << level << "\tchunk_size:" << CHUNK_SIZE << "\n";
-    os << level << "\tsize:" << size() << "\n";
-    os << level << "\tcapa_size:" << capa_size() << "\n";
-    POPLAR_EX_STATS(
-      os << level << "\tmax_length:" << max_length_ << "\n";
-      os << level << "\tave_length:" << double(sum_length_) / size() << "\n";
-    )
+  void show_stat(std::ostream& os, int level = 0) const {
+    std::string indent(level, '\t');
+    os << indent << "stat:LabelStoreGM\n";
+    os << indent << "\tchunk_size:" << CHUNK_SIZE << "\n";
+    os << indent << "\tsize:" << size() << "\n";
+    os << indent << "\tcapa_size:" << capa_size() << "\n";
+#ifdef POPLAR_ENABLE_EX_STATS
+    os << indent << "\tmax_length:" << max_length_ << "\n";
+    os << indent << "\tave_length:" << double(sum_length_) / size() << "\n";
+#endif
   }
 
   void swap(LabelStoreGM& rhs) {
     std::swap(ptrs_, rhs.ptrs_);
     std::swap(chunks_, rhs.chunks_);
     std::swap(size_, rhs.size_);
-    POPLAR_EX_STATS(
-      std::swap(max_length_, rhs.max_length_);
-      std::swap(sum_length_, rhs.sum_length_);
-    )
+#ifdef POPLAR_ENABLE_EX_STATS
+    std::swap(max_length_, rhs.max_length_);
+    std::swap(sum_length_, rhs.sum_length_);
+#endif
   }
 
   LabelStoreGM(const LabelStoreGM&) = delete;
@@ -188,15 +190,14 @@ public:
     return *this;
   }
 
-private:
+ private:
   std::vector<std::unique_ptr<uint8_t[]>> ptrs_{};
   std::vector<chunk_type> chunks_{};
   uint64_t size_{};
-
-  POPLAR_EX_STATS(
-    uint64_t max_length_{};
-    uint64_t sum_length_{};
-  )
+#ifdef POPLAR_ENABLE_EX_STATS
+  uint64_t max_length_{};
+  uint64_t sum_length_{};
+#endif
 
   std::pair<uint64_t, uint64_t> get_allocs_(const decomp_val_t& pos_c) {
     assert(chunks_[pos_c.quo].get(pos_c.mod));
@@ -262,7 +263,7 @@ private:
     // Second and subsequent association in the group
     auto fr_alloc = get_allocs_(pos_c);
     auto new_unique =
-      std::make_unique<uint8_t[]>(fr_alloc.first + new_slice.size() + fr_alloc.second);
+        std::make_unique<uint8_t[]>(fr_alloc.first + new_slice.size() + fr_alloc.second);
 
     uint8_t* new_ptr = new_unique.get();
 
@@ -281,6 +282,6 @@ private:
   }
 };
 
-} //ns - poplar
+}  // namespace poplar
 
-#endif //POPLAR_TRIE_LABEL_STORE_GM_HPP
+#endif  // POPLAR_TRIE_LABEL_STORE_GM_HPP

@@ -2,6 +2,5 @@
 #define POPLAR_TRIE_CONFIG_HPP
 
 #cmakedefine POPLAR_ENABLE_EX_STATS
-#cmakedefine POPLAR_USE_POPCNT
 
 #endif //POPLAR_TRIE_CONFIG_HPP

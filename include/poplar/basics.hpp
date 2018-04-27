@@ -5,22 +5,18 @@
 #include <cstdint>
 #include <cstring>
 #include <limits>
+#include <ostream>
+#include <string>
 #include <string_view>
 
 #include "poplar_config.hpp"
 
 namespace poplar {
 
-using std::uint8_t;
 using std::uint16_t;
 using std::uint32_t;
 using std::uint64_t;
-
-#ifdef POPLAR_ENABLE_EX_STATS
-  #define POPLAR_EX_STATS(x) x
-#else
-  #define POPLAR_EX_STATS(x)
-#endif
+using std::uint8_t;
 
 using ustr_view = std::basic_string_view<uint8_t>;
 
@@ -67,21 +63,26 @@ constexpr decomp_val_t decompose_value(uint64_t x) {
 }
 
 class size_p2_t {
-public:
+ public:
   size_p2_t() = default;
 
-  explicit size_p2_t(uint32_t bits)
-    : bits_{bits}, mask_{(1ULL << bits) - 1} {}
+  explicit size_p2_t(uint32_t bits) : bits_{bits}, mask_{(1ULL << bits) - 1} {}
 
-  uint32_t bits() const { return bits_; }
-  uint64_t mask() const { return mask_; }
-  uint64_t size() const { return mask_ + 1; }
+  uint32_t bits() const {
+    return bits_;
+  }
+  uint64_t mask() const {
+    return mask_;
+  }
+  uint64_t size() const {
+    return mask_ + 1;
+  }
 
-private:
+ private:
   uint32_t bits_{};
   uint64_t mask_{};
 };
 
-} //ns - poplar
+}  // namespace poplar
 
-#endif //POPLAR_TRIE_BASICS_HPP
+#endif  // POPLAR_TRIE_BASICS_HPP

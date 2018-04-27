@@ -3,40 +3,43 @@
 
 #include <array>
 
-#include "bit_tools.hpp"
 #include "Exception.hpp"
+#include "bit_tools.hpp"
 
 namespace poplar {
 
-// Associative array implementation with string keys based on a dynamic path-decomposed trie.
+// Associative array implementation with string keys based on a dynamic
+// path-decomposed trie.
 template <typename t_ht, typename t_ls, uint64_t t_lambda = 16>
 class Map {
-private:
+ private:
   static_assert(is_power2(t_lambda));
 
-public:
-  using map_type = Map<t_ht, t_ls, t_lambda>; // Map Type
-  using ht_type = t_ht; // HashTrie Type
-  using ls_type = t_ls; // LabelStore Type
-  using value_type = typename t_ls::value_type; // Value type
+ public:
+  using map_type = Map<t_ht, t_ls, t_lambda>;    // Map Type
+  using ht_type = t_ht;                          // HashTrie Type
+  using ls_type = t_ls;                          // LabelStore Type
+  using value_type = typename t_ls::value_type;  // Value type
 
-public:
+ public:
   // Generic constructor.
   Map() = default;
 
-  // Class constructor. Initially allocates the hash table of length 2**capa_bits.
+  // Class constructor. Initially allocates the hash table of length
+  // 2**capa_bits.
   explicit Map(uint32_t capa_bits) {
     is_ready_ = true;
     hash_trie_ = ht_type{capa_bits, 8 + bit_tools::get_num_bits(t_lambda - 1)};
     label_store_ = ls_type{hash_trie_.capa_bits()};
     codes_.fill(UINT8_MAX);
-    codes_[0] = static_cast<uint8_t>(num_codes_++); // terminator
+    codes_[0] = static_cast<uint8_t>(num_codes_++);  // terminator
   }
 
   // Generic destructor.
   ~Map() = default;
 
-  // Searches the given key and returns the value pointer if registered; otherwise returns nullptr.
+  // Searches the given key and returns the value pointer if registered;
+  // otherwise returns nullptr.
   const value_type* find(const char* key) const {
     return find_(make_ustr_view(key));
   }
@@ -81,17 +84,18 @@ public:
   }
 
   // Shows the statistics.
-  void show_stat(std::ostream& os, std::string&& level = "") const {
-    os << level << "stat:Map\n";
-    os << level << "\tlambda:" << t_lambda << "\n";
-    os << level << "\tsize:" << size() << "\n";
-    os << level << "\tcapa_size:" << capa_size() << "\n";
-    POPLAR_EX_STATS(
-      os << level << "\trate_steps:" << double(num_steps_) / hash_trie_.size() << "\n";
-      os << level << "\tnum_resize:" << num_resize_ << "\n";
-    )
-    hash_trie_.show_stat(os, level + "\t");
-    label_store_.show_stat(os, level + "\t");
+  void show_stat(std::ostream& os, int level = 0) const {
+    std::string indent(level, '\t');
+    os << indent << "stat:Map\n";
+    os << indent << "\tlambda:" << t_lambda << "\n";
+    os << indent << "\tsize:" << size() << "\n";
+    os << indent << "\tcapa_size:" << capa_size() << "\n";
+#ifdef POPLAR_ENABLE_EX_STATS
+    os << indent << "\trate_steps:" << double(num_steps_) / hash_trie_.size() << "\n";
+    os << indent << "\tnum_resize:" << num_resize_ << "\n";
+#endif
+    hash_trie_.show_stat(os, level + 1);
+    label_store_.show_stat(os, level + 1);
   }
 
   // Swaps the maps.
@@ -102,11 +106,10 @@ public:
     std::swap(codes_, rhs.codes_);
     std::swap(num_codes_, rhs.num_codes_);
     std::swap(size_, rhs.size_);
-
-    POPLAR_EX_STATS(
-      std::swap(num_steps_, rhs.num_steps_);
-      std::swap(num_resize_, rhs.num_resize_);
-    )
+#ifdef POPLAR_ENABLE_EX_STATS
+    std::swap(num_steps_, rhs.num_steps_);
+    std::swap(num_resize_, rhs.num_resize_);
+#endif
   }
 
   Map(const Map&) = delete;
@@ -120,9 +123,9 @@ public:
     return *this;
   }
 
-private:
+ private:
   static constexpr uint64_t NIL_ID = ht_type::NIL_ID;
-  static constexpr uint64_t STEP_SYMB = UINT8_MAX; // (UINT8_MAX, 0)
+  static constexpr uint64_t STEP_SYMB = UINT8_MAX;  // (UINT8_MAX, 0)
 
   bool is_ready_{false};
   ht_type hash_trie_{};
@@ -130,11 +133,10 @@ private:
   std::array<uint8_t, 256> codes_{};
   uint32_t num_codes_{};
   uint64_t size_{};
-
-  POPLAR_EX_STATS(
-    uint64_t num_steps_{};
-    uint64_t num_resize_{};
-  )
+#ifdef POPLAR_ENABLE_EX_STATS
+  uint64_t num_steps_{};
+  uint64_t num_resize_{};
+#endif
 
   const value_type* find_(ustr_view&& key) const {
     POPLAR_THROW_IF(key.empty(), "key must be a non-empty string.");
@@ -205,9 +207,9 @@ private:
       while (t_lambda <= match) {
         if (hash_trie_.add_child(node_id, STEP_SYMB)) {
           expand_if_needed_(node_id);
-          POPLAR_EX_STATS(
-            ++num_steps_;
-          )
+#ifdef POPLAR_ENABLE_EX_STATS
+          ++num_steps_;
+#endif
         }
         match -= t_lambda;
       }
@@ -249,13 +251,13 @@ private:
       auto node_map = hash_trie_.expand();
       node_id = node_map[node_id];
       label_store_.expand(node_map);
-      POPLAR_EX_STATS(
-        ++num_resize_;
-      )
+#ifdef POPLAR_ENABLE_EX_STATS
+      ++num_resize_;
+#endif
     }
   }
 };
 
-} //ns - poplar
+}  // namespace poplar
 
-#endif //POPLAR_TRIE_MAP_HPP
+#endif  // POPLAR_TRIE_MAP_HPP

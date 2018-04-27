@@ -3,26 +3,22 @@
 
 #include <map>
 
-#include "bijective_hash.hpp"
-#include "BitVector.hpp"
 #include "BitChunk.hpp"
+#include "BitVector.hpp"
 #include "CompactHashTable.hpp"
 #include "IntVector.hpp"
+#include "bijective_hash.hpp"
 
 namespace poplar {
 
-template<
-  uint32_t t_factor = 80,
-  uint32_t t_dsp_bits = 3,
-  typename t_cht = CompactHashTable<7>,
-  typename t_hash = bijective_hash::SplitMix
->
+template <uint32_t t_factor = 80, uint32_t t_dsp_bits = 3, typename t_cht = CompactHashTable<7>,
+          typename t_hash = bijective_hash::SplitMix>
 class HashTrieCR {
-private:
+ private:
   static_assert(0 < t_factor && t_factor < 100);
   static_assert(0 < t_dsp_bits && t_dsp_bits < 64);
 
-public:
+ public:
   static constexpr uint64_t NIL_ID = UINT64_MAX;
   static constexpr uint32_t MIN_CAPA_BITS = 16;
 
@@ -31,7 +27,7 @@ public:
   static constexpr uint32_t DSP2_BITS = t_cht::VAL_BITS;
   static constexpr uint32_t DSP2_MASK = t_cht::VAL_MASK;
 
-public:
+ public:
   HashTrieCR() = default;
 
   HashTrieCR(uint32_t capa_bits, uint32_t symb_bits, uint32_t cht_capa_bits = 0) {
@@ -99,19 +95,19 @@ public:
       if (compare_dsp_(i, 0)) {
         // this slot is empty
         if (size_ == max_size_) {
-          return 2; // fail to register because of full
+          return 2;  // fail to register because of full
         }
 
         ++size_;
         update_slot_(i, dec.quo, cnt);
         node_id = i;
 
-        return 1; // success to register
+        return 1;  // success to register
       }
 
       if (compare_dsp_(i, cnt) && dec.quo == get_quo_(i)) {
         node_id = i;
-        return 0; // already registered
+        return 0;  // already registered
       }
     }
   }
@@ -133,12 +129,13 @@ public:
   }
 
   class NodeMap {
-  public:
+   public:
     NodeMap() = default;
 
     NodeMap(IntVector&& map_high, IntVector&& map_low, BitVector&& done_flags)
-      : map_high_(std::move(map_high)), map_low_(std::move(map_low)),
-        done_flags_(std::move(done_flags)) {}
+        : map_high_(std::move(map_high)),
+          map_low_(std::move(map_low)),
+          done_flags_(std::move(done_flags)) {}
 
     ~NodeMap() = default;
 
@@ -174,7 +171,7 @@ public:
       return *this;
     }
 
-  private:
+   private:
     IntVector map_high_{};
     IntVector map_low_{};
     BitVector done_flags_{};
@@ -185,13 +182,13 @@ public:
   }
 
   NodeMap expand() {
-//    HashTrieCR new_ht{capa_bits() + 1, symb_size_.bits(), aux_cht_.capa_bits()};
+    // HashTrieCR new_ht{capa_bits() + 1, symb_size_.bits(), aux_cht_.capa_bits()};
     HashTrieCR new_ht{capa_bits() + 1, symb_size_.bits()};
     new_ht.add_root();
 
-    POPLAR_EX_STATS(
-      new_ht.num_resize_ = num_resize_ + 1;
-    )
+#ifdef POPLAR_ENABLE_EX_STATS
+    new_ht.num_resize_ = num_resize_ + 1;
+#endif
 
     BitVector done_flags(capa_size());
     done_flags.set(get_root());
@@ -280,24 +277,25 @@ public:
     return symb_size_.bits();
   }
 
-  void show_stat(std::ostream& os, std::string&& level = "") const {
-    os << level << "stat:HashTrieCR\n";
-    os << level << "\tfactor:" << t_factor << "\n";
-    os << level << "\tdsp1st_bits:" << DSP1_BITS << "\n";
-    os << level << "\tdsp2nd_bits:" << DSP2_BITS << "\n";
-    os << level << "\tsize:" << size() << "\n";
-    os << level << "\tcapa_size:" << capa_size() << "\n";
-    os << level << "\tcapa_bits:" << capa_bits() << "\n";
-    os << level << "\tsymb_size:" << symb_size() << "\n";
-    os << level << "\tsymb_bits:" << symb_bits() << "\n";
-    POPLAR_EX_STATS(
-      os << level << "\tnum_resize:" << num_resize_ << "\n";
-      os << level << "\trate_dsp1st:" << double(num_dsps_[0]) / size() << "\n";
-      os << level << "\trate_dsp2nd:" << double(num_dsps_[1]) / size() << "\n";
-      os << level << "\trate_dsp3rd:" << double(num_dsps_[2]) / size() << "\n";
-    )
-    hash_.show_stat(os, level + "\t");
-    aux_cht_.show_stat(os, level + "\t");
+  void show_stat(std::ostream& os, int level = 0) const {
+    std::string indent(level, '\t');
+    os << indent << "stat:HashTrieCR\n";
+    os << indent << "\tfactor:" << t_factor << "\n";
+    os << indent << "\tdsp1st_bits:" << DSP1_BITS << "\n";
+    os << indent << "\tdsp2nd_bits:" << DSP2_BITS << "\n";
+    os << indent << "\tsize:" << size() << "\n";
+    os << indent << "\tcapa_size:" << capa_size() << "\n";
+    os << indent << "\tcapa_bits:" << capa_bits() << "\n";
+    os << indent << "\tsymb_size:" << symb_size() << "\n";
+    os << indent << "\tsymb_bits:" << symb_bits() << "\n";
+#ifdef POPLAR_ENABLE_EX_STATS
+    os << indent << "\tnum_resize:" << num_resize_ << "\n";
+    os << indent << "\trate_dsp1st:" << double(num_dsps_[0]) / size() << "\n";
+    os << indent << "\trate_dsp2nd:" << double(num_dsps_[1]) / size() << "\n";
+    os << indent << "\trate_dsp3rd:" << double(num_dsps_[2]) / size() << "\n";
+#endif
+    hash_.show_stat(os, level + 1);
+    aux_cht_.show_stat(os, level + 1);
   }
 
   void swap(HashTrieCR& rhs) {
@@ -309,10 +307,10 @@ public:
     std::swap(max_size_, rhs.max_size_);
     std::swap(capa_size_, rhs.capa_size_);
     std::swap(symb_size_, rhs.symb_size_);
-    POPLAR_EX_STATS(
-      std::swap(num_resize_, rhs.num_resize_);
-      std::swap(num_dsps_, rhs.num_dsps_);
-    )
+#ifdef POPLAR_ENABLE_EX_STATS
+    std::swap(num_resize_, rhs.num_resize_);
+    std::swap(num_dsps_, rhs.num_dsps_);
+#endif
   }
 
   HashTrieCR(const HashTrieCR&) = delete;
@@ -326,20 +324,20 @@ public:
     return *this;
   }
 
-private:
+ private:
   t_hash hash_{};
   IntVector table_{};
-  t_cht aux_cht_{}; // 2nd dsp
-  std::map<uint64_t, uint64_t> aux_map_{}; // 3rd dsp
-  uint64_t size_{}; // # of registered nodes
-  uint64_t max_size_{}; // t_factor% of the capacity
+  t_cht aux_cht_{};                         // 2nd dsp
+  std::map<uint64_t, uint64_t> aux_map_{};  // 3rd dsp
+  uint64_t size_{};                         // # of registered nodes
+  uint64_t max_size_{};                     // t_factor% of the capacity
   size_p2_t capa_size_{};
   size_p2_t symb_size_{};
 
-  POPLAR_EX_STATS(
-    uint64_t num_resize_{};
-    uint64_t num_dsps_[3]{};
-  )
+#ifdef POPLAR_ENABLE_EX_STATS
+  uint64_t num_resize_{};
+  uint64_t num_dsps_[3]{};
+#endif
 
   uint64_t make_key_(uint64_t node_id, uint64_t symb) const {
     return (node_id << symb_size_.bits()) | symb;
@@ -410,20 +408,20 @@ private:
       }
     }
 
-    POPLAR_EX_STATS(
-      if (dsp < DSP1_MASK) {
-        ++num_dsps_[0];
-      } else if (dsp < DSP1_MASK + DSP2_MASK) {
-        ++num_dsps_[1];
-      } else {
-        ++num_dsps_[2];
-      }
-    )
+#ifdef POPLAR_ENABLE_EX_STATS
+    if (dsp < DSP1_MASK) {
+      ++num_dsps_[0];
+    } else if (dsp < DSP1_MASK + DSP2_MASK) {
+      ++num_dsps_[1];
+    } else {
+      ++num_dsps_[2];
+    }
+#endif
 
     table_.set(slot_id, v);
   }
 };
 
-} //ns - poplar
+}  // namespace poplar
 
-#endif //POPLAR_TRIE_HASH_TRIE_CR_HPP
+#endif  // POPLAR_TRIE_HASH_TRIE_CR_HPP

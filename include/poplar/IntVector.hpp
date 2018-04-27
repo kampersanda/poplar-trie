@@ -8,7 +8,7 @@
 namespace poplar {
 
 class IntVector {
-public:
+ public:
   IntVector() = default;
 
   IntVector(uint64_t size, uint32_t width) {
@@ -91,13 +91,13 @@ public:
     return *this;
   }
 
-private:
+ private:
   std::vector<uint64_t> chunks_{};
   uint64_t size_{};
   uint64_t mask_{};
   uint32_t width_{};
 };
 
-} //ns - poplar
+}  // namespace poplar
 
-#endif //POPLAR_TRIE_INT_VECTOR_HPP
+#endif  // POPLAR_TRIE_INT_VECTOR_HPP

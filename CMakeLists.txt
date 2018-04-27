@@ -25,20 +25,33 @@ option(POPLAR_ENABLE_EX_STATS
   "Enable extra stats."
   OFF)
 
-option(POPLAR_USE_POPCNT
-  "Use popcount intrinsic. Available on x86-64 since SSE4.2."
-  ON)
+set(BUILTIN_POPCNT 0)
 
-if (POPLAR_USE_POPCNT)
-  if (UNIX)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -msse4.2")
-  endif ()
-endif ()
+if (DISABLE_SSE4_2)
+  message(STATUS "sse4.2 disabled")
+elseif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+  # Use /proc/cpuinfo to get the information
+  file(STRINGS "/proc/cpuinfo" _cpuinfo)
+  if(_cpuinfo MATCHES "(sse4_2)|(sse4a)")
+    set(BUILTIN_POPCNT 1)
+  endif()
+elseif(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
+  execute_process(COMMAND sysctl -n machdep.cpu.features OUTPUT_VARIABLE _cpuinfo OUTPUT_STRIP_TRAILING_WHITESPACE)
+  if(_cpuinfo MATCHES "SSE4.2")
+    set(BUILTIN_POPCNT 1)
+  endif()
+endif()
+
+if(BUILTIN_POPCNT)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -msse4.2 -march=native")
+endif()
 
 message(STATUS "BUILD_TYPE is ${CMAKE_BUILD_TYPE}")
 message(STATUS "CXX_FLAGS are ${CMAKE_CXX_FLAGS}")
 message(STATUS "CXX_FLAGS_DEBUG are ${CMAKE_CXX_FLAGS_DEBUG}")
 message(STATUS "CXX_FLAGS_RELEASE are ${CMAKE_CXX_FLAGS_RELEASE}")
+
+file(REMOVE ${POPLAR_TRIE_SOURCE_DIR}/include/poplar/poplar_config.hpp)
 
 configure_file(
   ${POPLAR_TRIE_SOURCE_DIR}/include/poplar/poplar_config.hpp.in

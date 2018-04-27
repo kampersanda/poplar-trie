@@ -7,10 +7,10 @@ namespace poplar {
 
 template <uint64_t t_size>
 class BitChunk {
-private:
+ private:
   static_assert(t_size > 64 && is_power2(t_size));
 
-public:
+ public:
   static constexpr uint64_t SIZE = t_size;
 
   BitChunk() = default;
@@ -39,13 +39,13 @@ public:
     return sum + bit_tools::popcnt(chunks_[j], i % 64);
   }
 
-private:
+ private:
   uint64_t chunks_[SIZE / 64] = {};
 };
 
 template <>
 class BitChunk<64> {
-public:
+ public:
   static constexpr uint64_t SIZE = 64;
 
   BitChunk() = default;
@@ -66,13 +66,13 @@ public:
     return bit_tools::popcnt(chunk_, i);
   }
 
-private:
+ private:
   uint64_t chunk_{};
 };
 
 template <>
 class BitChunk<32> {
-public:
+ public:
   static constexpr uint64_t SIZE = 32;
 
   BitChunk() = default;
@@ -93,13 +93,13 @@ public:
     return bit_tools::popcnt(chunk_, i);
   }
 
-private:
+ private:
   uint32_t chunk_{};
 };
 
 template <>
 class BitChunk<16> {
-public:
+ public:
   static constexpr uint64_t SIZE = 16;
 
   BitChunk() = default;
@@ -120,13 +120,13 @@ public:
     return bit_tools::popcnt(chunk_, i);
   }
 
-private:
+ private:
   uint16_t chunk_{};
 };
 
 template <>
 class BitChunk<8> {
-public:
+ public:
   static constexpr uint64_t SIZE = 8;
 
   BitChunk() = default;
@@ -147,10 +147,10 @@ public:
     return bit_tools::popcnt(chunk_, i);
   }
 
-private:
+ private:
   uint8_t chunk_{};
 };
 
-} //ns - poplar
+}  // namespace poplar
 
-#endif //POPLAR_TRIE_BIT_CHUNK_HPP
+#endif  // POPLAR_TRIE_BIT_CHUNK_HPP

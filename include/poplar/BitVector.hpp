@@ -8,7 +8,7 @@
 namespace poplar {
 
 class BitVector {
-public:
+ public:
   BitVector() = default;
 
   explicit BitVector(uint64_t size) {
@@ -52,11 +52,11 @@ public:
     return *this;
   }
 
-private:
+ private:
   std::vector<uint64_t> chunks_{};
   uint64_t size_{};
 };
 
-} //ns - poplar
+}  // namespace poplar
 
-#endif //POPLAR_TRIE_BIT_VECTOR_HPP
+#endif  // POPLAR_TRIE_BIT_VECTOR_HPP

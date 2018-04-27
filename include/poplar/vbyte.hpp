@@ -35,6 +35,6 @@ inline uint64_t decode(const uint8_t* codes, uint64_t& val) {
   return i;
 }
 
-} //ns - poplar::vbyte
+}  // namespace poplar::vbyte
 
-#endif //POPLAR_TRIE_VBYTE_HPP
+#endif  // POPLAR_TRIE_VBYTE_HPP

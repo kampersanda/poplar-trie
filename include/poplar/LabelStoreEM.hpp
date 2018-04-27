@@ -8,20 +8,20 @@
 
 namespace poplar {
 
-template<typename t_value, typename t_chunk>
+template <typename t_value, typename t_chunk>
 class LabelStoreEM {
-public:
+ public:
   using ls_type = LabelStoreEM<t_value, t_chunk>;
   using value_type = t_value;
   using chunk_type = t_chunk;
 
   static constexpr uint64_t CHUNK_SIZE = chunk_type::SIZE;
 
-public:
+ public:
   LabelStoreEM() = default;
 
   explicit LabelStoreEM(uint32_t capa_bits)
-    : ptrs_(1ULL << capa_bits), vptrs_(ptrs_.size() / CHUNK_SIZE), chunks_(vptrs_.size()) {}
+      : ptrs_(1ULL << capa_bits), vptrs_(ptrs_.size() / CHUNK_SIZE), chunks_(vptrs_.size()) {}
 
   ~LabelStoreEM() {
     for (uint64_t i = 0; i < ptrs_.size(); ++i) {
@@ -48,14 +48,14 @@ public:
       }
     }
 
-    uint64_t i = 0; // #match
+    uint64_t i = 0;  // #match
     const value_type* ret = nullptr;
 
     if (chunk.get(pos_c.mod)) {
       // For a short label
       const uint8_t* str = ptrs_[pos].str;
       auto len = std::min<uint64_t>(key.length(), sizeof(void*));
-      for (;i < len; ++i) {
+      for (; i < len; ++i) {
         if (key[i] != str[i]) {
           return {nullptr, i};
         }
@@ -63,7 +63,7 @@ public:
       if (i == key.length()) {
         // nothing to do
       } else if (key[i] == '\0') {
-        ++i; // For the omitted terminator
+        ++i;  // For the omitted terminator
       } else {
         return {nullptr, i};
       }
@@ -97,19 +97,19 @@ public:
       ret = insert_value_(pos_c);
     } else {
       // For a long label
-      ptrs_[pos].ptr = new uint8_t[length + sizeof(value_type)]; // TODO: Remove new operation
+      ptrs_[pos].ptr = new uint8_t[length + sizeof(value_type)];  // TODO: Remove new operation
       copy_bytes(ptrs_[pos].ptr, key.data(), length);
       ret = reinterpret_cast<value_type*>(ptrs_[pos].ptr + length);
     }
 
     ++size_;
 
-    POPLAR_EX_STATS(
-      max_length_ = std::max(max_length_, length);
-      sum_length_ += length;
-    )
+#ifdef POPLAR_ENABLE_EX_STATS
+    max_length_ = std::max(max_length_, length);
+    sum_length_ += length;
+#endif
 
-    *ret = static_cast<value_type>(0); // initialization
+    *ret = static_cast<value_type>(0);  // initialization
     return ret;
   }
 
@@ -133,11 +133,11 @@ public:
     }
 
     new_ls.size_ = size_;
-    POPLAR_EX_STATS(
-      new_ls.max_length_ = max_length_;
-      new_ls.sum_length_ = sum_length_;
-    )
-    ptrs_.clear(); // to avoid free() in destructor
+#ifdef POPLAR_ENABLE_EX_STATS
+    new_ls.max_length_ = max_length_;
+    new_ls.sum_length_ = sum_length_;
+#endif
+    ptrs_.clear();  // to avoid free() in destructor
     *this = std::move(new_ls);
   }
 
@@ -149,15 +149,16 @@ public:
     return ptrs_.size();
   }
 
-  void show_stat(std::ostream& os, std::string&& level = "") const {
-    os << level << "stat:LabelStoreEM\n";
-    os << level << "\tchunk_size:" << CHUNK_SIZE << "\n";
-    os << level << "\tsize:" << size() << "\n";
-    os << level << "\tcapa_size:" << capa_size() << "\n";
-    POPLAR_EX_STATS(
-      os << level << "\tmax_length:" << max_length_ << "\n";
-      os << level << "\tave_length:" << double(sum_length_) / size() << "\n";
-    )
+  void show_stat(std::ostream& os, int level = 0) const {
+    std::string indent(level, '\t');
+    os << indent << "stat:LabelStoreEM\n";
+    os << indent << "\tchunk_size:" << CHUNK_SIZE << "\n";
+    os << indent << "\tsize:" << size() << "\n";
+    os << indent << "\tcapa_size:" << capa_size() << "\n";
+#ifdef POPLAR_ENABLE_EX_STATS
+    os << level << "\tmax_length:" << max_length_ << "\n";
+    os << level << "\tave_length:" << double(sum_length_) / size() << "\n";
+#endif
   }
 
   void swap(LabelStoreEM& rhs) {
@@ -165,10 +166,10 @@ public:
     std::swap(vptrs_, rhs.vptrs_);
     std::swap(chunks_, rhs.chunks_);
     std::swap(size_, rhs.size_);
-    POPLAR_EX_STATS(
-      std::swap(max_length_, rhs.max_length_);
-      std::swap(sum_length_, rhs.sum_length_);
-    )
+#ifdef POPLAR_ENABLE_EX_STATS
+    std::swap(max_length_, rhs.max_length_);
+    std::swap(sum_length_, rhs.sum_length_);
+#endif
   }
 
   LabelStoreEM(const LabelStoreEM&) = delete;
@@ -182,20 +183,19 @@ public:
     return *this;
   }
 
-private:
+ private:
   union ptr_t {
-    uint8_t* ptr = nullptr; // for long labels
-    uint8_t str[sizeof(void*)]; // for short labels
+    uint8_t* ptr = nullptr;      // for long labels
+    uint8_t str[sizeof(void*)];  // for short labels
   };
   std::vector<ptr_t> ptrs_{};
-  std::vector<std::unique_ptr<value_type[]>> vptrs_{}; // for each chunk
-  std::vector<chunk_type> chunks_{}; // chunks of bitmap
+  std::vector<std::unique_ptr<value_type[]>> vptrs_{};  // for each chunk
+  std::vector<chunk_type> chunks_{};                    // chunks of bitmap
   uint64_t size_{};
-
-  POPLAR_EX_STATS(
-    uint64_t max_length_{};
-    uint64_t sum_length_{};
-  )
+#ifdef POPLAR_ENABLE_EX_STATS
+  uint64_t max_length_{};
+  uint64_t sum_length_{};
+#endif
 
   // Allocates a value area for short labels in O(CHUNK_SIZE) time
   value_type* insert_value_(const decomp_val_t& pos_c) {
@@ -232,6 +232,6 @@ private:
   }
 };
 
-} //ns - poplar
+}  // namespace poplar
 
-#endif //POPLAR_TRIE_LABEL_STORE_EM_HPP
+#endif  // POPLAR_TRIE_LABEL_STORE_EM_HPP

@@ -15,6 +15,6 @@ struct SplitMix {
   }
 };
 
-} //ns - poplar::hash
+}  // namespace poplar::hash
 
-#endif //POPLAR_TRIE_HASH_HPP
+#endif  // POPLAR_TRIE_HASH_HPP

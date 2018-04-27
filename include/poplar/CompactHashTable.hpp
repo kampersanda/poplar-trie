@@ -1,30 +1,26 @@
 #ifndef POPLAR_TRIE_COMPACT_HASH_TABLE_HPP
 #define POPLAR_TRIE_COMPACT_HASH_TABLE_HPP
 
-#include "bit_tools.hpp"
 #include "Exception.hpp"
 #include "IntVector.hpp"
 #include "bijective_hash.hpp"
+#include "bit_tools.hpp"
 
 namespace poplar {
 
-template<
-  uint32_t t_val_bits,
-  uint32_t t_factor = 80,
-  typename t_hash = bijective_hash::SplitMix
->
+template <uint32_t t_val_bits, uint32_t t_factor = 80, typename t_hash = bijective_hash::SplitMix>
 class CompactHashTable {
-private:
+ private:
   static_assert(0 < t_factor && t_factor < 100);
 
-public:
+ public:
   using cht_type = CompactHashTable<t_val_bits, t_factor, t_hash>;
 
   static constexpr uint32_t MIN_CAPA_BITS = 12;
   static constexpr uint32_t VAL_BITS = t_val_bits;
   static constexpr uint64_t VAL_MASK = (1ULL << t_val_bits) - 1;
 
-public:
+ public:
   CompactHashTable() = default;
 
   explicit CompactHashTable(uint32_t univ_bits, uint32_t capa_bits = MIN_CAPA_BITS) {
@@ -83,14 +79,14 @@ public:
     uint64_t empty_id = 0;
     uint64_t slot_id = find_ass_cbit_(dec.mod, empty_id);
 
-    if (!get_vbit_(dec.mod)) { // initial insertion in the group
+    if (!get_vbit_(dec.mod)) {  // initial insertion in the group
       // create a new collision group
-      if (slot_id != UINT64_MAX) { // require to displace existing groups?
+      if (slot_id != UINT64_MAX) {  // require to displace existing groups?
         do {
           slot_id = right_(slot_id);
         } while (!get_cbit_(slot_id));
 
-        slot_id = left_(slot_id); // rightmost slot of the group
+        slot_id = left_(slot_id);  // rightmost slot of the group
 
         while (empty_id != slot_id) {
           empty_id = copy_from_right_(empty_id);
@@ -102,12 +98,12 @@ public:
       set_cbit_(empty_id, true);
     } else {
       // collision group already exists
-      if (find_item_(slot_id, dec.quo)) { // already registered?
-        set_val_(slot_id, val); // update
+      if (find_item_(slot_id, dec.quo)) {  // already registered?
+        set_val_(slot_id, val);            // update
         return false;
       }
 
-      slot_id = left_(slot_id); // rightmost of the group
+      slot_id = left_(slot_id);  // rightmost of the group
 
       // displace existing groups for creating an empty slot
       while (empty_id != slot_id) {
@@ -148,18 +144,19 @@ public:
     return capa_size_.bits();
   }
 
-  void show_stat(std::ostream& os, std::string&& level = "") const {
-    os << level << "stat:CompactHashTable\n";
-    os << level << "\tfactor:" << t_factor << "\n";
-    os << level << "\tsize:" << size() << "\n";
-    os << level << "\tuniv_size:" << univ_size() << "\n";
-    os << level << "\tuniv_bits:" << univ_bits() << "\n";
-    os << level << "\tcapa_size:" << capa_size() << "\n";
-    os << level << "\tcapa_bits:" << capa_bits() << "\n";
-    POPLAR_EX_STATS(
-      os << level << "\tnum_resize:" << num_resize_ << "\n";
-    )
-    hash_.show_stat(os, level + "\t");
+  void show_stat(std::ostream& os, int level = 0) const {
+    std::string indent(level, '\t');
+    os << indent << "stat:CompactHashTable\n";
+    os << indent << "\tfactor:" << t_factor << "\n";
+    os << indent << "\tsize:" << size() << "\n";
+    os << indent << "\tuniv_size:" << univ_size() << "\n";
+    os << indent << "\tuniv_bits:" << univ_bits() << "\n";
+    os << indent << "\tcapa_size:" << capa_size() << "\n";
+    os << indent << "\tcapa_bits:" << capa_bits() << "\n";
+#ifdef POPLAR_ENABLE_EX_STATS
+    os << indent << "\tnum_resize:" << num_resize_ << "\n";
+#endif
+    hash_.show_stat(os, level + 1);
   }
 
   void swap(CompactHashTable& rhs) {
@@ -172,9 +169,9 @@ public:
     std::swap(quo_size_, rhs.quo_size_);
     std::swap(quo_shift_, rhs.quo_shift_);
     std::swap(quo_invmask_, rhs.quo_invmask_);
-    POPLAR_EX_STATS(
-      std::swap(num_resize_, rhs.num_resize_);
-    )
+#ifdef POPLAR_ENABLE_EX_STATS
+    std::swap(num_resize_, rhs.num_resize_);
+#endif
   }
 
   CompactHashTable(const CompactHashTable&) = delete;
@@ -188,20 +185,20 @@ public:
     return *this;
   }
 
-private:
+ private:
   t_hash hash_{};
   IntVector table_{};
-  uint64_t size_{}; // # of registered nodes
-  uint64_t max_size_{}; // t_factor% of the capacity
+  uint64_t size_{};      // # of registered nodes
+  uint64_t max_size_{};  // t_factor% of the capacity
   size_p2_t univ_size_{};
   size_p2_t capa_size_{};
   size_p2_t quo_size_{};
   uint64_t quo_shift_{};
-  uint64_t quo_invmask_{}; // For setter
+  uint64_t quo_invmask_{};  // For setter
 
-  POPLAR_EX_STATS(
-    uint64_t num_resize_{};
-  )
+#ifdef POPLAR_ENABLE_EX_STATS
+  uint64_t num_resize_{};
+#endif
 
   uint64_t find_ass_cbit_(uint64_t slot_id) const {
     uint64_t dummy{};
@@ -250,9 +247,10 @@ private:
     }
 
     cht_type new_cht{univ_size_.bits(), capa_size_.bits() + 1};
-    POPLAR_EX_STATS(
-      new_cht.num_resize_ = num_resize_ + 1;
-    )
+
+#ifdef POPLAR_ENABLE_EX_STATS
+    new_cht.num_resize_ = num_resize_ + 1;
+#endif
 
     // Find the first vacant slot
     uint64_t i = 0;
@@ -261,7 +259,7 @@ private:
     }
 
     const uint64_t beg = i;
-    i = right_(i); // skip the vacant
+    i = right_(i);  // skip the vacant
 
     for (bool completed = false; !completed;) {
       // Find the leftmost of some collision groups
@@ -358,6 +356,6 @@ private:
   }
 };
 
-} //ns - poplar
+}  // namespace poplar
 
-#endif //POPLAR_TRIE_COMPACT_HASH_TABLE_HPP
+#endif  // POPLAR_TRIE_COMPACT_HASH_TABLE_HPP
