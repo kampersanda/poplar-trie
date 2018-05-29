@@ -36,21 +36,11 @@ class BitVector {
     return size_;
   }
 
-  void swap(BitVector& rhs) {
-    std::swap(chunks_, rhs.chunks_);
-    std::swap(size_, rhs.size_);
-  }
-
   BitVector(const BitVector&) = delete;
   BitVector& operator=(const BitVector&) = delete;
 
-  BitVector(BitVector&& rhs) noexcept : BitVector() {
-    this->swap(rhs);
-  }
-  BitVector& operator=(BitVector&& rhs) noexcept {
-    this->swap(rhs);
-    return *this;
-  }
+  BitVector(BitVector&& rhs) noexcept = default;
+  BitVector& operator=(BitVector&& rhs) noexcept = default;
 
  private:
   std::vector<uint64_t> chunks_{};

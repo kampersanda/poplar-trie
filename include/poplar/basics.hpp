@@ -36,7 +36,7 @@ inline ustr_view make_ustr_view(const std::string_view& str) {
 }
 
 constexpr bool is_power2(uint64_t n) {
-  return n != 0 && (n & (n - 1)) == 0;
+  return n != 0 and (n & (n - 1)) == 0;
 }
 
 constexpr uint32_t bits_to_bytes(uint32_t bits) {
@@ -51,6 +51,8 @@ constexpr void copy_bytes(uint8_t* dst, const uint8_t* src, uint64_t num) {
     dst[i] = src[i];
   }
 }
+
+enum class ac_res_type { SUCCESS, ALREADY_STORED, NEEDS_TO_EXPAND };
 
 struct decomp_val_t {
   uint64_t quo;

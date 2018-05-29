@@ -119,33 +119,38 @@ inline uint64_t popcnt(uint64_t x, uint64_t i) {
   return popcnt(static_cast<uint64_t>(x & ((1ULL << i) - 1)));
 }
 
-constexpr uint32_t NUM_BIT_TABLE[256] = {
-    1, 1, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
+#ifndef __SSE4_2__
+constexpr uint32_t MSB_TABLE[256] = {
+    0, 0, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4,
+    5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
+    6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6,
     6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6,
     7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7,
     7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7,
-    8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8,
-    8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8,
-    8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8,
-    8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8};
+    7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7,
+    7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7};
+#endif
 
-inline uint32_t get_num_bits(uint64_t x) {
+constexpr uint32_t msb(uint64_t x) {
+#ifdef __SSE4_2__
+  return x == 0 ? 0 : 63 - __builtin_clzll(x);
+#else
   uint64_t x1 = x >> 32;
   if (x1 > 0) {  // 32 < |x| <= 64
     uint64_t x2 = x1 >> 16;
     if (x2 > 0) {  // 48 < |x| <= 64
       x1 = x2 >> 8;
       if (x1 > 0) {  // 56 < |x| <= 64
-        return NUM_BIT_TABLE[x1] + 56;
+        return MSB_TABLE[x1] + 56;
       } else {  // 48 < |x| <= 56
-        return NUM_BIT_TABLE[x2] + 48;
+        return MSB_TABLE[x2] + 48;
       }
     } else {  // 32 < |x| <= 48
       x2 = x1 >> 8;
       if (x2 > 0) {  // 40 < |x| <= 48
-        return NUM_BIT_TABLE[x2] + 40;
+        return MSB_TABLE[x2] + 40;
       } else {  // 32 < |x| <= 40
-        return NUM_BIT_TABLE[x1] + 32;
+        return MSB_TABLE[x1] + 32;
       }
     }
   } else {  // 0 < |x| <= 32
@@ -153,19 +158,28 @@ inline uint32_t get_num_bits(uint64_t x) {
     if (x2 > 0) {  // 16 < |x| <= 32
       x1 = x2 >> 8;
       if (x1 > 0) {  // 24 < |x| <= 32
-        return NUM_BIT_TABLE[x1] + 24;
+        return MSB_TABLE[x1] + 24;
       } else {  // 16 < |x| <= 24
-        return NUM_BIT_TABLE[x2] + 16;
+        return MSB_TABLE[x2] + 16;
       }
     } else {  // 0 < |x| <= 16
       x1 = x >> 8;
       if (x1 > 0) {  // 8 < |x| <= 16
-        return NUM_BIT_TABLE[x1] + 8;
+        return MSB_TABLE[x1] + 8;
       } else {  // 0 < |x| <= 8
-        return NUM_BIT_TABLE[x];
+        return MSB_TABLE[x];
       }
     }
   }
+#endif
+}
+
+constexpr uint32_t get_num_bits(uint64_t x) {
+  return msb(x) + 1;
+}
+
+constexpr uint32_t ceil_log2(uint64_t x) {
+  return (x > 1) ? msb(x - 1) + 1 : 0;
 }
 
 }  // namespace poplar::bit_tools

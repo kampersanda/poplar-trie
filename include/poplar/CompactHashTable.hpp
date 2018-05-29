@@ -99,7 +99,7 @@ class CompactHashTable {
     } else {
       // collision group already exists
       if (find_item_(slot_id, dec.quo)) {  // already registered?
-        set_val_(slot_id, val);            // update
+        set_val_(slot_id, val);  // update
         return false;
       }
 
@@ -159,36 +159,16 @@ class CompactHashTable {
     hash_.show_stat(os, level + 1);
   }
 
-  void swap(CompactHashTable& rhs) {
-    std::swap(hash_, rhs.hash_);
-    std::swap(table_, rhs.table_);
-    std::swap(size_, rhs.size_);
-    std::swap(max_size_, rhs.max_size_);
-    std::swap(univ_size_, rhs.univ_size_);
-    std::swap(capa_size_, rhs.capa_size_);
-    std::swap(quo_size_, rhs.quo_size_);
-    std::swap(quo_shift_, rhs.quo_shift_);
-    std::swap(quo_invmask_, rhs.quo_invmask_);
-#ifdef POPLAR_ENABLE_EX_STATS
-    std::swap(num_resize_, rhs.num_resize_);
-#endif
-  }
-
   CompactHashTable(const CompactHashTable&) = delete;
   CompactHashTable& operator=(const CompactHashTable&) = delete;
 
-  CompactHashTable(CompactHashTable&& rhs) noexcept : CompactHashTable() {
-    this->swap(rhs);
-  }
-  CompactHashTable& operator=(CompactHashTable&& rhs) noexcept {
-    this->swap(rhs);
-    return *this;
-  }
+  CompactHashTable(CompactHashTable&& rhs) noexcept = default;
+  CompactHashTable& operator=(CompactHashTable&& rhs) noexcept = default;
 
  private:
   t_hash hash_{};
   IntVector table_{};
-  uint64_t size_{};      // # of registered nodes
+  uint64_t size_{};  // # of registered nodes
   uint64_t max_size_{};  // t_factor% of the capacity
   size_p2_t univ_size_{};
   size_p2_t capa_size_{};

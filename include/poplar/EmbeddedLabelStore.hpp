@@ -9,21 +9,21 @@
 namespace poplar {
 
 template <typename t_value, typename t_chunk>
-class LabelStoreEM {
+class EmbeddedLabelStore {
  public:
-  using ls_type = LabelStoreEM<t_value, t_chunk>;
+  using ls_type = EmbeddedLabelStore<t_value, t_chunk>;
   using value_type = t_value;
   using chunk_type = t_chunk;
 
   static constexpr uint64_t CHUNK_SIZE = chunk_type::SIZE;
 
  public:
-  LabelStoreEM() = default;
+  EmbeddedLabelStore() = default;
 
-  explicit LabelStoreEM(uint32_t capa_bits)
+  explicit EmbeddedLabelStore(uint32_t capa_bits)
       : ptrs_(1ULL << capa_bits), vptrs_(ptrs_.size() / CHUNK_SIZE), chunks_(vptrs_.size()) {}
 
-  ~LabelStoreEM() {
+  ~EmbeddedLabelStore() {
     for (uint64_t i = 0; i < ptrs_.size(); ++i) {
       decomp_val_t pos_c = decompose_value<CHUNK_SIZE>(i);
       if (!chunks_[pos_c.quo].get(pos_c.mod) && ptrs_[i].ptr != nullptr) {
@@ -151,7 +151,7 @@ class LabelStoreEM {
 
   void show_stat(std::ostream& os, int level = 0) const {
     std::string indent(level, '\t');
-    os << indent << "stat:LabelStoreEM\n";
+    os << indent << "stat:EmbeddedLabelStore\n";
     os << indent << "\tchunk_size:" << CHUNK_SIZE << "\n";
     os << indent << "\tsize:" << size() << "\n";
     os << indent << "\tcapa_size:" << capa_size() << "\n";
@@ -161,36 +161,20 @@ class LabelStoreEM {
 #endif
   }
 
-  void swap(LabelStoreEM& rhs) {
-    std::swap(ptrs_, rhs.ptrs_);
-    std::swap(vptrs_, rhs.vptrs_);
-    std::swap(chunks_, rhs.chunks_);
-    std::swap(size_, rhs.size_);
-#ifdef POPLAR_ENABLE_EX_STATS
-    std::swap(max_length_, rhs.max_length_);
-    std::swap(sum_length_, rhs.sum_length_);
-#endif
-  }
+  EmbeddedLabelStore(const EmbeddedLabelStore&) = delete;
+  EmbeddedLabelStore& operator=(const EmbeddedLabelStore&) = delete;
 
-  LabelStoreEM(const LabelStoreEM&) = delete;
-  LabelStoreEM& operator=(const LabelStoreEM&) = delete;
-
-  LabelStoreEM(LabelStoreEM&& rhs) noexcept : LabelStoreEM() {
-    this->swap(rhs);
-  }
-  LabelStoreEM& operator=(LabelStoreEM&& rhs) noexcept {
-    this->swap(rhs);
-    return *this;
-  }
+  EmbeddedLabelStore(EmbeddedLabelStore&&) noexcept = default;
+  EmbeddedLabelStore& operator=(EmbeddedLabelStore&&) noexcept = default;
 
  private:
   union ptr_t {
-    uint8_t* ptr = nullptr;      // for long labels
+    uint8_t* ptr = nullptr;  // for long labels
     uint8_t str[sizeof(void*)];  // for short labels
   };
   std::vector<ptr_t> ptrs_{};
   std::vector<std::unique_ptr<value_type[]>> vptrs_{};  // for each chunk
-  std::vector<chunk_type> chunks_{};                    // chunks of bitmap
+  std::vector<chunk_type> chunks_{};  // chunks of bitmap
   uint64_t size_{};
 #ifdef POPLAR_ENABLE_EX_STATS
   uint64_t max_length_{};

@@ -73,23 +73,11 @@ class IntVector {
     return width_;
   }
 
-  void swap(IntVector& rhs) {
-    std::swap(chunks_, rhs.chunks_);
-    std::swap(size_, rhs.size_);
-    std::swap(mask_, rhs.mask_);
-    std::swap(width_, rhs.width_);
-  }
-
   IntVector(const IntVector&) = delete;
   IntVector& operator=(const IntVector&) = delete;
 
-  IntVector(IntVector&& rhs) noexcept : IntVector() {
-    this->swap(rhs);
-  }
-  IntVector& operator=(IntVector&& rhs) noexcept {
-    this->swap(rhs);
-    return *this;
-  }
+  IntVector(IntVector&&) noexcept = default;
+  IntVector& operator=(IntVector&&) noexcept = default;
 
  private:
   std::vector<uint64_t> chunks_{};

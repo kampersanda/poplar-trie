@@ -7,34 +7,34 @@ namespace poplar::bijective_hash {
 
 // (p, q): p < 2**w is a prime and q < 2**w is an integer such that pq mod m = 1
 constexpr uint64_t PRIME_TABLE[][2][3] = {
-    {{0ULL, 0ULL, 0ULL}, {0ULL, 0ULL, 0ULL}},                                                 // 0
-    {{1ULL, 1ULL, 1ULL}, {1ULL, 1ULL, 1ULL}},                                                 // 1
-    {{3ULL, 1ULL, 3ULL}, {3ULL, 1ULL, 3ULL}},                                                 // 2
-    {{7ULL, 5ULL, 3ULL}, {7ULL, 5ULL, 3ULL}},                                                 // 3
-    {{13ULL, 11ULL, 7ULL}, {5ULL, 3ULL, 7ULL}},                                               // 4
-    {{31ULL, 29ULL, 23ULL}, {31ULL, 21ULL, 7ULL}},                                            // 5
-    {{61ULL, 59ULL, 53ULL}, {21ULL, 51ULL, 29ULL}},                                           // 6
-    {{127ULL, 113ULL, 109ULL}, {127ULL, 17ULL, 101ULL}},                                      // 7
-    {{251ULL, 241ULL, 239ULL}, {51ULL, 17ULL, 15ULL}},                                        // 8
-    {{509ULL, 503ULL, 499ULL}, {341ULL, 455ULL, 315ULL}},                                     // 9
-    {{1021ULL, 1019ULL, 1013ULL}, {341ULL, 819ULL, 93ULL}},                                   // 10
-    {{2039ULL, 2029ULL, 2027ULL}, {455ULL, 1509ULL, 195ULL}},                                 // 11
-    {{4093ULL, 4091ULL, 4079ULL}, {1365ULL, 819ULL, 3855ULL}},                                // 12
-    {{8191ULL, 8179ULL, 8171ULL}, {8191ULL, 4411ULL, 4291ULL}},                               // 13
-    {{16381ULL, 16369ULL, 16363ULL}, {5461ULL, 4369ULL, 12483ULL}},                           // 14
-    {{32749ULL, 32719ULL, 32717ULL}, {13797ULL, 10031ULL, 1285ULL}},                          // 15
-    {{65521ULL, 65519ULL, 65497ULL}, {4369ULL, 3855ULL, 36969ULL}},                           // 16
-    {{131071ULL, 131063ULL, 131059ULL}, {131071ULL, 29127ULL, 110907ULL}},                    // 17
-    {{262139ULL, 262133ULL, 262127ULL}, {209715ULL, 95325ULL, 200463ULL}},                    // 18
-    {{524287ULL, 524269ULL, 524261ULL}, {524287ULL, 275941ULL, 271853ULL}},                   // 19
-    {{1048573ULL, 1048571ULL, 1048559ULL}, {349525ULL, 209715ULL, 986895ULL}},                // 20
-    {{2097143ULL, 2097133ULL, 2097131ULL}, {1864135ULL, 1324517ULL, 798915ULL}},              // 21
-    {{4194301ULL, 4194287ULL, 4194277ULL}, {1398101ULL, 986895ULL, 3417581ULL}},              // 22
-    {{8388593ULL, 8388587ULL, 8388581ULL}, {1118481ULL, 798915ULL, 3417581ULL}},              // 23
-    {{16777213ULL, 16777199ULL, 16777183ULL}, {5592405ULL, 986895ULL, 15760415ULL}},          // 24
-    {{33554393ULL, 33554383ULL, 33554371ULL}, {17207401ULL, 31500079ULL, 15952107ULL}},       // 25
-    {{67108859ULL, 67108837ULL, 67108819ULL}, {53687091ULL, 62137837ULL, 50704475ULL}},       // 26
-    {{134217689ULL, 134217649ULL, 134217617ULL}, {17207401ULL, 113830225ULL, 82223473ULL}},   // 27
+    {{0ULL, 0ULL, 0ULL}, {0ULL, 0ULL, 0ULL}},  // 0
+    {{1ULL, 1ULL, 1ULL}, {1ULL, 1ULL, 1ULL}},  // 1
+    {{3ULL, 1ULL, 3ULL}, {3ULL, 1ULL, 3ULL}},  // 2
+    {{7ULL, 5ULL, 3ULL}, {7ULL, 5ULL, 3ULL}},  // 3
+    {{13ULL, 11ULL, 7ULL}, {5ULL, 3ULL, 7ULL}},  // 4
+    {{31ULL, 29ULL, 23ULL}, {31ULL, 21ULL, 7ULL}},  // 5
+    {{61ULL, 59ULL, 53ULL}, {21ULL, 51ULL, 29ULL}},  // 6
+    {{127ULL, 113ULL, 109ULL}, {127ULL, 17ULL, 101ULL}},  // 7
+    {{251ULL, 241ULL, 239ULL}, {51ULL, 17ULL, 15ULL}},  // 8
+    {{509ULL, 503ULL, 499ULL}, {341ULL, 455ULL, 315ULL}},  // 9
+    {{1021ULL, 1019ULL, 1013ULL}, {341ULL, 819ULL, 93ULL}},  // 10
+    {{2039ULL, 2029ULL, 2027ULL}, {455ULL, 1509ULL, 195ULL}},  // 11
+    {{4093ULL, 4091ULL, 4079ULL}, {1365ULL, 819ULL, 3855ULL}},  // 12
+    {{8191ULL, 8179ULL, 8171ULL}, {8191ULL, 4411ULL, 4291ULL}},  // 13
+    {{16381ULL, 16369ULL, 16363ULL}, {5461ULL, 4369ULL, 12483ULL}},  // 14
+    {{32749ULL, 32719ULL, 32717ULL}, {13797ULL, 10031ULL, 1285ULL}},  // 15
+    {{65521ULL, 65519ULL, 65497ULL}, {4369ULL, 3855ULL, 36969ULL}},  // 16
+    {{131071ULL, 131063ULL, 131059ULL}, {131071ULL, 29127ULL, 110907ULL}},  // 17
+    {{262139ULL, 262133ULL, 262127ULL}, {209715ULL, 95325ULL, 200463ULL}},  // 18
+    {{524287ULL, 524269ULL, 524261ULL}, {524287ULL, 275941ULL, 271853ULL}},  // 19
+    {{1048573ULL, 1048571ULL, 1048559ULL}, {349525ULL, 209715ULL, 986895ULL}},  // 20
+    {{2097143ULL, 2097133ULL, 2097131ULL}, {1864135ULL, 1324517ULL, 798915ULL}},  // 21
+    {{4194301ULL, 4194287ULL, 4194277ULL}, {1398101ULL, 986895ULL, 3417581ULL}},  // 22
+    {{8388593ULL, 8388587ULL, 8388581ULL}, {1118481ULL, 798915ULL, 3417581ULL}},  // 23
+    {{16777213ULL, 16777199ULL, 16777183ULL}, {5592405ULL, 986895ULL, 15760415ULL}},  // 24
+    {{33554393ULL, 33554383ULL, 33554371ULL}, {17207401ULL, 31500079ULL, 15952107ULL}},  // 25
+    {{67108859ULL, 67108837ULL, 67108819ULL}, {53687091ULL, 62137837ULL, 50704475ULL}},  // 26
+    {{134217689ULL, 134217649ULL, 134217617ULL}, {17207401ULL, 113830225ULL, 82223473ULL}},  // 27
     {{268435399ULL, 268435367ULL, 268435361ULL}, {131863031ULL, 96516119ULL, 186492001ULL}},  // 28
     {{536870909ULL, 536870879ULL, 536870869ULL}, {357913941ULL, 32537631ULL, 274678141ULL}},  // 29
     {{1073741789ULL, 1073741783ULL, 1073741741ULL},
@@ -109,11 +109,17 @@ constexpr uint64_t PRIME_TABLE[][2][3] = {
 
 class SplitMix {
  public:
+  static constexpr uint8_t PATTERNS[][3] = {{0, 1, 2}, {0, 2, 1}, {1, 0, 2}, {1, 2, 0},
+                                            {2, 0, 1}, {2, 1, 0}, {0, 1, 0}, {1, 2, 1}};
+
+ public:
   SplitMix() = default;
 
-  explicit SplitMix(uint32_t univ_bits) {
+  explicit SplitMix(uint32_t univ_bits, uint32_t pid = 0) {
     assert(0 < univ_bits && univ_bits < 64);
+    assert(pid < 8);
 
+    pid_ = pid;
     shift_ = univ_bits / 2 + 1;
     univ_size_ = size_p2_t{univ_bits};
   }
@@ -150,18 +156,20 @@ class SplitMix {
   }
 
  private:
+  uint32_t pid_{};
   uint32_t shift_{};
   size_p2_t univ_size_{};
 
   template <uint32_t N>
   uint64_t hash_(uint64_t x) const {
     x = x ^ (x >> (shift_ + N));
-    x = (x * PRIME_TABLE[univ_size_.bits()][0][N]) & univ_size_.mask();
+    x = (x * PRIME_TABLE[univ_size_.bits()][0][PATTERNS[pid_][N]]) & univ_size_.mask();
     return x;
   }
+
   template <uint32_t N>
   uint64_t hash_inv_(uint64_t x) const {
-    x = (x * PRIME_TABLE[univ_size_.bits()][1][N]) & univ_size_.mask();
+    x = (x * PRIME_TABLE[univ_size_.bits()][1][PATTERNS[pid_][N]]) & univ_size_.mask();
     x = x ^ (x >> (shift_ + N));
     return x;
   }

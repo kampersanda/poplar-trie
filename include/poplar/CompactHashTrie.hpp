@@ -1,5 +1,5 @@
-#ifndef POPLAR_TRIE_HASH_TRIE_CR_HPP
-#define POPLAR_TRIE_HASH_TRIE_CR_HPP
+#ifndef POPLAR_TRIE_COMPACT_HASH_TRIE_HPP
+#define POPLAR_TRIE_COMPACT_HASH_TRIE_HPP
 
 #include <map>
 
@@ -11,37 +11,37 @@
 
 namespace poplar {
 
-template <uint32_t t_factor = 80, uint32_t t_dsp_bits = 3, typename t_cht = CompactHashTable<7>,
-          typename t_hash = bijective_hash::SplitMix>
-class HashTrieCR {
+template <uint32_t Factor = 80, uint32_t DspBits = 3, typename Table = CompactHashTable<7>,
+          typename Hash = bijective_hash::SplitMix>
+class CompactHashTrie {
  private:
-  static_assert(0 < t_factor && t_factor < 100);
-  static_assert(0 < t_dsp_bits && t_dsp_bits < 64);
+  static_assert(0 < Factor and Factor < 100);
+  static_assert(0 < DspBits and DspBits < 64);
 
  public:
   static constexpr uint64_t NIL_ID = UINT64_MAX;
   static constexpr uint32_t MIN_CAPA_BITS = 16;
 
-  static constexpr uint32_t DSP1_BITS = t_dsp_bits;
+  static constexpr uint32_t DSP1_BITS = DspBits;
   static constexpr uint64_t DSP1_MASK = (1ULL << DSP1_BITS) - 1;
-  static constexpr uint32_t DSP2_BITS = t_cht::VAL_BITS;
-  static constexpr uint32_t DSP2_MASK = t_cht::VAL_MASK;
+  static constexpr uint32_t DSP2_BITS = Table::VAL_BITS;
+  static constexpr uint32_t DSP2_MASK = Table::VAL_MASK;
 
  public:
-  HashTrieCR() = default;
+  CompactHashTrie() = default;
 
-  HashTrieCR(uint32_t capa_bits, uint32_t symb_bits, uint32_t cht_capa_bits = 0) {
+  CompactHashTrie(uint32_t capa_bits, uint32_t symb_bits, uint32_t cht_capa_bits = 0) {
     capa_size_ = size_p2_t{std::max(MIN_CAPA_BITS, capa_bits)};
     symb_size_ = size_p2_t{symb_bits};
 
-    max_size_ = static_cast<uint64_t>(capa_size_.size() * t_factor / 100.0);
+    max_size_ = static_cast<uint64_t>(capa_size_.size() * Factor / 100.0);
 
-    hash_ = t_hash{capa_size_.bits() + symb_size_.bits()};
+    hash_ = Hash{capa_size_.bits() + symb_size_.bits()};
     table_ = IntVector{capa_size_.size(), symb_size_.bits() + DSP1_BITS};
-    aux_cht_ = t_cht{capa_size_.bits(), cht_capa_bits};
+    aux_cht_ = Table{capa_size_.bits(), cht_capa_bits};
   }
 
-  ~HashTrieCR() = default;
+  ~CompactHashTrie() = default;
 
   uint64_t get_root() const {
     assert(size_ != 0);
@@ -80,7 +80,7 @@ class HashTrieCR {
     }
   }
 
-  int add_child(uint64_t& node_id, uint64_t symb) {
+  ac_res_type add_child(uint64_t& node_id, uint64_t symb) {
     assert(node_id < capa_size_.size());
     assert(symb < symb_size_.size());
 
@@ -95,19 +95,20 @@ class HashTrieCR {
       if (compare_dsp_(i, 0)) {
         // this slot is empty
         if (size_ == max_size_) {
-          return 2;  // fail to register because of full
+          return ac_res_type::NEEDS_TO_EXPAND;
         }
 
-        ++size_;
         update_slot_(i, dec.quo, cnt);
+
+        ++size_;
         node_id = i;
 
-        return 1;  // success to register
+        return ac_res_type::SUCCESS;
       }
 
       if (compare_dsp_(i, cnt) && dec.quo == get_quo_(i)) {
         node_id = i;
-        return 0;  // already registered
+        return ac_res_type::ALREADY_STORED;
       }
     }
   }
@@ -154,22 +155,11 @@ class HashTrieCR {
       return map_low_.size();
     }
 
-    void swap(NodeMap& rhs) {
-      std::swap(map_high_, rhs.map_high_);
-      std::swap(map_low_, rhs.map_low_);
-      std::swap(done_flags_, rhs.done_flags_);
-    }
-
     NodeMap(const NodeMap&) = delete;
     NodeMap& operator=(const NodeMap&) = delete;
 
-    NodeMap(NodeMap&& rhs) noexcept : NodeMap() {
-      this->swap(rhs);
-    }
-    NodeMap& operator=(NodeMap&& rhs) noexcept {
-      this->swap(rhs);
-      return *this;
-    }
+    NodeMap(NodeMap&& rhs) noexcept = default;
+    NodeMap& operator=(NodeMap&& rhs) noexcept = default;
 
    private:
     IntVector map_high_{};
@@ -182,8 +172,8 @@ class HashTrieCR {
   }
 
   NodeMap expand() {
-    // HashTrieCR new_ht{capa_bits() + 1, symb_size_.bits(), aux_cht_.capa_bits()};
-    HashTrieCR new_ht{capa_bits() + 1, symb_size_.bits()};
+    // CompactHashTrie new_ht{capa_bits() + 1, symb_size_.bits(), aux_cht_.capa_bits()};
+    CompactHashTrie new_ht{capa_bits() + 1, symb_size_.bits()};
     new_ht.add_root();
 
 #ifdef POPLAR_ENABLE_EX_STATS
@@ -222,7 +212,7 @@ class HashTrieCR {
 
     // 0 is root
     for (uint64_t i = 1; i < table_.size(); ++i) {
-      if (done_flags[i] || compare_dsp_(i, 0)) {
+      if (done_flags[i] or compare_dsp_(i, 0)) {
         // skip already processed or empty elements
         continue;
       }
@@ -240,8 +230,8 @@ class HashTrieCR {
       uint64_t new_node_id = get_mapping(node_id);
 
       for (auto rit = std::rbegin(path); rit != std::rend(path); ++rit) {
-        int ret = new_ht.add_child(new_node_id, rit->second);
-        assert(ret == 1);
+        auto ret = new_ht.add_child(new_node_id, rit->second);
+        assert(ret == ac_res_type::SUCCESS);
         set_mapping(rit->first, new_node_id);
         done_flags.set(rit->first);
       }
@@ -279,8 +269,8 @@ class HashTrieCR {
 
   void show_stat(std::ostream& os, int level = 0) const {
     std::string indent(level, '\t');
-    os << indent << "stat:HashTrieCR\n";
-    os << indent << "\tfactor:" << t_factor << "\n";
+    os << indent << "stat:CompactHashTrie\n";
+    os << indent << "\tfactor:" << Factor << "\n";
     os << indent << "\tdsp1st_bits:" << DSP1_BITS << "\n";
     os << indent << "\tdsp2nd_bits:" << DSP2_BITS << "\n";
     os << indent << "\tsize:" << size() << "\n";
@@ -298,39 +288,19 @@ class HashTrieCR {
     aux_cht_.show_stat(os, level + 1);
   }
 
-  void swap(HashTrieCR& rhs) {
-    std::swap(hash_, rhs.hash_);
-    std::swap(table_, rhs.table_);
-    std::swap(aux_cht_, rhs.aux_cht_);
-    std::swap(aux_map_, rhs.aux_map_);
-    std::swap(size_, rhs.size_);
-    std::swap(max_size_, rhs.max_size_);
-    std::swap(capa_size_, rhs.capa_size_);
-    std::swap(symb_size_, rhs.symb_size_);
-#ifdef POPLAR_ENABLE_EX_STATS
-    std::swap(num_resize_, rhs.num_resize_);
-    std::swap(num_dsps_, rhs.num_dsps_);
-#endif
-  }
+  CompactHashTrie(const CompactHashTrie&) = delete;
+  CompactHashTrie& operator=(const CompactHashTrie&) = delete;
 
-  HashTrieCR(const HashTrieCR&) = delete;
-  HashTrieCR& operator=(const HashTrieCR&) = delete;
-
-  HashTrieCR(HashTrieCR&& rhs) noexcept : HashTrieCR() {
-    this->swap(rhs);
-  }
-  HashTrieCR& operator=(HashTrieCR&& rhs) noexcept {
-    this->swap(rhs);
-    return *this;
-  }
+  CompactHashTrie(CompactHashTrie&& rhs) noexcept = default;
+  CompactHashTrie& operator=(CompactHashTrie&& rhs) noexcept = default;
 
  private:
-  t_hash hash_{};
+  Hash hash_{};
   IntVector table_{};
-  t_cht aux_cht_{};                         // 2nd dsp
+  Table aux_cht_{};  // 2nd dsp
   std::map<uint64_t, uint64_t> aux_map_{};  // 3rd dsp
-  uint64_t size_{};                         // # of registered nodes
-  uint64_t max_size_{};                     // t_factor% of the capacity
+  uint64_t size_{};  // # of registered nodes
+  uint64_t max_size_{};  // Factor% of the capacity
   size_p2_t capa_size_{};
   size_p2_t symb_size_{};
 
@@ -424,4 +394,4 @@ class HashTrieCR {
 
 }  // namespace poplar
 
-#endif  // POPLAR_TRIE_HASH_TRIE_CR_HPP
+#endif  // POPLAR_TRIE_COMPACT_HASH_TRIE_HPP

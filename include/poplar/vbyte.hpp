@@ -5,7 +5,7 @@
 
 namespace poplar::vbyte {
 
-inline uint64_t size(uint64_t val) {
+constexpr uint64_t size(uint64_t val) {
   uint64_t n = 1;
   while (127ULL < val) {
     ++n;
@@ -14,7 +14,7 @@ inline uint64_t size(uint64_t val) {
   return n;
 }
 
-inline uint64_t encode(uint8_t* codes, uint64_t val) {
+constexpr uint64_t encode(uint8_t* codes, uint64_t val) {
   uint64_t i = 0;
   while (127ULL < val) {
     codes[i++] = static_cast<uint8_t>((val & 127ULL) | 0x80ULL);
@@ -24,7 +24,7 @@ inline uint64_t encode(uint8_t* codes, uint64_t val) {
   return i;
 }
 
-inline uint64_t decode(const uint8_t* codes, uint64_t& val) {
+constexpr uint64_t decode(const uint8_t* codes, uint64_t& val) {
   val = 0;
   uint64_t i = 0, shift = 0;
   while ((codes[i] & 0x80) != 0) {

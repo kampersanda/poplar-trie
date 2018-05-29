@@ -3,26 +3,15 @@
 
 #include <algorithm>
 #include <fstream>
+#include <random>
 #include <string>
 #include <vector>
-#include <random>
 
 namespace poplar::test {
 
 inline std::vector<std::string> make_tiny_keys() {
-  return {"trie",
-          "denying",
-          "defies",
-          "defy",
-          "tries",
-          "defying",
-          "defied",
-          "denied",
-          "trying",
-          "deny",
-          "try",
-          "denies",
-          "tried"};
+  return {"trie",   "denying", "defies", "defy", "tries",  "defying", "defied",
+          "denied", "trying",  "deny",   "try",  "denies", "tried"};
 }
 
 inline std::vector<std::string> load_keys(const char* filename) {
@@ -39,7 +28,6 @@ inline std::vector<std::string> load_keys(const char* filename) {
   return keys;
 }
 
-}
+}  // namespace poplar::test
 
-
-#endif //POPLAR_TRIE_TEST_COMMON_HPP
+#endif  // POPLAR_TRIE_TEST_COMMON_HPP

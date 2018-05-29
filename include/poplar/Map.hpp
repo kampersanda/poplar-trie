@@ -16,9 +16,9 @@ class Map {
   static_assert(is_power2(t_lambda));
 
  public:
-  using map_type = Map<t_ht, t_ls, t_lambda>;    // Map Type
-  using ht_type = t_ht;                          // HashTrie Type
-  using ls_type = t_ls;                          // LabelStore Type
+  using map_type = Map<t_ht, t_ls, t_lambda>;  // Map Type
+  using ht_type = t_ht;  // HashTrie Type
+  using ls_type = t_ls;  // LabelStore Type
   using value_type = typename t_ls::value_type;  // Value type
 
  public:
@@ -98,30 +98,11 @@ class Map {
     label_store_.show_stat(os, level + 1);
   }
 
-  // Swaps the maps.
-  void swap(Map& rhs) {
-    std::swap(is_ready_, rhs.is_ready_);
-    std::swap(hash_trie_, rhs.hash_trie_);
-    std::swap(label_store_, rhs.label_store_);
-    std::swap(codes_, rhs.codes_);
-    std::swap(num_codes_, rhs.num_codes_);
-    std::swap(size_, rhs.size_);
-#ifdef POPLAR_ENABLE_EX_STATS
-    std::swap(num_steps_, rhs.num_steps_);
-    std::swap(num_resize_, rhs.num_resize_);
-#endif
-  }
-
   Map(const Map&) = delete;
   Map& operator=(const Map&) = delete;
 
-  Map(Map&& rhs) noexcept : Map() {
-    this->swap(rhs);
-  }
-  Map& operator=(Map&& rhs) noexcept {
-    this->swap(rhs);
-    return *this;
-  }
+  Map(Map&&) noexcept = default;
+  Map& operator=(Map&&) noexcept = default;
 
  private:
   static constexpr uint64_t NIL_ID = ht_type::NIL_ID;
@@ -205,7 +186,7 @@ class Map {
       key.remove_prefix(match);
 
       while (t_lambda <= match) {
-        if (hash_trie_.add_child(node_id, STEP_SYMB)) {
+        if (hash_trie_.add_child(node_id, STEP_SYMB) != ac_res_type::ALREADY_STORED) {
           expand_if_needed_(node_id);
 #ifdef POPLAR_ENABLE_EX_STATS
           ++num_steps_;
@@ -220,7 +201,7 @@ class Map {
         POPLAR_THROW_IF(UINT8_MAX == num_codes_, "");
       }
 
-      if (hash_trie_.add_child(node_id, make_symb_(key[0], match))) {
+      if (hash_trie_.add_child(node_id, make_symb_(key[0], match)) != ac_res_type::ALREADY_STORED) {
         expand_if_needed_(node_id);
         key.remove_prefix(1);
         ++size_;

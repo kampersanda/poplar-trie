@@ -1,5 +1,5 @@
-#ifndef POPLAR_TRIE_LABEL_STORE_PM_HPP
-#define POPLAR_TRIE_LABEL_STORE_PM_HPP
+#ifndef POPLAR_TRIE_PLAIN_LABEL_STORE_HPP
+#define POPLAR_TRIE_PLAIN_LABEL_STORE_HPP
 
 #include <memory>
 #include <vector>
@@ -10,16 +10,16 @@
 namespace poplar {
 
 template <typename t_value>
-class LabelStorePM {
+class PlainLabelStore {
  public:
   using value_type = t_value;
 
  public:
-  LabelStorePM() = default;
+  PlainLabelStore() = default;
 
-  explicit LabelStorePM(uint32_t capa_bits) : ptrs_(1ULL << capa_bits) {}
+  explicit PlainLabelStore(uint32_t capa_bits) : ptrs_(1ULL << capa_bits) {}
 
-  ~LabelStorePM() = default;
+  ~PlainLabelStore() = default;
 
   std::pair<const t_value*, uint64_t> compare(uint64_t pos, const ustr_view& key) const {
     assert(ptrs_[pos]);
@@ -80,7 +80,7 @@ class LabelStorePM {
 
   void show_stat(std::ostream& os, int level = 0) const {
     std::string indent(level, '\t');
-    os << indent << "stat:LabelStorePM\n";
+    os << indent << "stat:PlainLabelStore\n";
     os << indent << "\tsize:" << size() << "\n";
     os << indent << "\tcapa_size:" << capa_size() << "\n";
 #ifdef POPLAR_ENABLE_EX_STATS
@@ -89,25 +89,11 @@ class LabelStorePM {
 #endif
   }
 
-  void swap(LabelStorePM& rhs) {
-    std::swap(ptrs_, rhs.ptrs_);
-    std::swap(size_, rhs.size_);
-#ifdef POPLAR_ENABLE_EX_STATS
-    std::swap(max_length_, rhs.max_length_);
-    std::swap(sum_length_, rhs.sum_length_);
-#endif
-  }
+  PlainLabelStore(const PlainLabelStore&) = delete;
+  PlainLabelStore& operator=(const PlainLabelStore&) = delete;
 
-  LabelStorePM(const LabelStorePM&) = delete;
-  LabelStorePM& operator=(const LabelStorePM&) = delete;
-
-  LabelStorePM(LabelStorePM&& rhs) noexcept : LabelStorePM() {
-    this->swap(rhs);
-  }
-  LabelStorePM& operator=(LabelStorePM&& rhs) noexcept {
-    this->swap(rhs);
-    return *this;
-  }
+  PlainLabelStore(PlainLabelStore&&) noexcept = default;
+  PlainLabelStore& operator=(PlainLabelStore&&) noexcept = default;
 
  private:
   std::vector<std::unique_ptr<uint8_t[]>> ptrs_{};
@@ -120,4 +106,4 @@ class LabelStorePM {
 
 }  // namespace poplar
 
-#endif  // POPLAR_TRIE_LABEL_STORE_PM_HPP
+#endif  // POPLAR_TRIE_PLAIN_LABEL_STORE_HPP

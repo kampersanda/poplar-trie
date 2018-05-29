@@ -7,7 +7,7 @@ namespace {
 using namespace poplar;
 using namespace poplar::benchmark;
 
-template<class t_map>
+template <class t_map>
 int build(const char* key_name, uint32_t capa_bits) {
   std::ifstream ifs{key_name};
   if (!ifs) {
@@ -42,14 +42,13 @@ int build(const char* key_name, uint32_t capa_bits) {
   return 0;
 }
 
-template<size_t N = 0>
-std::enable_if_t<N == NUM_MAPS, int>
-build_for_id(int, const char*, uint32_t) {
+template <size_t N = 0>
+std::enable_if_t<N == NUM_MAPS, int> build_for_id(int, const char*, uint32_t) {
   return 1;
 }
-template<size_t N = 0>
-std::enable_if_t<N < NUM_MAPS, int>
-build_for_id(int id, const char* key_name, uint32_t capa_bits) {
+template <size_t N = 0>
+    std::enable_if_t <
+    N<NUM_MAPS, int> build_for_id(int id, const char* key_name, uint32_t capa_bits) {
   if (id - 1 == N) {
     using map_type = std::tuple_element_t<N, map_types<>>;
     return build<map_type>(key_name, capa_bits);
@@ -66,7 +65,7 @@ void show_usage(const char* exe, std::ostream& os) {
   os.flush();
 }
 
-} // ns
+}  // namespace
 
 int main(int argc, char* argv[]) {
   std::ios::sync_with_stdio(false);
@@ -85,7 +84,6 @@ int main(int argc, char* argv[]) {
   const char* key_name = argv[2];
 
   uint32_t capa_bits = 4 <= argc ? static_cast<uint32_t>(std::stoi(argv[3])) : 0;
-
 
   return build_for_id(map_id, key_name, capa_bits);
 }

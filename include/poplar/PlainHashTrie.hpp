@@ -1,5 +1,5 @@
-#ifndef POPLAR_TRIE_HASH_TRIE_PR_HPP
-#define POPLAR_TRIE_HASH_TRIE_PR_HPP
+#ifndef POPLAR_TRIE_PLAIN_HASH_TRIE_HPP
+#define POPLAR_TRIE_PLAIN_HASH_TRIE_HPP
 
 #include "BitVector.hpp"
 #include "IntVector.hpp"
@@ -8,28 +8,28 @@
 
 namespace poplar {
 
-template <uint32_t t_factor = 80, typename t_hash = hash::SplitMix>
-class HashTriePR {
+template <uint32_t Factor = 80, typename Hash = hash::SplitMix>
+class PlainHashTrie {
  private:
-  static_assert(0 < t_factor && t_factor < 100);
+  static_assert(0 < Factor and Factor < 100);
 
  public:
   static constexpr uint64_t NIL_ID = UINT64_MAX;
   static constexpr uint32_t MIN_CAPA_BITS = 16;
 
  public:
-  HashTriePR() = default;
+  PlainHashTrie() = default;
 
-  HashTriePR(uint32_t capa_bits, uint32_t symb_bits) {
+  PlainHashTrie(uint32_t capa_bits, uint32_t symb_bits) {
     capa_size_ = size_p2_t{std::max(MIN_CAPA_BITS, capa_bits)};
     symb_size_ = size_p2_t{symb_bits};
 
-    max_size_ = static_cast<uint64_t>(capa_size_.size() * t_factor / 100.0);
+    max_size_ = static_cast<uint64_t>(capa_size_.size() * Factor / 100.0);
 
     table_ = IntVector{capa_size_.size(), capa_size_.bits() + symb_size_.bits()};
   }
 
-  ~HashTriePR() = default;
+  ~PlainHashTrie() = default;
 
   uint64_t get_root() const {
     assert(size_ != 0);
@@ -52,7 +52,7 @@ class HashTriePR {
     uint64_t key = make_key_(node_id, symb);
     assert(key != 0);
 
-    for (uint64_t i = t_hash::hash(key) & capa_size_.mask();; i = right_(i)) {
+    for (uint64_t i = Hash::hash(key) & capa_size_.mask();; i = right_(i)) {
       if (i == 0) {
         // table_[0] is always empty so that table_[i] = 0 indicates to be empty.
         continue;
@@ -70,34 +70,40 @@ class HashTriePR {
     }
   }
 
-  int add_child(uint64_t& node_id, uint64_t symb) {
+  ac_res_type add_child(uint64_t& node_id, uint64_t symb) {
     assert(node_id < capa_size_.size());
     assert(symb < symb_size_.size());
 
     uint64_t key = make_key_(node_id, symb);
     assert(key != 0);
 
-    for (uint64_t i = t_hash::hash(key) & capa_size_.mask();; i = right_(i)) {
+    for (uint64_t i = Hash::hash(key) & capa_size_.mask();; i = right_(i)) {
       if (i == 0) {
         // table_[0] is always empty so that any table_[i] = 0 indicates to be empty.
         continue;
       }
+
       if (i == get_root()) {
         continue;
       }
+
       if (table_[i] == 0) {
         // this slot is empty
         if (size_ == max_size_) {
-          return 2;  // fail to register because of full
+          return ac_res_type::NEEDS_TO_EXPAND;
         }
-        ++size_;
+
         table_.set(i, key);
+
+        ++size_;
         node_id = i;
-        return 1;  // success to register
+
+        return ac_res_type::SUCCESS;
       }
+
       if (table_[i] == key) {
         node_id = i;
-        return 0;
+        return ac_res_type::ALREADY_STORED;
       }
     }
   }
@@ -134,21 +140,11 @@ class HashTriePR {
       return map_.size();
     }
 
-    void swap(NodeMap& rhs) {
-      std::swap(map_, rhs.map_);
-      std::swap(done_flags_, rhs.done_flags_);
-    }
-
     NodeMap(const NodeMap&) = delete;
     NodeMap& operator=(const NodeMap&) = delete;
 
-    NodeMap(NodeMap&& rhs) noexcept : NodeMap() {
-      this->swap(rhs);
-    }
-    NodeMap& operator=(NodeMap&& rhs) noexcept {
-      this->swap(rhs);
-      return *this;
-    }
+    NodeMap(NodeMap&& rhs) noexcept = default;
+    NodeMap& operator=(NodeMap&& rhs) noexcept = default;
 
    private:
     IntVector map_{};
@@ -160,7 +156,7 @@ class HashTriePR {
   }
 
   NodeMap expand() {
-    HashTriePR new_ht{capa_bits() + 1, symb_size_.bits()};
+    PlainHashTrie new_ht{capa_bits() + 1, symb_size_.bits()};
     new_ht.add_root();
 
 #ifdef POPLAR_ENABLE_EX_STATS
@@ -195,8 +191,8 @@ class HashTriePR {
       uint64_t new_node_id = table_[node_id];
 
       for (auto rit = std::rbegin(path); rit != std::rend(path); ++rit) {
-        int ret = new_ht.add_child(new_node_id, rit->second);
-        assert(ret == 1);
+        auto ret = new_ht.add_child(new_node_id, rit->second);
+        assert(ret == ac_res_type::SUCCESS);
         table_.set(rit->first, new_node_id);
         done_flags.set(rit->first);
       }
@@ -208,6 +204,7 @@ class HashTriePR {
     return node_map;
   }
 
+  // # of registerd nodes
   uint64_t size() const {
     return size_;
   }
@@ -234,8 +231,8 @@ class HashTriePR {
 
   void show_stat(std::ostream& os, int level = 0) const {
     std::string indent(level, '\t');
-    os << indent << "stat:HashTriePR\n";
-    os << indent << "\tfactor:" << t_factor << "\n";
+    os << indent << "stat:PlainHashTrie\n";
+    os << indent << "\tfactor:" << Factor << "\n";
     os << indent << "\tsize:" << size() << "\n";
     os << indent << "\tcapa_size:" << capa_size() << "\n";
     os << indent << "\tcapa_bits:" << capa_bits() << "\n";
@@ -246,32 +243,16 @@ class HashTriePR {
 #endif
   }
 
-  void swap(HashTriePR& rhs) {
-    std::swap(table_, rhs.table_);
-    std::swap(size_, rhs.size_);
-    std::swap(max_size_, rhs.max_size_);
-    std::swap(capa_size_, rhs.capa_size_);
-    std::swap(symb_size_, rhs.symb_size_);
-#ifdef POPLAR_ENABLE_EX_STATS
-    std::swap(num_resize_, rhs.num_resize_);
-#endif
-  }
+  PlainHashTrie(const PlainHashTrie&) = delete;
+  PlainHashTrie& operator=(const PlainHashTrie&) = delete;
 
-  HashTriePR(const HashTriePR&) = delete;
-  HashTriePR& operator=(const HashTriePR&) = delete;
-
-  HashTriePR(HashTriePR&& rhs) noexcept : HashTriePR() {
-    this->swap(rhs);
-  }
-  HashTriePR& operator=(HashTriePR&& rhs) noexcept {
-    this->swap(rhs);
-    return *this;
-  }
+  PlainHashTrie(PlainHashTrie&& rhs) noexcept = default;
+  PlainHashTrie& operator=(PlainHashTrie&& rhs) noexcept = default;
 
  private:
   IntVector table_{};
-  uint64_t size_{};      // # of registered nodes
-  uint64_t max_size_{};  // t_factor% of the capacity
+  uint64_t size_{};  // # of registered nodes
+  uint64_t max_size_{};  // Factor% of the capacity
   size_p2_t capa_size_{};
   size_p2_t symb_size_{};
 #ifdef POPLAR_ENABLE_EX_STATS
@@ -288,4 +269,4 @@ class HashTriePR {
 
 }  // namespace poplar
 
-#endif  // POPLAR_TRIE_HASH_TRIE_PR_HPP
+#endif  // POPLAR_TRIE_PLAIN_HASH_TRIE_HPP

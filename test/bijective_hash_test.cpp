@@ -1,6 +1,6 @@
-#include <random>
 #include <gtest/gtest.h>
 #include <poplar.hpp>
+#include <random>
 
 #include "test_common.hpp"
 
@@ -30,14 +30,12 @@ void check_bijection(uint32_t univ_bits) {
   }
 }
 
-} // ns - bijective_hash_test
+}  // namespace bijective_hash_test
 
-template<typename>
+template <typename>
 class BijectiveHashTest : public ::testing::Test {};
 
-using BijectiveHashTypes = ::testing::Types<
-  bijective_hash::SplitMix
->;
+using BijectiveHashTypes = ::testing::Types<bijective_hash::SplitMix>;
 
 TYPED_TEST_CASE(BijectiveHashTest, BijectiveHashTypes);
 
@@ -47,4 +45,4 @@ TYPED_TEST(BijectiveHashTest, Tiny) {
   }
 }
 
-} // ns
+}  // namespace

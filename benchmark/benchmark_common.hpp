@@ -48,13 +48,13 @@ inline std::string short_realname() {
 }
 
 template <typename t_value = int, uint64_t t_lambda = 16>
-using map_types = std::tuple<
-    poplar::MapPP<t_value, t_lambda>, poplar::MapPE<t_value, t_lambda>,
-    poplar::MapPG<t_value, 8, t_lambda>, poplar::MapPG<t_value, 16, t_lambda>,
-    poplar::MapPG<t_value, 32, t_lambda>, poplar::MapPG<t_value, 64, t_lambda>,
-    poplar::MapCP<t_value, t_lambda>, poplar::MapCE<t_value, t_lambda>,
-    poplar::MapCG<t_value, 8, t_lambda>, poplar::MapCG<t_value, 16, t_lambda>,
-    poplar::MapCG<t_value, 32, t_lambda>, poplar::MapCG<t_value, 64, t_lambda>>;
+using map_types =
+    std::tuple<poplar::MapPP<t_value, t_lambda>, poplar::MapPE<t_value, t_lambda>,
+               poplar::MapPG<t_value, 8, t_lambda>, poplar::MapPG<t_value, 16, t_lambda>,
+               poplar::MapPG<t_value, 32, t_lambda>, poplar::MapPG<t_value, 64, t_lambda>,
+               poplar::MapCP<t_value, t_lambda>, poplar::MapCE<t_value, t_lambda>,
+               poplar::MapCG<t_value, 8, t_lambda>, poplar::MapCG<t_value, 16, t_lambda>,
+               poplar::MapCG<t_value, 32, t_lambda>, poplar::MapCG<t_value, 64, t_lambda>>;
 
 constexpr size_t NUM_MAPS = std::tuple_size<map_types<>>::value;
 

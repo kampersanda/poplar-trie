@@ -1,5 +1,5 @@
-#ifndef POPLAR_TRIE_LABEL_STORE_GM_HPP
-#define POPLAR_TRIE_LABEL_STORE_GM_HPP
+#ifndef POPLAR_TRIE_GROUPED_LABEL_STORE_HPP
+#define POPLAR_TRIE_GROUPED_LABEL_STORE_HPP
 
 #include <memory>
 #include <vector>
@@ -10,21 +10,21 @@
 namespace poplar {
 
 template <typename t_value, typename t_chunk>
-class LabelStoreGM {
+class GroupedLabelStore {
  public:
-  using ls_type = LabelStoreGM<t_value, t_chunk>;
+  using ls_type = GroupedLabelStore<t_value, t_chunk>;
   using value_type = t_value;
   using chunk_type = t_chunk;
 
   static constexpr uint64_t CHUNK_SIZE = chunk_type::SIZE;
 
  public:
-  LabelStoreGM() = default;
+  GroupedLabelStore() = default;
 
-  explicit LabelStoreGM(uint32_t capa_bits)
+  explicit GroupedLabelStore(uint32_t capa_bits)
       : ptrs_((1ULL << capa_bits) / CHUNK_SIZE), chunks_(ptrs_.size()) {}
 
-  ~LabelStoreGM() = default;
+  ~GroupedLabelStore() = default;
 
   std::pair<const t_value*, uint64_t> compare(uint64_t pos, const ustr_view& key) const {
     const decomp_val_t pos_c = decompose_value<CHUNK_SIZE>(pos);
@@ -159,7 +159,7 @@ class LabelStoreGM {
 
   void show_stat(std::ostream& os, int level = 0) const {
     std::string indent(level, '\t');
-    os << indent << "stat:LabelStoreGM\n";
+    os << indent << "stat:GroupedLabelStore\n";
     os << indent << "\tchunk_size:" << CHUNK_SIZE << "\n";
     os << indent << "\tsize:" << size() << "\n";
     os << indent << "\tcapa_size:" << capa_size() << "\n";
@@ -169,26 +169,11 @@ class LabelStoreGM {
 #endif
   }
 
-  void swap(LabelStoreGM& rhs) {
-    std::swap(ptrs_, rhs.ptrs_);
-    std::swap(chunks_, rhs.chunks_);
-    std::swap(size_, rhs.size_);
-#ifdef POPLAR_ENABLE_EX_STATS
-    std::swap(max_length_, rhs.max_length_);
-    std::swap(sum_length_, rhs.sum_length_);
-#endif
-  }
+  GroupedLabelStore(const GroupedLabelStore&) = delete;
+  GroupedLabelStore& operator=(const GroupedLabelStore&) = delete;
 
-  LabelStoreGM(const LabelStoreGM&) = delete;
-  LabelStoreGM& operator=(const LabelStoreGM&) = delete;
-
-  LabelStoreGM(LabelStoreGM&& rhs) noexcept : LabelStoreGM() {
-    this->swap(rhs);
-  }
-  LabelStoreGM& operator=(LabelStoreGM&& rhs) noexcept {
-    this->swap(rhs);
-    return *this;
-  }
+  GroupedLabelStore(GroupedLabelStore&&) noexcept = default;
+  GroupedLabelStore& operator=(GroupedLabelStore&&) noexcept = default;
 
  private:
   std::vector<std::unique_ptr<uint8_t[]>> ptrs_{};
@@ -284,4 +269,4 @@ class LabelStoreGM {
 
 }  // namespace poplar
 
-#endif  // POPLAR_TRIE_LABEL_STORE_GM_HPP
+#endif  // POPLAR_TRIE_GROUPED_LABEL_STORE_HPP

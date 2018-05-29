@@ -20,12 +20,14 @@ void insert_keys(t_ht& ht, const std::vector<std::string>& keys, std::vector<uin
   for (uint64_t i = 0; i < keys.size(); ++i) {
     auto node_id = ht.get_root();
     for (auto c : keys[i]) {
-      int ret = ht.add_child(node_id, static_cast<uint8_t>(c));
-      ASSERT_NE(ret, 2);
-      if (ret == 1) {
+      auto ret = ht.add_child(node_id, static_cast<uint8_t>(c));
+
+      ASSERT_NE(ret, ac_res_type::NEEDS_TO_EXPAND);
+      if (ret == ac_res_type::SUCCESS) {
         ++num_nodes;
       }
     }
+
     ids[node_id] = i;
   }
 
@@ -105,19 +107,17 @@ void restore_keys(const t_ht& ht, const std::vector<std::string>& keys,
   }
 }
 
-} // ns - hash_trie_test
+}  // namespace hash_trie_test
 
-template<typename>
+template <typename>
 class HashTrieTest : public ::testing::Test {};
 
-using HashTrieTypes = ::testing::Types<
-  HashTriePR<>, HashTrieCR<>
->;
+using HashTrieTypes = ::testing::Types<PlainHashTrie<>, CompactHashTrie<>, CompactCuckooHashTrie<>>;
 
 TYPED_TEST_CASE(HashTrieTest, HashTrieTypes);
 
 TYPED_TEST(HashTrieTest, Tiny) {
-  TypeParam ht{0,8};
+  TypeParam ht{0, 8};
   auto keys = make_tiny_keys();
   std::vector<uint64_t> ids;
   hash_trie_test::insert_keys(ht, keys, ids);
@@ -126,7 +126,7 @@ TYPED_TEST(HashTrieTest, Tiny) {
 }
 
 TYPED_TEST(HashTrieTest, Words) {
-  TypeParam ht{20,8};
+  TypeParam ht{20, 8};
   auto keys = load_keys("words.txt");
   std::vector<uint64_t> ids;
   hash_trie_test::insert_keys(ht, keys, ids);
@@ -134,13 +134,13 @@ TYPED_TEST(HashTrieTest, Words) {
   hash_trie_test::restore_keys(ht, keys, ids);
 }
 
-TYPED_TEST(HashTrieTest, WordsEx) {
-  TypeParam ht{0,8};
-  auto keys = load_keys("words.txt");
-  std::vector<uint64_t> ids;
-  hash_trie_test::insert_keys_ex(ht, keys, ids);
-  hash_trie_test::search_keys(ht, keys, ids);
-  hash_trie_test::restore_keys(ht, keys, ids);
-}
+// TYPED_TEST(HashTrieTest, WordsEx) {
+//   TypeParam ht{0, 8};
+//   auto keys = load_keys("words.txt");
+//   std::vector<uint64_t> ids;
+//   hash_trie_test::insert_keys_ex(ht, keys, ids);
+//   hash_trie_test::search_keys(ht, keys, ids);
+//   hash_trie_test::restore_keys(ht, keys, ids);
+// }
 
-} // ns
+}  // namespace

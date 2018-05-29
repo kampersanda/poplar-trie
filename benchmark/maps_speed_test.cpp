@@ -10,7 +10,7 @@ using namespace poplar::benchmark;
 constexpr int UPDATE_RUNS = 1;
 constexpr int FIND_RUNS = 1;
 
-template<class t_map>
+template <class t_map>
 int speed_test(const char* key_name, const char* query_name, uint32_t capa_bits) {
   std::vector<std::string> keys;
   {
@@ -78,7 +78,8 @@ int speed_test(const char* key_name, const char* query_name, uint32_t capa_bits)
       for (const auto& key : keys) {
         volatile auto ret = map.find(key);
       }
-      times[i] = watch.micro_sec() / keys.size();;
+      times[i] = watch.micro_sec() / keys.size();
+      ;
     }
 
     num_queries = keys.size();
@@ -96,14 +97,13 @@ int speed_test(const char* key_name, const char* query_name, uint32_t capa_bits)
   return 0;
 }
 
-template<uint64_t N = 0>
-std::enable_if_t<N == NUM_MAPS, int>
-bench_for_id(int, const char*, const char*, uint32_t) {
+template <uint64_t N = 0>
+std::enable_if_t<N == NUM_MAPS, int> bench_for_id(int, const char*, const char*, uint32_t) {
   return 1;
 }
-template<uint64_t N = 0>
-std::enable_if_t<N < NUM_MAPS, int>
-bench_for_id(int id, const char* key_name, const char* query_name, uint32_t capa_bits) {
+template <uint64_t N = 0>
+    std::enable_if_t < N<NUM_MAPS, int> bench_for_id(int id, const char* key_name,
+                                                     const char* query_name, uint32_t capa_bits) {
   if (id - 1 == N) {
     using map_type = std::tuple_element_t<N, map_types<>>;
     return speed_test<map_type>(key_name, query_name, capa_bits);
@@ -121,7 +121,7 @@ void show_usage(const char* exe, std::ostream& os) {
   os.flush();
 }
 
-}
+}  // namespace
 
 int main(int argc, char* argv[]) {
   std::ios::sync_with_stdio(false);
