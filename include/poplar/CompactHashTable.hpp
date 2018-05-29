@@ -8,17 +8,17 @@
 
 namespace poplar {
 
-template <uint32_t t_val_bits, uint32_t t_factor = 80, typename t_hash = bijective_hash::SplitMix>
+template <uint32_t ValBits, uint32_t Factor = 80, typename Hasher = bijective_hash::SplitMix>
 class CompactHashTable {
  private:
-  static_assert(0 < t_factor && t_factor < 100);
+  static_assert(0 < Factor and Factor < 100);
 
  public:
-  using cht_type = CompactHashTable<t_val_bits, t_factor, t_hash>;
+  using ThisType = CompactHashTable<ValBits, Factor, Hasher>;
 
   static constexpr uint32_t MIN_CAPA_BITS = 12;
-  static constexpr uint32_t VAL_BITS = t_val_bits;
-  static constexpr uint64_t VAL_MASK = (1ULL << t_val_bits) - 1;
+  static constexpr uint32_t VAL_BITS = ValBits;
+  static constexpr uint64_t VAL_MASK = (1ULL << ValBits) - 1;
 
  public:
   CompactHashTable() = default;
@@ -33,9 +33,9 @@ class CompactHashTable {
     quo_shift_ = 2 + VAL_BITS;
     quo_invmask_ = ~(quo_size_.mask() << quo_shift_);
 
-    max_size_ = static_cast<uint64_t>(capa_size_.size() * t_factor / 100.0);
+    max_size_ = static_cast<uint64_t>(capa_size_.size() * Factor / 100.0);
 
-    hash_ = t_hash{univ_size_.bits()};
+    hash_ = Hasher{univ_size_.bits()};
     table_ = IntVector{capa_size_.size(), quo_size_.bits() + VAL_BITS + 2, (VAL_MASK << 2) | 1ULL};
   }
 
@@ -147,7 +147,7 @@ class CompactHashTable {
   void show_stat(std::ostream& os, int level = 0) const {
     std::string indent(level, '\t');
     os << indent << "stat:CompactHashTable\n";
-    os << indent << "\tfactor:" << t_factor << "\n";
+    os << indent << "\tfactor:" << Factor << "\n";
     os << indent << "\tsize:" << size() << "\n";
     os << indent << "\tuniv_size:" << univ_size() << "\n";
     os << indent << "\tuniv_bits:" << univ_bits() << "\n";
@@ -162,14 +162,14 @@ class CompactHashTable {
   CompactHashTable(const CompactHashTable&) = delete;
   CompactHashTable& operator=(const CompactHashTable&) = delete;
 
-  CompactHashTable(CompactHashTable&& rhs) noexcept = default;
-  CompactHashTable& operator=(CompactHashTable&& rhs) noexcept = default;
+  CompactHashTable(CompactHashTable&&) noexcept = default;
+  CompactHashTable& operator=(CompactHashTable&&) noexcept = default;
 
  private:
-  t_hash hash_{};
+  Hasher hash_{};
   IntVector table_{};
   uint64_t size_{};  // # of registered nodes
-  uint64_t max_size_{};  // t_factor% of the capacity
+  uint64_t max_size_{};  // Factor% of the capacity
   size_p2_t univ_size_{};
   size_p2_t capa_size_{};
   size_p2_t quo_size_{};
@@ -226,7 +226,7 @@ class CompactHashTable {
       return;
     }
 
-    cht_type new_cht{univ_size_.bits(), capa_size_.bits() + 1};
+    ThisType new_cht{univ_size_.bits(), capa_size_.bits() + 1};
 
 #ifdef POPLAR_ENABLE_EX_STATS
     new_cht.num_resize_ = num_resize_ + 1;

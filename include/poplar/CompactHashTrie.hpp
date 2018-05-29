@@ -74,7 +74,7 @@ class CompactHashTrie {
         return NIL_ID;
       }
 
-      if (compare_dsp_(i, cnt) && dec.quo == get_quo_(i)) {
+      if (compare_dsp_(i, cnt) and dec.quo == get_quo_(i)) {
         return i;
       }
     }
@@ -106,7 +106,7 @@ class CompactHashTrie {
         return ac_res_type::SUCCESS;
       }
 
-      if (compare_dsp_(i, cnt) && dec.quo == get_quo_(i)) {
+      if (compare_dsp_(i, cnt) and dec.quo == get_quo_(i)) {
         node_id = i;
         return ac_res_type::ALREADY_STORED;
       }
@@ -158,8 +158,8 @@ class CompactHashTrie {
     NodeMap(const NodeMap&) = delete;
     NodeMap& operator=(const NodeMap&) = delete;
 
-    NodeMap(NodeMap&& rhs) noexcept = default;
-    NodeMap& operator=(NodeMap&& rhs) noexcept = default;
+    NodeMap(NodeMap&&) noexcept = default;
+    NodeMap& operator=(NodeMap&&) noexcept = default;
 
    private:
     IntVector map_high_{};

@@ -8,14 +8,14 @@
 
 namespace poplar {
 
-template <typename t_value, typename t_chunk>
+template <typename Value, typename Chunk>
 class EmbeddedLabelStore {
  public:
-  using ls_type = EmbeddedLabelStore<t_value, t_chunk>;
-  using value_type = t_value;
-  using chunk_type = t_chunk;
+  using ThisType = EmbeddedLabelStore<Value, Chunk>;
+  using ValueType = Value;
+  using ChunkType = Chunk;
 
-  static constexpr uint64_t CHUNK_SIZE = chunk_type::SIZE;
+  static constexpr uint64_t CHUNK_SIZE = ChunkType::LEN;
 
  public:
   EmbeddedLabelStore() = default;
@@ -26,15 +26,15 @@ class EmbeddedLabelStore {
   ~EmbeddedLabelStore() {
     for (uint64_t i = 0; i < ptrs_.size(); ++i) {
       decomp_val_t pos_c = decompose_value<CHUNK_SIZE>(i);
-      if (!chunks_[pos_c.quo].get(pos_c.mod) && ptrs_[i].ptr != nullptr) {
+      if (!chunks_[pos_c.quo].get(pos_c.mod) and ptrs_[i].ptr != nullptr) {
         delete[] ptrs_[i].ptr;
       }
     }
   }
 
-  std::pair<const value_type*, uint64_t> compare(uint64_t pos, const ustr_view& key) const {
+  std::pair<const ValueType*, uint64_t> compare(uint64_t pos, const ustr_view& key) const {
     const decomp_val_t pos_c = decompose_value<CHUNK_SIZE>(pos);
-    const chunk_type& chunk = chunks_[pos_c.quo];
+    const ChunkType& chunk = chunks_[pos_c.quo];
 
     if (key.empty()) {
       // Return the target value pointer without comparison
@@ -44,12 +44,12 @@ class EmbeddedLabelStore {
       } else {
         // For a long label
         assert(ptrs_[pos].ptr != nullptr);
-        return {reinterpret_cast<const value_type*>(ptrs_[pos].ptr), 0};
+        return {reinterpret_cast<const ValueType*>(ptrs_[pos].ptr), 0};
       }
     }
 
     uint64_t i = 0;  // #match
-    const value_type* ret = nullptr;
+    const ValueType* ret = nullptr;
 
     if (chunk.get(pos_c.mod)) {
       // For a short label
@@ -76,30 +76,30 @@ class EmbeddedLabelStore {
           return {nullptr, i};
         }
       }
-      ret = reinterpret_cast<const t_value*>(ptr + i);
+      ret = reinterpret_cast<const Value*>(ptr + i);
     }
 
     return {ret, i};
   }
 
-  t_value* associate(uint64_t pos, const ustr_view& key) {
+  Value* associate(uint64_t pos, const ustr_view& key) {
     const decomp_val_t pos_c = decompose_value<CHUNK_SIZE>(pos);
-    const chunk_type& chunk = chunks_[pos_c.quo];
+    const ChunkType& chunk = chunks_[pos_c.quo];
 
     assert(!chunk.get(pos_c.mod));
 
-    value_type* ret = nullptr;
+    ValueType* ret = nullptr;
     uint64_t length = key.length();
 
     if (length <= sizeof(void*) + 1) {
       // For a short label
       copy_bytes(ptrs_[pos].str, key.data(), std::min<uint64_t>(length, sizeof(void*)));
-      ret = insert_value_(pos_c);
+      ret = inserValue_(pos_c);
     } else {
       // For a long label
-      ptrs_[pos].ptr = new uint8_t[length + sizeof(value_type)];  // TODO: Remove new operation
+      ptrs_[pos].ptr = new uint8_t[length + sizeof(ValueType)];  // TODO: Remove new operation
       copy_bytes(ptrs_[pos].ptr, key.data(), length);
-      ret = reinterpret_cast<value_type*>(ptrs_[pos].ptr + length);
+      ret = reinterpret_cast<ValueType*>(ptrs_[pos].ptr + length);
     }
 
     ++size_;
@@ -109,13 +109,13 @@ class EmbeddedLabelStore {
     sum_length_ += length;
 #endif
 
-    *ret = static_cast<value_type>(0);  // initialization
+    *ret = static_cast<ValueType>(0);  // initialization
     return ret;
   }
 
   template <typename T>
   void expand(const T& pos_map) {
-    ls_type new_ls(bit_tools::get_num_bits(capa_size()));
+    ThisType new_ls(bit_tools::get_num_bits(capa_size()));
 
     for (uint64_t pos = 0; pos < pos_map.size(); ++pos) {
       uint64_t new_pos = pos_map[pos];
@@ -126,7 +126,7 @@ class EmbeddedLabelStore {
 
         if (chunks_[pos_c.quo].get(pos_c.mod)) {
           const decomp_val_t new_pos_c = decompose_value<CHUNK_SIZE>(new_pos);
-          value_type* v = new_ls.insert_value_(new_pos_c);
+          ValueType* v = new_ls.inserValue_(new_pos_c);
           *v = vptrs_[pos_c.quo][chunks_[pos_c.quo].popcnt(pos_c.mod)];
         }
       }
@@ -173,8 +173,8 @@ class EmbeddedLabelStore {
     uint8_t str[sizeof(void*)];  // for short labels
   };
   std::vector<ptr_t> ptrs_{};
-  std::vector<std::unique_ptr<value_type[]>> vptrs_{};  // for each chunk
-  std::vector<chunk_type> chunks_{};  // chunks of bitmap
+  std::vector<std::unique_ptr<ValueType[]>> vptrs_{};  // for each chunk
+  std::vector<ChunkType> chunks_{};  // chunks of bitmap
   uint64_t size_{};
 #ifdef POPLAR_ENABLE_EX_STATS
   uint64_t max_length_{};
@@ -182,14 +182,14 @@ class EmbeddedLabelStore {
 #endif
 
   // Allocates a value area for short labels in O(CHUNK_SIZE) time
-  value_type* insert_value_(const decomp_val_t& pos_c) {
-    chunk_type& chunk = chunks_[pos_c.quo];
+  ValueType* inserValue_(const decomp_val_t& pos_c) {
+    ChunkType& chunk = chunks_[pos_c.quo];
     assert(!chunk.get(pos_c.mod));
 
     uint64_t num = chunk.popcnt();
 
-    value_type* ret = nullptr;
-    auto new_vptr = std::make_unique<value_type[]>(num + 1);
+    ValueType* ret = nullptr;
+    auto new_vptr = std::make_unique<ValueType[]>(num + 1);
 
     if (num == 0) {
       // initial
@@ -198,7 +198,7 @@ class EmbeddedLabelStore {
       ret = vptrs_[pos_c.quo].get();
     } else {
       uint64_t offset = chunk.popcnt(pos_c.mod);
-      const value_type* vptr = vptrs_[pos_c.quo].get();
+      const ValueType* vptr = vptrs_[pos_c.quo].get();
 
       uint64_t i = 0;
       for (; i < offset; ++i) {

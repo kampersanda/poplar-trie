@@ -109,17 +109,11 @@ constexpr uint64_t PRIME_TABLE[][2][3] = {
 
 class SplitMix {
  public:
-  static constexpr uint8_t PATTERNS[][3] = {{0, 1, 2}, {0, 2, 1}, {1, 0, 2}, {1, 2, 0},
-                                            {2, 0, 1}, {2, 1, 0}, {0, 1, 0}, {1, 2, 1}};
-
- public:
   SplitMix() = default;
 
-  explicit SplitMix(uint32_t univ_bits, uint32_t pid = 0) {
+  explicit SplitMix(uint32_t univ_bits) {
     assert(0 < univ_bits && univ_bits < 64);
-    assert(pid < 8);
 
-    pid_ = pid;
     shift_ = univ_bits / 2 + 1;
     univ_size_ = size_p2_t{univ_bits};
   }
@@ -156,20 +150,19 @@ class SplitMix {
   }
 
  private:
-  uint32_t pid_{};
   uint32_t shift_{};
   size_p2_t univ_size_{};
 
   template <uint32_t N>
   uint64_t hash_(uint64_t x) const {
     x = x ^ (x >> (shift_ + N));
-    x = (x * PRIME_TABLE[univ_size_.bits()][0][PATTERNS[pid_][N]]) & univ_size_.mask();
+    x = (x * PRIME_TABLE[univ_size_.bits()][0][N]) & univ_size_.mask();
     return x;
   }
 
   template <uint32_t N>
   uint64_t hash_inv_(uint64_t x) const {
-    x = (x * PRIME_TABLE[univ_size_.bits()][1][PATTERNS[pid_][N]]) & univ_size_.mask();
+    x = (x * PRIME_TABLE[univ_size_.bits()][1][N]) & univ_size_.mask();
     x = x ^ (x >> (shift_ + N));
     return x;
   }

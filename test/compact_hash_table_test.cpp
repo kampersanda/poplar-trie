@@ -33,7 +33,7 @@ std::map<uint64_t, uint64_t> create_map(uint32_t univ_bits, uint64_t size) {
   return m;
 };
 
-} // ns - compact_hash_table_test
+}  // namespace compact_hash_table_test
 
 TEST(CompactHashTableTest, Tiny) {
   const uint64_t univ_bits = 14;
@@ -52,4 +52,4 @@ TEST(CompactHashTableTest, Tiny) {
   }
 }
 
-} // ns
+}  // namespace

@@ -10,16 +10,14 @@ namespace poplar {
 
 // Associative array implementation with string keys based on a dynamic
 // path-decomposed trie.
-template <typename t_ht, typename t_ls, uint64_t t_lambda = 16>
+template <typename HashTrie, typename LabelStore, uint64_t Lambda = 16>
 class Map {
  private:
-  static_assert(is_power2(t_lambda));
+  static_assert(is_power2(Lambda));
 
  public:
-  using map_type = Map<t_ht, t_ls, t_lambda>;  // Map Type
-  using ht_type = t_ht;  // HashTrie Type
-  using ls_type = t_ls;  // LabelStore Type
-  using value_type = typename t_ls::value_type;  // Value type
+  using MapType = Map<HashTrie, LabelStore, Lambda>;  // Map Type
+  using ValueType = typename LabelStore::ValueType;  // Value type
 
  public:
   // Generic constructor.
@@ -29,8 +27,8 @@ class Map {
   // 2**capa_bits.
   explicit Map(uint32_t capa_bits) {
     is_ready_ = true;
-    hash_trie_ = ht_type{capa_bits, 8 + bit_tools::get_num_bits(t_lambda - 1)};
-    label_store_ = ls_type{hash_trie_.capa_bits()};
+    hash_trie_ = HashTrie{capa_bits, 8 + bit_tools::get_num_bits(Lambda - 1)};
+    label_store_ = LabelStore{hash_trie_.capa_bits()};
     codes_.fill(UINT8_MAX);
     codes_[0] = static_cast<uint8_t>(num_codes_++);  // terminator
   }
@@ -40,36 +38,36 @@ class Map {
 
   // Searches the given key and returns the value pointer if registered;
   // otherwise returns nullptr.
-  const value_type* find(const char* key) const {
+  const ValueType* find(const char* key) const {
     return find_(make_ustr_view(key));
   }
-  const value_type* find(const char* key, uint64_t len) const {
+  const ValueType* find(const char* key, uint64_t len) const {
     return find_(make_ustr_view(key, len));
   }
-  const value_type* find(const std::string& key) const {
+  const ValueType* find(const std::string& key) const {
     return find_(make_ustr_view(key));
   }
-  const value_type* find(std::string_view key) const {
+  const ValueType* find(std::string_view key) const {
     return find_(make_ustr_view(key));
   }
-  const value_type* find(ustr_view key) const {
+  const ValueType* find(ustr_view key) const {
     return find_(std::move(key));
   }
 
   // Inserts the given key and returns the value pointer.
-  value_type* update(const char* key) {
+  ValueType* update(const char* key) {
     return update_(make_ustr_view(key));
   }
-  value_type* update(const char* key, uint64_t len) {
+  ValueType* update(const char* key, uint64_t len) {
     return update_(make_ustr_view(key, len));
   }
-  value_type* update(const std::string& key) {
+  ValueType* update(const std::string& key) {
     return update_(make_ustr_view(key));
   }
-  value_type* update(std::string_view key) {
+  ValueType* update(std::string_view key) {
     return update_(make_ustr_view(key));
   }
-  value_type* update(ustr_view key) {
+  ValueType* update(ustr_view key) {
     return update_(std::move(key));
   }
 
@@ -87,7 +85,7 @@ class Map {
   void show_stat(std::ostream& os, int level = 0) const {
     std::string indent(level, '\t');
     os << indent << "stat:Map\n";
-    os << indent << "\tlambda:" << t_lambda << "\n";
+    os << indent << "\tlambda:" << Lambda << "\n";
     os << indent << "\tsize:" << size() << "\n";
     os << indent << "\tcapa_size:" << capa_size() << "\n";
 #ifdef POPLAR_ENABLE_EX_STATS
@@ -105,12 +103,12 @@ class Map {
   Map& operator=(Map&&) noexcept = default;
 
  private:
-  static constexpr uint64_t NIL_ID = ht_type::NIL_ID;
+  static constexpr uint64_t NIL_ID = HashTrie::NIL_ID;
   static constexpr uint64_t STEP_SYMB = UINT8_MAX;  // (UINT8_MAX, 0)
 
   bool is_ready_{false};
-  ht_type hash_trie_{};
-  ls_type label_store_{};
+  HashTrie hash_trie_{};
+  LabelStore label_store_{};
   std::array<uint8_t, 256> codes_{};
   uint32_t num_codes_{};
   uint64_t size_{};
@@ -119,7 +117,7 @@ class Map {
   uint64_t num_resize_{};
 #endif
 
-  const value_type* find_(ustr_view&& key) const {
+  const ValueType* find_(ustr_view&& key) const {
     POPLAR_THROW_IF(key.empty(), "key must be a non-empty string.");
     POPLAR_THROW_IF(key.back() != '\0', "The last character of key must be the null terminator.");
 
@@ -137,12 +135,12 @@ class Map {
 
       key.remove_prefix(match);
 
-      while (t_lambda <= match) {
+      while (Lambda <= match) {
         node_id = hash_trie_.find_child(node_id, STEP_SYMB);
         if (node_id == NIL_ID) {
           return nullptr;
         }
-        match -= t_lambda;
+        match -= Lambda;
       }
 
       if (codes_[key[0]] == UINT8_MAX) {
@@ -161,13 +159,13 @@ class Map {
     return label_store_.compare(node_id, key).first;
   }
 
-  value_type* update_(ustr_view&& key) {
+  ValueType* update_(ustr_view&& key) {
     POPLAR_THROW_IF(key.empty(), "key must be a non-empty string.");
     POPLAR_THROW_IF(key.back() != '\0', "The last character of key must be the null terminator.");
 
     if (hash_trie_.size() == 0) {
       if (!is_ready_) {
-        *this = map_type{0};
+        *this = MapType{0};
       }
       // The first insertion
       ++size_;
@@ -180,19 +178,19 @@ class Map {
     while (!key.empty()) {
       auto [vptr, match] = label_store_.compare(node_id, key);
       if (vptr != nullptr) {
-        return const_cast<value_type*>(vptr);
+        return const_cast<ValueType*>(vptr);
       }
 
       key.remove_prefix(match);
 
-      while (t_lambda <= match) {
+      while (Lambda <= match) {
         if (hash_trie_.add_child(node_id, STEP_SYMB) != ac_res_type::ALREADY_STORED) {
           expand_if_needed_(node_id);
 #ifdef POPLAR_ENABLE_EX_STATS
           ++num_steps_;
 #endif
         }
-        match -= t_lambda;
+        match -= Lambda;
       }
 
       if (codes_[key[0]] == UINT8_MAX) {
@@ -213,7 +211,7 @@ class Map {
 
     auto [vptr, match] = label_store_.compare(node_id, key);
     if (vptr != nullptr) {
-      return const_cast<value_type*>(vptr);
+      return const_cast<ValueType*>(vptr);
     }
 
     key.remove_prefix(match);

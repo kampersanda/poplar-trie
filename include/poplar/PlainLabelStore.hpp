@@ -9,10 +9,10 @@
 
 namespace poplar {
 
-template <typename t_value>
+template <typename Value>
 class PlainLabelStore {
  public:
-  using value_type = t_value;
+  using ValueType = Value;
 
  public:
   PlainLabelStore() = default;
@@ -21,13 +21,13 @@ class PlainLabelStore {
 
   ~PlainLabelStore() = default;
 
-  std::pair<const t_value*, uint64_t> compare(uint64_t pos, const ustr_view& key) const {
+  std::pair<const Value*, uint64_t> compare(uint64_t pos, const ustr_view& key) const {
     assert(ptrs_[pos]);
 
     const uint8_t* ptr = ptrs_[pos].get();
 
     if (key.empty()) {
-      return {reinterpret_cast<const t_value*>(ptr), 0};
+      return {reinterpret_cast<const Value*>(ptr), 0};
     }
 
     for (uint64_t i = 0; i < key.length(); ++i) {
@@ -36,16 +36,16 @@ class PlainLabelStore {
       }
     }
 
-    return {reinterpret_cast<const t_value*>(ptr + key.length()), key.length()};
+    return {reinterpret_cast<const Value*>(ptr + key.length()), key.length()};
   }
 
-  t_value* associate(uint64_t pos, const ustr_view& key) {
+  Value* associate(uint64_t pos, const ustr_view& key) {
     assert(!ptrs_[pos]);
 
     ++size_;
 
     uint64_t length = key.length();
-    ptrs_[pos] = std::make_unique<uint8_t[]>(length + sizeof(value_type));
+    ptrs_[pos] = std::make_unique<uint8_t[]>(length + sizeof(ValueType));
     auto ptr = ptrs_[pos].get();
     copy_bytes(ptr, key.data(), length);
 
@@ -54,8 +54,8 @@ class PlainLabelStore {
     sum_length_ += length;
 #endif
 
-    auto ret = reinterpret_cast<t_value*>(ptr + length);
-    *ret = static_cast<t_value>(0);
+    auto ret = reinterpret_cast<Value*>(ptr + length);
+    *ret = static_cast<Value>(0);
 
     return ret;
   }

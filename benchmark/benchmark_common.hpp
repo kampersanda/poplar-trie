@@ -38,7 +38,6 @@ inline std::string realname() {
   int status;
   return abi::__cxa_demangle(typeid(T).name(), nullptr, nullptr, &status);
 }
-
 template <typename T>
 inline std::string short_realname() {
   auto name = realname<T>();
@@ -47,27 +46,45 @@ inline std::string short_realname() {
   return name;
 }
 
-template <typename t_value = int, uint64_t t_lambda = 16>
-using map_types =
-    std::tuple<poplar::MapPP<t_value, t_lambda>, poplar::MapPE<t_value, t_lambda>,
-               poplar::MapPG<t_value, 8, t_lambda>, poplar::MapPG<t_value, 16, t_lambda>,
-               poplar::MapPG<t_value, 32, t_lambda>, poplar::MapPG<t_value, 64, t_lambda>,
-               poplar::MapCP<t_value, t_lambda>, poplar::MapCE<t_value, t_lambda>,
-               poplar::MapCG<t_value, 8, t_lambda>, poplar::MapCG<t_value, 16, t_lambda>,
-               poplar::MapCG<t_value, 32, t_lambda>, poplar::MapCG<t_value, 64, t_lambda>>;
+// clang-format off
+template <typename Value = int, uint64_t Lambda = 16>
+using MapTypes =
+    std::tuple<poplar::MapPP<Value, Lambda>,
+               poplar::MapPE<Value, Lambda>,
+               poplar::MapPG<Value, 8, Lambda>,
+               poplar::MapPG<Value, 16, Lambda>,
+               poplar::MapPG<Value, 32, Lambda>,
+               poplar::MapPG<Value, 64, Lambda>,
+               poplar::MapCP<Value, Lambda>,
+               poplar::MapCE<Value, Lambda>,
+               poplar::MapCG<Value, 8, Lambda>,
+               poplar::MapCG<Value, 16, Lambda>,
+               poplar::MapCG<Value, 32, Lambda>,
+               poplar::MapCG<Value, 64, Lambda>
+               >;
 
-constexpr size_t NUM_MAPS = std::tuple_size<map_types<>>::value;
+using HashTrieTypes =
+    std::tuple<poplar::PlainHashTrie<80>,
+               poplar::CompactHashTrie<80>,
+               poplar::PlainHashTrie<90>,
+               poplar::CompactHashTrie<90>,
+               poplar::PlainHashTrie<95>,
+               poplar::CompactHashTrie<95>
+               >;
+// clang-format on
 
-template <size_t N = NUM_MAPS>
-inline void maps_list_all(const char* pfx, std::ostream& os) {
-  maps_list_all<N - 1>(pfx, os);
-  using map_type = std::tuple_element_t<N - 1, map_types<>>;
-  os << pfx << std::setw(2) << N << ": " << short_realname<map_type>() << "\n";
-}
-template <>
-inline void maps_list_all<1>(const char* pfx, std::ostream& os) {
-  using map_type = std::tuple_element_t<0, map_types<>>;
-  os << pfx << std::setw(2) << 1 << ": " << short_realname<map_type>() << "\n";
+constexpr size_t NUM_MAPS = std::tuple_size_v<MapTypes<>>;
+constexpr size_t NUM_HASH_TRIES = std::tuple_size_v<HashTrieTypes>;
+
+template <typename Types, size_t N = std::tuple_size_v<Types>>
+constexpr void list_all(const char* pfx, std::ostream& os) {
+  static_assert(N != 0);
+
+  if constexpr (N > 1) {
+    list_all<Types, N - 1>(pfx, os);
+  }
+  using type = std::tuple_element_t<N - 1, Types>;
+  os << pfx << std::setw(2) << N << ": " << short_realname<type>() << "\n";
 }
 
 template <size_t N>

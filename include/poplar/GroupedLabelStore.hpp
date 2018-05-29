@@ -9,14 +9,14 @@
 
 namespace poplar {
 
-template <typename t_value, typename t_chunk>
+template <typename Value, typename Chunk>
 class GroupedLabelStore {
  public:
-  using ls_type = GroupedLabelStore<t_value, t_chunk>;
-  using value_type = t_value;
-  using chunk_type = t_chunk;
+  using ThisType = GroupedLabelStore<Value, Chunk>;
+  using ValueType = Value;
+  using ChunkType = Chunk;
 
-  static constexpr uint64_t CHUNK_SIZE = chunk_type::SIZE;
+  static constexpr uint64_t CHUNK_SIZE = ChunkType::LEN;
 
  public:
   GroupedLabelStore() = default;
@@ -26,7 +26,7 @@ class GroupedLabelStore {
 
   ~GroupedLabelStore() = default;
 
-  std::pair<const t_value*, uint64_t> compare(uint64_t pos, const ustr_view& key) const {
+  std::pair<const Value*, uint64_t> compare(uint64_t pos, const ustr_view& key) const {
     const decomp_val_t pos_c = decompose_value<CHUNK_SIZE>(pos);
 
     assert(ptrs_[pos_c.quo]);
@@ -43,10 +43,10 @@ class GroupedLabelStore {
     ptr += vbyte::decode(ptr, alloc);
 
     if (key.empty()) {
-      return {reinterpret_cast<const t_value*>(ptr), 0};
+      return {reinterpret_cast<const Value*>(ptr), 0};
     }
 
-    uint64_t length = alloc - sizeof(t_value);
+    uint64_t length = alloc - sizeof(Value);
     for (uint64_t i = 0; i < length; ++i) {
       if (key[i] != ptr[i]) {
         return {nullptr, i};
@@ -58,10 +58,10 @@ class GroupedLabelStore {
     }
 
     // +1 considers the terminator '\0'
-    return {reinterpret_cast<const t_value*>(ptr + length), length + 1};
+    return {reinterpret_cast<const Value*>(ptr + length), length + 1};
   };
 
-  t_value* associate(uint64_t pos, const ustr_view& key) {
+  Value* associate(uint64_t pos, const ustr_view& key) {
     const decomp_val_t pos_c = decompose_value<CHUNK_SIZE>(pos);
 
     assert(!chunks_[pos_c.quo].get(pos_c.mod));
@@ -77,16 +77,16 @@ class GroupedLabelStore {
     if (!ptrs_[pos_c.quo]) {
       // First association in the group
       uint64_t length = key.empty() ? 0 : key.length() - 1;
-      uint64_t new_alloc = vbyte::size(length + sizeof(value_type)) + length + sizeof(value_type);
+      uint64_t new_alloc = vbyte::size(length + sizeof(ValueType)) + length + sizeof(ValueType);
 
       ptrs_[pos_c.quo] = std::make_unique<uint8_t[]>(new_alloc);
       uint8_t* ptr = ptrs_[pos_c.quo].get();
 
-      ptr += vbyte::encode(ptr, length + sizeof(value_type));
+      ptr += vbyte::encode(ptr, length + sizeof(ValueType));
       copy_bytes(ptr, key.data(), length);
 
-      auto ret_ptr = reinterpret_cast<value_type*>(ptr + length);
-      *ret_ptr = static_cast<value_type>(0);
+      auto ret_ptr = reinterpret_cast<ValueType*>(ptr + length);
+      *ret_ptr = static_cast<ValueType>(0);
 
       return ret_ptr;
     }
@@ -95,7 +95,7 @@ class GroupedLabelStore {
     auto fr_alloc = get_allocs_(pos_c);
 
     const uint64_t len = key.empty() ? 0 : key.length() - 1;
-    const uint64_t new_alloc = vbyte::size(len + sizeof(value_type)) + len + sizeof(value_type);
+    const uint64_t new_alloc = vbyte::size(len + sizeof(ValueType)) + len + sizeof(ValueType);
 
     auto new_unique = std::make_unique<uint8_t[]>(fr_alloc.first + new_alloc + fr_alloc.second);
 
@@ -109,23 +109,23 @@ class GroupedLabelStore {
     new_ptr += fr_alloc.first;
 
     // Set new allocation
-    new_ptr += vbyte::encode(new_ptr, len + sizeof(value_type));
+    new_ptr += vbyte::encode(new_ptr, len + sizeof(ValueType));
     copy_bytes(new_ptr, key.data(), len);
     new_ptr += len;
-    *reinterpret_cast<value_type*>(new_ptr) = static_cast<value_type>(0);
+    *reinterpret_cast<ValueType*>(new_ptr) = static_cast<ValueType>(0);
 
     // Copy the back allocation
-    copy_bytes(new_ptr + sizeof(value_type), orig_ptr, fr_alloc.second);
+    copy_bytes(new_ptr + sizeof(ValueType), orig_ptr, fr_alloc.second);
 
     // Overwrite
     ptrs_[pos_c.quo] = std::move(new_unique);
 
-    return reinterpret_cast<value_type*>(new_ptr);
+    return reinterpret_cast<ValueType*>(new_ptr);
   }
 
   template <typename T>
   void expand(const T& pos_map) {
-    ls_type new_ls(bit_tools::get_num_bits(capa_size()));
+    ThisType new_ls(bit_tools::get_num_bits(capa_size()));
 
     for (uint64_t pos = 0; pos < pos_map.size(); ++pos) {
       decomp_val_t pos_c = decompose_value<CHUNK_SIZE>(pos);
@@ -177,7 +177,7 @@ class GroupedLabelStore {
 
  private:
   std::vector<std::unique_ptr<uint8_t[]>> ptrs_{};
-  std::vector<chunk_type> chunks_{};
+  std::vector<ChunkType> chunks_{};
   uint64_t size_{};
 #ifdef POPLAR_ENABLE_EX_STATS
   uint64_t max_length_{};

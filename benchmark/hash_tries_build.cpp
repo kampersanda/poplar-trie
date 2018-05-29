@@ -7,7 +7,7 @@ namespace {
 using namespace poplar;
 using namespace poplar::benchmark;
 
-template <class Map>
+template <class Trie>
 int build(const char* key_name, uint32_t capa_bits) {
   std::ifstream ifs{key_name};
   if (!ifs) {
@@ -18,7 +18,7 @@ int build(const char* key_name, uint32_t capa_bits) {
   size_t num_keys = 0;
   double elapsed_sec = 0.0;
 
-  auto map = Map{capa_bits};
+  auto trie = Trie{capa_bits, 8};
 
   try {
     std::string key;
@@ -26,7 +26,14 @@ int build(const char* key_name, uint32_t capa_bits) {
 
     Stopwatch watch;
     while (std::getline(ifs, key)) {
-      map.update(key);
+      auto node_id = trie.get_root();
+      for (auto c : key) {
+        auto ret = trie.add_child(node_id, static_cast<uint8_t>(c));
+        if (ret == ac_res_type::NEEDS_TO_EXPAND) {
+          std::cerr << "error\n";
+          return 1;
+        }
+      }
       ++num_keys;
     }
     elapsed_sec = watch.sec();
@@ -34,21 +41,21 @@ int build(const char* key_name, uint32_t capa_bits) {
     std::cerr << ex.what() << std::endl;
   }
 
-  std::cout << "name:" << short_realname<Map>() << "\n";
+  std::cout << "name:" << short_realname<Trie>() << "\n";
   std::cout << "keys:" << num_keys << "\n";
   std::cout << "elapsed_sec:" << elapsed_sec << "\n";
-  map.show_stat(std::cout);
+  trie.show_stat(std::cout);
 
   return 0;
 }
 
 template <size_t N = 0>
 int build_with_id(int id, const char* key_name, uint32_t capa_bits) {
-  if constexpr (N >= NUM_MAPS) {
+  if constexpr (N >= NUM_HASH_TRIES) {
     return 1;
   } else {
     if (id - 1 == N) {
-      return build<std::tuple_element_t<N, MapTypes<>>>(key_name, capa_bits);
+      return build<std::tuple_element_t<N, HashTrieTypes>>(key_name, capa_bits);
     }
     return build_with_id<N + 1>(id, key_name, capa_bits);
   }
@@ -56,8 +63,8 @@ int build_with_id(int id, const char* key_name, uint32_t capa_bits) {
 
 void show_usage(const char* exe, std::ostream& os) {
   os << exe << " <type> <key> <capa>\n";
-  os << "<type>  type ID of maps\n";
-  list_all<MapTypes<>>("  ", os);
+  os << "<type>  type ID of hash tries as follows:\n";
+  list_all<HashTrieTypes>("  ", os);
   os << "<key>   path of input keywords\n";
   os << "<capa>  #bits of initial capacity (optional)\n";
   os.flush();
@@ -74,7 +81,7 @@ int main(int argc, char* argv[]) {
   }
 
   int map_id = std::stoi(argv[1]);
-  if (map_id < 1 or NUM_MAPS < map_id) {
+  if (map_id < 1 or NUM_HASH_TRIES < map_id) {
     show_usage(argv[0], std::cerr);
     return 1;
   }

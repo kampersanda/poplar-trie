@@ -8,7 +8,7 @@
 
 namespace poplar {
 
-template <uint32_t Factor = 80, typename Hash = hash::SplitMix>
+template <uint32_t Factor = 80, typename Hasher = hash::SplitMix>
 class PlainHashTrie {
  private:
   static_assert(0 < Factor and Factor < 100);
@@ -52,7 +52,7 @@ class PlainHashTrie {
     uint64_t key = make_key_(node_id, symb);
     assert(key != 0);
 
-    for (uint64_t i = Hash::hash(key) & capa_size_.mask();; i = right_(i)) {
+    for (uint64_t i = Hasher::hash(key) & capa_size_.mask();; i = right_(i)) {
       if (i == 0) {
         // table_[0] is always empty so that table_[i] = 0 indicates to be empty.
         continue;
@@ -77,7 +77,7 @@ class PlainHashTrie {
     uint64_t key = make_key_(node_id, symb);
     assert(key != 0);
 
-    for (uint64_t i = Hash::hash(key) & capa_size_.mask();; i = right_(i)) {
+    for (uint64_t i = Hasher::hash(key) & capa_size_.mask();; i = right_(i)) {
       if (i == 0) {
         // table_[0] is always empty so that any table_[i] = 0 indicates to be empty.
         continue;
