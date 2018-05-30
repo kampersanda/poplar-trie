@@ -62,7 +62,7 @@ int speed_test(const char* key_name, const char* query_name, uint32_t capa_bits)
   // warming up
   for (const auto& key : keys) {
     auto ptr = map.find(key);
-    if (ptr != nullptr && *ptr == 1) {
+    if (ptr != nullptr and *ptr == 1) {
       ++ok;
     } else {
       ++ng;
@@ -123,13 +123,13 @@ void show_usage(const char* exe, std::ostream& os) {
 int main(int argc, char* argv[]) {
   std::ios::sync_with_stdio(false);
 
-  if (argc < 3 || 5 < argc) {
+  if (argc < 3 or 5 < argc) {
     show_usage(argv[0], std::cerr);
     return 1;
   }
 
   int map_id = std::stoi(argv[1]);
-  if (map_id < 1 || NUM_MAPS < map_id) {
+  if (map_id < 1 or NUM_MAPS < map_id) {
     show_usage(argv[0], std::cerr);
     return 1;
   }

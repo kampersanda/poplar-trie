@@ -13,28 +13,28 @@ The underlying data structure is the DynPDT.
 A property of the DynPDT is that the edge labels are drawn from an integer set larger than that of normal tries represented in one byte, so it is important that searching a child can be performed in constant time.
 Poplar-trie solves the task using hash-based trie implementations of the following two classes:
 
-- `HashTriePR` is a plain representation of a hash table.
-- `HashTrieCR` is a compact representation of a hash table based on [m-Bonsai](https://arxiv.org/abs/1704.05682).
+- `PlainHashTrie` is a plain representation of a hash table.
+- `CompactHashTrie` is a compact representation of a hash table based on [m-Bonsai](https://arxiv.org/abs/1704.05682).
 
 Another property is that the trie has string labels for each node, so their pointers have to be stored.
 This library includes the three management methods:
 
-- `LabelStorePM` simply stores all pointers to string labels.
-- `LabelStoreEM` embeds short string labels into spaces of pointers.
-- `LabelStoreGM` reduces the overhead by grouping pointers in the same manner as [sparsehash](https://github.com/sparsehash/sparsehash).
+- `PlainLabelStore` simply stores all pointers to string labels.
+- `EmbeddedLabelStore` embeds short string labels into spaces of pointers.
+- `GroupedLabelStore` reduces the overhead by grouping pointers in the same manner as [sparsehash](https://github.com/sparsehash/sparsehash).
 
 Class `Map` implements the associative array and takes `HashTrie*` and `LabelStore*` as the template arguments.
 That is to say, there are implementations of six classes.
 But, you can easily get the implementations since `poplar.hpp` provides the following aliases:
 
-- `MapPP` = `Map` + `HashTriePR` + `LabelStorePM` (fastest)
-- `MapPE` = `Map` + `HashTriePR` + `LabelStoreEM`
-- `MapPG` = `Map` + `HashTriePR` + `LabelStoreGM`
-- `MapCP` = `Map` + `HashTrieCR` + `LabelStorePM`
-- `MapCE` = `Map` + `HashTrieCR` + `LabelStoreEM`
-- `MapCG` = `Map` + `HashTrieCR` + `LabelStoreGM` (smallest)
+- `MapPP` = `Map` + `PlainHashTrie` + `PlainLabelStore` (fastest)
+- `MapPE` = `Map` + `PlainHashTrie` + `EmbeddedLabelStore`
+- `MapPG` = `Map` + `PlainHashTrie` + `GroupedLabelStore`
+- `MapCP` = `Map` + `CompactHashTrie` + `PlainLabelStore`
+- `MapCE` = `Map` + `CompactHashTrie` + `EmbeddedLabelStore`
+- `MapCG` = `Map` + `CompactHashTrie` + `GroupedLabelStore` (smallest)
 
-These have template argument `t_lambda` in common.
+These have template argument `Lambda` in common.
 This is a parameter depending on lengths of given strings.
 From previous experimental results, the value 16 (default) would be good for natural language words.
 For long strings such as URLs, the value 32 or 64 would be good.
