@@ -12,6 +12,12 @@ constexpr int FIND_RUNS = 1;
 
 template <class Map>
 int speed_test(const char* key_name, const char* query_name, uint32_t capa_bits) {
+  boost::property_tree::ptree pt;
+  pt.put("map_name", realname<Map>());
+  pt.put("key_name", key_name);
+  pt.put("query_name", query_name);
+  pt.put("capa_bits", capa_bits);
+
   std::vector<std::string> keys;
   {
     std::ifstream ifs{key_name};
@@ -36,11 +42,11 @@ int speed_test(const char* key_name, const char* query_name, uint32_t capa_bits)
 
     for (int i = 0; i < UPDATE_RUNS; ++i) {
       map = Map{capa_bits};
-      Stopwatch watch;
+      timer t;
       for (const auto& key : keys) {
-        *map.update(key) = 1;
+        *map.update(make_char_range(key)) = 1;
       }
-      times[i] = watch.micro_sec() / keys.size();
+      times[i] = t.get<std::micro>() / keys.size();
     }
 
     num_keys = keys.size();
@@ -61,7 +67,7 @@ int speed_test(const char* key_name, const char* query_name, uint32_t capa_bits)
 
   // warming up
   for (const auto& key : keys) {
-    auto ptr = map.find(key);
+    auto ptr = map.find(make_char_range(key));
     if (ptr != nullptr and *ptr == 1) {
       ++ok;
     } else {
@@ -74,24 +80,26 @@ int speed_test(const char* key_name, const char* query_name, uint32_t capa_bits)
     std::array<double, FIND_RUNS> times{};
 
     for (int i = 0; i < FIND_RUNS; ++i) {
-      Stopwatch watch;
+      timer t;
       for (const auto& key : keys) {
-        volatile auto ret = map.find(key);
+        volatile auto ret = map.find(make_char_range(key));
       }
-      times[i] = watch.micro_sec() / keys.size();
+      times[i] = t.get<std::micro>() / keys.size();
     }
 
     num_queries = keys.size();
     find_time = get_average(times);
   }
 
-  std::cout << "name:" << short_realname<Map>() << "\n";
-  std::cout << "keys:" << num_keys << "\n";
-  std::cout << "queries:" << num_queries << "\n";
-  std::cout << "update_us_key:" << update_time << "\n";
-  std::cout << "find_us_query:" << find_time << "\n";
-  std::cout << "ok:" << ok << "\n";
-  std::cout << "ng:" << ng << "\n";
+  pt.put("num_keys", num_keys);
+  pt.put("num_queries", num_queries);
+  pt.put("update_us_key", update_time);
+  pt.put("find_us_query", find_time);
+  pt.put("ok", ok);
+  pt.put("ng", ng);
+  pt.add_child("map", map.make_ptree());
+
+  boost::property_tree::write_json(std::cout, pt);
 
   return 0;
 }
@@ -102,7 +110,7 @@ int speed_test_with_id(int id, const char* key_name, const char* query_name, uin
     return 1;
   } else {
     if (id - 1 == N) {
-      return speed_test<std::tuple_element_t<N, MapTypes<>>>(key_name, query_name, capa_bits);
+      return speed_test<std::tuple_element_t<N, map_types<>>>(key_name, query_name, capa_bits);
     }
     return speed_test_with_id<N + 1>(id, key_name, query_name, capa_bits);
   }
@@ -111,7 +119,7 @@ int speed_test_with_id(int id, const char* key_name, const char* query_name, uin
 void show_usage(const char* exe, std::ostream& os) {
   os << exe << " <type> <key> <query> <capa>\n";
   os << "<type>   type ID of maps\n";
-  list_all<MapTypes<>>("  ", os);
+  list_all<map_types<>>("  ", os);
   os << "<key>    path of input keywords\n";
   os << "<query>  path of input queries (optional)\n";
   os << "<capa>   #bits of initial capacity (optional)\n";

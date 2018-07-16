@@ -1,61 +1,62 @@
 #ifndef POPLAR_TRIE_COMPACT_HASH_TABLE_HPP
 #define POPLAR_TRIE_COMPACT_HASH_TABLE_HPP
 
-#include "Exception.hpp"
-#include "IntVector.hpp"
 #include "bijective_hash.hpp"
 #include "bit_tools.hpp"
+#include "compact_vector.hpp"
+#include "exception.hpp"
 
 namespace poplar {
 
-template <uint32_t ValBits, uint32_t Factor = 80, typename Hasher = bijective_hash::SplitMix>
-class CompactHashTable {
- private:
-  static_assert(0 < Factor and Factor < 100);
+template <uint32_t ValBits, uint32_t MaxFactor = 80,
+          typename Hasher = bijective_hash::split_mix_hasher>
+class compact_hash_table {
+  static_assert(0 < MaxFactor and MaxFactor < 100);
 
  public:
-  using ThisType = CompactHashTable<ValBits, Factor, Hasher>;
+  using this_type = compact_hash_table<ValBits, MaxFactor, Hasher>;
 
-  static constexpr uint32_t MIN_CAPA_BITS = 12;
-  static constexpr uint32_t VAL_BITS = ValBits;
-  static constexpr uint64_t VAL_MASK = (1ULL << ValBits) - 1;
+  static constexpr uint32_t min_capa_bits = 12;
+  static constexpr uint32_t val_bits = ValBits;
+  static constexpr uint64_t val_mask = (1ULL << ValBits) - 1;
 
  public:
-  CompactHashTable() = default;
+  compact_hash_table() = default;
 
-  explicit CompactHashTable(uint32_t univ_bits, uint32_t capa_bits = MIN_CAPA_BITS) {
-    univ_size_ = size_p2_t{univ_bits};
-    capa_size_ = size_p2_t{std::max(MIN_CAPA_BITS, capa_bits)};
+  explicit compact_hash_table(uint32_t univ_bits, uint32_t capa_bits = min_capa_bits) {
+    univ_size_ = size_p2{univ_bits};
+    capa_size_ = size_p2{std::max(min_capa_bits, capa_bits)};
 
     assert(capa_size_.bits() <= univ_size_.bits());
 
-    quo_size_ = size_p2_t{univ_size_.bits() - capa_size_.bits()};
-    quo_shift_ = 2 + VAL_BITS;
+    quo_size_ = size_p2{univ_size_.bits() - capa_size_.bits()};
+    quo_shift_ = 2 + val_bits;
     quo_invmask_ = ~(quo_size_.mask() << quo_shift_);
 
-    max_size_ = static_cast<uint64_t>(capa_size_.size() * Factor / 100.0);
+    max_size_ = static_cast<uint64_t>(capa_size_.size() * MaxFactor / 100.0);
 
-    hash_ = Hasher{univ_size_.bits()};
-    table_ = IntVector{capa_size_.size(), quo_size_.bits() + VAL_BITS + 2, (VAL_MASK << 2) | 1ULL};
+    hasher_ = Hasher{univ_size_.bits()};
+    table_ =
+        compact_vector{capa_size_.size(), quo_size_.bits() + val_bits + 2, (val_mask << 2) | 1ULL};
   }
 
-  ~CompactHashTable() = default;
+  ~compact_hash_table() = default;
 
   uint64_t get(uint64_t key) const {
     assert(key < univ_size_.size());
 
-    const decomp_val_t dec = decompose_(hash_.hash(key));
+    auto [quo, mod] = decompose_(hasher_.hash(key));
 
-    if (!get_vbit_(dec.mod)) {
+    if (!get_vbit_(mod)) {
       return UINT64_MAX;
     }
 
-    uint64_t slot_id = find_ass_cbit_(dec.mod);
+    uint64_t slot_id = find_ass_cbit_(mod);
     if (slot_id == UINT64_MAX) {
       return UINT64_MAX;
     }
 
-    if (!find_item_(slot_id, dec.quo)) {
+    if (!find_item_(slot_id, quo)) {
       return UINT64_MAX;
     }
     return get_val_(slot_id);
@@ -63,23 +64,25 @@ class CompactHashTable {
 
   bool set(uint64_t key, uint64_t val) {
     assert(key < univ_size_.size());
-    assert(val < VAL_MASK);
+    assert(val < val_mask);
 
-    expand_if_needed_();
+    if (max_size_ <= size_) {
+      expand_();
+    }
 
-    const decomp_val_t dec = decompose_(hash_.hash(key));
+    auto [quo, mod] = decompose_(hasher_.hash(key));
 
-    if (is_vacant_(dec.mod)) {
+    if (is_vacant_(mod)) {
       // without collision
-      update_slot_(dec.mod, dec.quo, val, true, true);
+      update_slot_(mod, quo, val, true, true);
       ++size_;
       return true;
     }
 
     uint64_t empty_id = 0;
-    uint64_t slot_id = find_ass_cbit_(dec.mod, empty_id);
+    uint64_t slot_id = find_ass_cbit_(mod, empty_id);
 
-    if (!get_vbit_(dec.mod)) {  // initial insertion in the group
+    if (!get_vbit_(mod)) {  // initial insertion in the group
       // create a new collision group
       if (slot_id != UINT64_MAX) {  // require to displace existing groups?
         do {
@@ -94,11 +97,11 @@ class CompactHashTable {
       } else {
         // not inside other collision groups
       }
-      set_vbit_(dec.mod, true);
+      set_vbit_(mod, true);
       set_cbit_(empty_id, true);
     } else {
       // collision group already exists
-      if (find_item_(slot_id, dec.quo)) {  // already registered?
+      if (find_item_(slot_id, quo)) {  // already registered?
         set_val_(slot_id, val);  // update
         return false;
       }
@@ -112,7 +115,7 @@ class CompactHashTable {
       set_cbit_(empty_id, false);
     }
 
-    set_quo_(empty_id, dec.quo);
+    set_quo_(empty_id, quo);
     set_val_(empty_id, val);
 
     ++size_;
@@ -123,65 +126,62 @@ class CompactHashTable {
   uint64_t size() const {
     return size_;
   }
-
   uint64_t max_size() const {
     return max_size_;
   }
-
   uint64_t univ_size() const {
     return univ_size_.size();
   }
-
   uint32_t univ_bits() const {
     return univ_size_.bits();
   }
-
   uint64_t capa_size() const {
     return capa_size_.size();
   }
-
   uint32_t capa_bits() const {
     return capa_size_.bits();
   }
 
-  void show_stat(std::ostream& os, int level = 0) const {
-    std::string indent(level, '\t');
-    os << indent << "stat:CompactHashTable\n";
-    os << indent << "\tfactor:" << Factor << "\n";
-    os << indent << "\tsize:" << size() << "\n";
-    os << indent << "\tuniv_size:" << univ_size() << "\n";
-    os << indent << "\tuniv_bits:" << univ_bits() << "\n";
-    os << indent << "\tcapa_size:" << capa_size() << "\n";
-    os << indent << "\tcapa_bits:" << capa_bits() << "\n";
+  boost::property_tree::ptree make_ptree() const {
+    boost::property_tree::ptree pt;
+    pt.put("name", "compact_hash_table");
+    pt.put("factor", double(size()) / capa_size() * 100);
+    pt.put("max_factor", MaxFactor);
+    pt.put("size", size());
+    pt.put("univ_size", univ_size());
+    pt.put("univ_bits", univ_bits());
+    pt.put("capa_size", capa_size());
+    pt.put("capa_bits", capa_bits());
 #ifdef POPLAR_ENABLE_EX_STATS
-    os << indent << "\tnum_resize:" << num_resize_ << "\n";
+    pt.put("num_resize", num_resize_);
 #endif
-    hash_.show_stat(os, level + 1);
+    pt.add_child("hasher", hasher_.make_ptree());
+    return pt;
   }
 
-  CompactHashTable(const CompactHashTable&) = delete;
-  CompactHashTable& operator=(const CompactHashTable&) = delete;
+  compact_hash_table(const compact_hash_table&) = delete;
+  compact_hash_table& operator=(const compact_hash_table&) = delete;
 
-  CompactHashTable(CompactHashTable&&) noexcept = default;
-  CompactHashTable& operator=(CompactHashTable&&) noexcept = default;
+  compact_hash_table(compact_hash_table&&) noexcept = default;
+  compact_hash_table& operator=(compact_hash_table&&) noexcept = default;
 
  private:
-  Hasher hash_{};
-  IntVector table_{};
-  uint64_t size_{};  // # of registered nodes
-  uint64_t max_size_{};  // Factor% of the capacity
-  size_p2_t univ_size_{};
-  size_p2_t capa_size_{};
-  size_p2_t quo_size_{};
-  uint64_t quo_shift_{};
-  uint64_t quo_invmask_{};  // For setter
+  Hasher hasher_;
+  compact_vector table_;
+  uint64_t size_ = 0;  // # of registered nodes
+  uint64_t max_size_ = 0;  // MaxFactor% of the capacity
+  size_p2 univ_size_;
+  size_p2 capa_size_;
+  size_p2 quo_size_;
+  uint64_t quo_shift_ = 0;
+  uint64_t quo_invmask_ = 0;  // For setter
 
 #ifdef POPLAR_ENABLE_EX_STATS
-  uint64_t num_resize_{};
+  uint64_t num_resize_ = 0;
 #endif
 
   uint64_t find_ass_cbit_(uint64_t slot_id) const {
-    uint64_t dummy{};
+    uint64_t dummy = 0;
     return find_ass_cbit_(slot_id, dummy);
   }
 
@@ -221,12 +221,8 @@ class CompactHashTable {
     return false;
   }
 
-  void expand_if_needed_() {
-    if (size_ < max_size_) {
-      return;
-    }
-
-    ThisType new_cht{univ_size_.bits(), capa_size_.bits() + 1};
+  void expand_() {
+    this_type new_cht{univ_size_.bits(), capa_size_.bits() + 1};
 
 #ifdef POPLAR_ENABLE_EX_STATS
     new_cht.num_resize_ = num_resize_ + 1;
@@ -262,7 +258,7 @@ class CompactHashTable {
         do {
           assert(!is_vacant_(i));
 
-          uint64_t key = hash_.hash_inv((get_quo_(i) << capa_size_.bits()) | init_id);
+          uint64_t key = hasher_.hash_inv((get_quo_(i) << capa_size_.bits()) | init_id);
           uint64_t val = get_val_(i);
           new_cht.set(key, val);
 
@@ -280,7 +276,7 @@ class CompactHashTable {
     *this = std::move(new_cht);
   }
 
-  decomp_val_t decompose_(uint64_t x) const {
+  std::pair<uint64_t, uint64_t> decompose_(uint64_t x) const {
     return {x >> capa_size_.bits(), x & capa_size_.mask()};
   }
 
@@ -291,14 +287,14 @@ class CompactHashTable {
     return (slot_id + 1) & capa_size_.mask();
   }
   bool is_vacant_(uint64_t slot_id) const {
-    return get_val_(slot_id) == VAL_MASK;
+    return get_val_(slot_id) == val_mask;
   }
 
   uint64_t get_quo_(uint64_t slot_id) const {
     return table_.get(slot_id) >> quo_shift_;
   }
   uint64_t get_val_(uint64_t slot_id) const {
-    return (table_.get(slot_id) >> 2) & VAL_MASK;
+    return (table_.get(slot_id) >> 2) & val_mask;
   }
   bool get_vbit_(uint64_t slot_id) const {
     return (table_.get(slot_id) & 2) == 2;
@@ -312,8 +308,8 @@ class CompactHashTable {
     table_.set(slot_id, (table_.get(slot_id) & quo_invmask_) | (quo << quo_shift_));
   }
   void set_val_(uint64_t slot_id, uint64_t val) {
-    assert(val <= VAL_MASK);
-    table_.set(slot_id, (table_.get(slot_id) & ~(VAL_MASK << 2)) | (val << 2));
+    assert(val <= val_mask);
+    table_.set(slot_id, (table_.get(slot_id) & ~(val_mask << 2)) | (val << 2));
   }
   void set_vbit_(uint64_t slot_id, bool bit) {
     table_.set(slot_id, (table_.get(slot_id) & ~2ULL) | (bit << 1));
@@ -331,7 +327,7 @@ class CompactHashTable {
 
   void update_slot_(uint64_t slot_id, uint64_t quo, uint64_t val, bool vbit, bool cbit) {
     assert(quo < quo_size_.size());
-    assert(val <= VAL_MASK);
+    assert(val <= val_mask);
     table_.set(slot_id, (quo << quo_shift_) | (val << 2) | (vbit << 1) | cbit);
   }
 };

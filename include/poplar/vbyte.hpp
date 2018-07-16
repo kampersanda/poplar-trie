@@ -1,11 +1,13 @@
 #ifndef POPLAR_TRIE_VBYTE_HPP
 #define POPLAR_TRIE_VBYTE_HPP
 
+#include <vector>
+
 #include "basics.hpp"
 
 namespace poplar::vbyte {
 
-constexpr uint64_t size(uint64_t val) {
+inline uint64_t size(uint64_t val) {
   uint64_t n = 1;
   while (127ULL < val) {
     ++n;
@@ -14,7 +16,17 @@ constexpr uint64_t size(uint64_t val) {
   return n;
 }
 
-constexpr uint64_t encode(uint8_t* codes, uint64_t val) {
+inline uint64_t append(std::vector<uint8_t>& vec, uint64_t val) {
+  uint64_t size = vec.size();
+  while (127ULL < val) {
+    vec.emplace_back(static_cast<uint8_t>((val & 127ULL) | 0x80ULL));
+    val >>= 7;
+  }
+  vec.emplace_back(static_cast<uint8_t>(val & 127ULL));
+  return vec.size() - size;
+}
+
+inline uint64_t encode(uint8_t* codes, uint64_t val) {
   uint64_t i = 0;
   while (127ULL < val) {
     codes[i++] = static_cast<uint8_t>((val & 127ULL) | 0x80ULL);
@@ -24,7 +36,7 @@ constexpr uint64_t encode(uint8_t* codes, uint64_t val) {
   return i;
 }
 
-constexpr uint64_t decode(const uint8_t* codes, uint64_t& val) {
+inline uint64_t decode(const uint8_t* codes, uint64_t& val) {
   val = 0;
   uint64_t i = 0, shift = 0;
   while ((codes[i] & 0x80) != 0) {

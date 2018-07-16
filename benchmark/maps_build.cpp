@@ -24,20 +24,23 @@ int build(const char* key_name, uint32_t capa_bits) {
     std::string key;
     key.reserve(1024);
 
-    Stopwatch watch;
+    timer t;
     while (std::getline(ifs, key)) {
-      map.update(key);
+      map.update(make_char_range(key));
       ++num_keys;
     }
-    elapsed_sec = watch.sec();
-  } catch (const Exception& ex) {
+    elapsed_sec = t.get<>();
+  } catch (const exception& ex) {
     std::cerr << ex.what() << std::endl;
   }
 
-  std::cout << "name:" << short_realname<Map>() << "\n";
-  std::cout << "keys:" << num_keys << "\n";
-  std::cout << "elapsed_sec:" << elapsed_sec << "\n";
-  map.show_stat(std::cout);
+  boost::property_tree::ptree pt;
+  pt.put("map_name", realname<Map>());
+  pt.put("key_name", key_name);
+  pt.put("capa_bits", capa_bits);
+  pt.put("num_keys", num_keys);
+  pt.put("elapsed_sec", elapsed_sec);
+  boost::property_tree::write_json(std::cout, pt);
 
   return 0;
 }
@@ -48,7 +51,7 @@ int build_with_id(int id, const char* key_name, uint32_t capa_bits) {
     return 1;
   } else {
     if (id - 1 == N) {
-      return build<std::tuple_element_t<N, MapTypes<>>>(key_name, capa_bits);
+      return build<std::tuple_element_t<N, map_types<>>>(key_name, capa_bits);
     }
     return build_with_id<N + 1>(id, key_name, capa_bits);
   }
@@ -57,7 +60,7 @@ int build_with_id(int id, const char* key_name, uint32_t capa_bits) {
 void show_usage(const char* exe, std::ostream& os) {
   os << exe << " <type> <key> <capa>\n";
   os << "<type>  type ID of maps\n";
-  list_all<MapTypes<>>("  ", os);
+  list_all<map_types<>>("  ", os);
   os << "<key>   path of input keywords\n";
   os << "<capa>  #bits of initial capacity (optional)\n";
   os.flush();

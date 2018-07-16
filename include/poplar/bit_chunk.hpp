@@ -5,33 +5,33 @@
 
 namespace poplar {
 
-template <uint64_t Len>
-class BitChunk {
+template <uint64_t ChunkSize>
+class bit_chunk {
  private:
-  static_assert(Len > 64 && is_power2(Len));
+  static_assert(ChunkSize > 64 and is_power2(ChunkSize));
 
  public:
-  static constexpr uint64_t LEN = Len;
+  static constexpr uint64_t chunk_size = ChunkSize;
 
-  BitChunk() = default;
+  bit_chunk() = default;
 
   bool get(uint64_t i) const {
-    assert(i < LEN);
+    assert(i < chunk_size);
     return bit_tools::get_bit(chunks_[i / 64], i % 64);
   }
   void set(uint64_t i) {
-    assert(i < LEN);
+    assert(i < chunk_size);
     bit_tools::set_bit(chunks_[i / 64], i % 64);
   }
   uint64_t popcnt() const {
     uint64_t sum = 0;
-    for (const uint64_t chunk : chunks_) {
+    for (auto chunk : chunks_) {
       sum += bit_tools::popcnt(chunk);
     }
     return sum;
   }
   uint64_t popcnt(uint64_t i) const {
-    assert(i < LEN);
+    assert(i < chunk_size);
     uint64_t sum = 0, j = i / 64;
     for (uint64_t k = 0; k < j; ++k) {
       sum += bit_tools::popcnt(chunks_[k]);
@@ -40,29 +40,29 @@ class BitChunk {
   }
 
  private:
-  uint64_t chunks_[LEN / 64] = {};
+  uint64_t chunks_[chunk_size / 64] = {};
 };
 
 template <>
-class BitChunk<64> {
+class bit_chunk<64> {
  public:
-  static constexpr uint64_t LEN = 64;
+  static constexpr uint64_t chunk_size = 64;
 
-  BitChunk() = default;
+  bit_chunk() = default;
 
   bool get(uint64_t i) const {
-    assert(i < LEN);
+    assert(i < chunk_size);
     return bit_tools::get_bit(chunk_, i);
   }
   void set(uint64_t i) {
-    assert(i < LEN);
+    assert(i < chunk_size);
     bit_tools::set_bit(chunk_, i);
   }
   uint64_t popcnt() const {
     return bit_tools::popcnt(chunk_);
   }
   uint64_t popcnt(uint64_t i) const {
-    assert(i < LEN);
+    assert(i < chunk_size);
     return bit_tools::popcnt(chunk_, i);
   }
 
@@ -71,25 +71,25 @@ class BitChunk<64> {
 };
 
 template <>
-class BitChunk<32> {
+class bit_chunk<32> {
  public:
-  static constexpr uint64_t LEN = 32;
+  static constexpr uint64_t chunk_size = 32;
 
-  BitChunk() = default;
+  bit_chunk() = default;
 
   bool get(uint64_t i) const {
-    assert(i < LEN);
+    assert(i < chunk_size);
     return bit_tools::get_bit(chunk_, i);
   }
   void set(uint64_t i) {
-    assert(i < LEN);
+    assert(i < chunk_size);
     bit_tools::set_bit(chunk_, i);
   }
   uint64_t popcnt() const {
     return bit_tools::popcnt(chunk_);
   }
   uint64_t popcnt(uint64_t i) const {
-    assert(i < LEN);
+    assert(i < chunk_size);
     return bit_tools::popcnt(chunk_, i);
   }
 
@@ -98,25 +98,25 @@ class BitChunk<32> {
 };
 
 template <>
-class BitChunk<16> {
+class bit_chunk<16> {
  public:
-  static constexpr uint64_t LEN = 16;
+  static constexpr uint64_t chunk_size = 16;
 
-  BitChunk() = default;
+  bit_chunk() = default;
 
   bool get(uint64_t i) const {
-    assert(i < LEN);
+    assert(i < chunk_size);
     return bit_tools::get_bit(chunk_, i);
   }
   void set(uint64_t i) {
-    assert(i < LEN);
+    assert(i < chunk_size);
     bit_tools::set_bit(chunk_, i);
   }
   uint64_t popcnt() const {
     return bit_tools::popcnt(chunk_);
   }
   uint64_t popcnt(uint64_t i) const {
-    assert(i < LEN);
+    assert(i < chunk_size);
     return bit_tools::popcnt(chunk_, i);
   }
 
@@ -125,25 +125,25 @@ class BitChunk<16> {
 };
 
 template <>
-class BitChunk<8> {
+class bit_chunk<8> {
  public:
-  static constexpr uint64_t LEN = 8;
+  static constexpr uint64_t chunk_size = 8;
 
-  BitChunk() = default;
+  bit_chunk() = default;
 
   bool get(uint64_t i) const {
-    assert(i < LEN);
+    assert(i < chunk_size);
     return bit_tools::get_bit(chunk_, i);
   }
   void set(uint64_t i) {
-    assert(i < LEN);
+    assert(i < chunk_size);
     bit_tools::set_bit(chunk_, i);
   }
   uint64_t popcnt() const {
     return bit_tools::popcnt(chunk_);
   }
   uint64_t popcnt(uint64_t i) const {
-    assert(i < LEN);
+    assert(i < chunk_size);
     return bit_tools::popcnt(chunk_, i);
   }
 

@@ -7,16 +7,16 @@
 
 namespace poplar {
 
-class BitVector {
+class bit_vector {
  public:
-  BitVector() = default;
+  bit_vector() = default;
 
-  explicit BitVector(uint64_t size) {
+  explicit bit_vector(uint64_t size) {
     size_ = size;
     chunks_.resize(size_ / 64 + 1);
   }
 
-  ~BitVector() = default;
+  ~bit_vector() = default;
 
   bool operator[](uint64_t i) const {
     return get(i);
@@ -36,11 +36,11 @@ class BitVector {
     return size_;
   }
 
-  BitVector(const BitVector&) = delete;
-  BitVector& operator=(const BitVector&) = delete;
+  bit_vector(const bit_vector&) = delete;
+  bit_vector& operator=(const bit_vector&) = delete;
 
-  BitVector(BitVector&& rhs) noexcept = default;
-  BitVector& operator=(BitVector&& rhs) noexcept = default;
+  bit_vector(bit_vector&& rhs) noexcept = default;
+  bit_vector& operator=(bit_vector&& rhs) noexcept = default;
 
  private:
   std::vector<uint64_t> chunks_{};

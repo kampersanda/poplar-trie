@@ -107,15 +107,15 @@ constexpr uint64_t PRIME_TABLE[][2][3] = {
      {3657236494304118067ULL, 2545580940228350223ULL, 3339243145719352645ULL}}  // 63
 };
 
-class SplitMix {
+class split_mix_hasher {
  public:
-  SplitMix() = default;
+  split_mix_hasher() = default;
 
-  explicit SplitMix(uint32_t univ_bits) {
+  explicit split_mix_hasher(uint32_t univ_bits) {
     assert(0 < univ_bits && univ_bits < 64);
 
     shift_ = univ_bits / 2 + 1;
-    univ_size_ = size_p2_t{univ_bits};
+    univ_size_ = size_p2{univ_bits};
   }
 
   uint64_t hash(uint64_t x) const {
@@ -142,16 +142,17 @@ class SplitMix {
     return univ_size_.bits();
   }
 
-  void show_stat(std::ostream& os, int level = 0) const {
-    std::string indent(level, '\t');
-    os << indent << "stat:bijective_SplitMix\n";
-    os << indent << "\tsize:" << size() << "\n";
-    os << indent << "\tbits:" << bits() << "\n";
+  boost::property_tree::ptree make_ptree() const {
+    boost::property_tree::ptree pt;
+    pt.put("name", "split_mix_hasher");
+    pt.put("size", size());
+    pt.put("bits", bits());
+    return pt;
   }
 
  private:
-  uint32_t shift_{};
-  size_p2_t univ_size_{};
+  uint32_t shift_ = 0;
+  size_p2 univ_size_;
 
   template <uint32_t N>
   uint64_t hash_(uint64_t x) const {

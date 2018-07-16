@@ -10,13 +10,13 @@ using namespace poplar::test;
 
 using value_type = uint64_t;
 
-namespace map_test {
+template <typename Map>
+void insert_keys(Map& map, const std::vector<std::string>& keys) {
+  ASSERT_FALSE(keys.empty());
 
-template <typename t_map>
-void insert_keys(t_map& map, const std::vector<std::string>& keys) {
   uint64_t num_keys = 0;
   for (uint64_t i = 0; i < keys.size(); i += 2) {
-    auto ptr = map.update(keys[i]);
+    auto ptr = map.update(make_char_range(keys[i]));
     ASSERT_EQ(*ptr, 0);
     *ptr = i;
     ++num_keys;
@@ -25,48 +25,56 @@ void insert_keys(t_map& map, const std::vector<std::string>& keys) {
   ASSERT_EQ(map.size(), num_keys);
 }
 
-template <typename t_map>
-void search_keys(t_map& map, const std::vector<std::string>& keys) {
+template <typename Map>
+void search_keys(Map& map, const std::vector<std::string>& keys) {
+  ASSERT_FALSE(keys.empty());
+
   for (uint64_t i = 0; i < keys.size(); i += 2) {
-    auto ptr = map.find(keys[i]);
+    auto ptr = map.find(make_char_range(keys[i]));
     ASSERT_NE(ptr, nullptr);
     ASSERT_EQ(*ptr, i);
   }
 
   for (uint64_t i = 0; i < keys.size(); i += 2) {
-    auto ptr = map.update(keys[i]);
+    auto ptr = map.update(make_char_range(keys[i]));
     ASSERT_NE(ptr, nullptr);
     ASSERT_EQ(*ptr, i);
   }
 
   for (uint64_t i = 1; i < keys.size(); i += 2) {
-    auto ptr = map.find(keys[i]);
+    auto ptr = map.find(make_char_range(keys[i]));
     ASSERT_EQ(ptr, nullptr);
   }
 }
 
-}  // namespace map_test
-
-using MapTypes = ::testing::Types<MapPP<value_type>, MapPE<value_type>, MapPG<value_type>,
-                                  MapCP<value_type>, MapCE<value_type>, MapCG<value_type> >;
+// clang-format off
+using map_types = ::testing::Types<map_pp<value_type>,
+                                   map_pp_r<value_type>,
+                                   map_pc<value_type>,
+                                   map_pc_r<value_type>,
+                                   map_cp<value_type>,
+                                   map_cp_r<value_type>,
+                                   map_cc<value_type>,
+                                   map_cc_r<value_type>>;
+// clang-format on
 
 template <typename>
-class MapTest : public ::testing::Test {};
+class map_test : public ::testing::Test {};
 
-TYPED_TEST_CASE(MapTest, MapTypes);
+TYPED_TEST_CASE(map_test, map_types);
 
-TYPED_TEST(MapTest, Tiny) {
+TYPED_TEST(map_test, Tiny) {
   TypeParam map;
   auto keys = make_tiny_keys();
-  map_test::insert_keys(map, keys);
-  map_test::search_keys(map, keys);
+  insert_keys(map, keys);
+  search_keys(map, keys);
 }
 
-TYPED_TEST(MapTest, Words) {
+TYPED_TEST(map_test, Words) {
   TypeParam map;
   auto keys = load_keys("words.txt");
-  map_test::insert_keys(map, keys);
-  map_test::search_keys(map, keys);
+  insert_keys(map, keys);
+  search_keys(map, keys);
 }
 
 }  // namespace

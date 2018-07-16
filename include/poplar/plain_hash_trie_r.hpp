@@ -1,35 +1,34 @@
-#ifndef POPLAR_TRIE_PLAIN_HASH_TRIE_HPP
-#define POPLAR_TRIE_PLAIN_HASH_TRIE_HPP
+#ifndef POPLAR_TRIE_PLAIN_HASH_TRIE_RO_HPP
+#define POPLAR_TRIE_PLAIN_HASH_TRIE_RO_HPP
 
-#include "BitVector.hpp"
-#include "IntVector.hpp"
 #include "bit_tools.hpp"
+#include "bit_vector.hpp"
+#include "compact_vector.hpp"
 #include "hash.hpp"
 
 namespace poplar {
 
-template <uint32_t Factor = 80, typename Hasher = hash::SplitMix>
-class PlainHashTrie {
+template <uint32_t MaxFactor = 80, typename Hasher = hash::vigna_hasher>
+class plain_hash_trie_r {
  private:
-  static_assert(0 < Factor and Factor < 100);
+  static_assert(0 < MaxFactor and MaxFactor < 100);
 
  public:
-  static constexpr uint64_t NIL_ID = UINT64_MAX;
-  static constexpr uint32_t MIN_CAPA_BITS = 16;
+  static constexpr uint64_t nil_id = UINT64_MAX;
+  static constexpr uint32_t min_capa_bits = 16;
+  static constexpr bool random_order = true;
 
  public:
-  PlainHashTrie() = default;
+  plain_hash_trie_r() = default;
 
-  PlainHashTrie(uint32_t capa_bits, uint32_t symb_bits) {
-    capa_size_ = size_p2_t{std::max(MIN_CAPA_BITS, capa_bits)};
-    symb_size_ = size_p2_t{symb_bits};
-
-    max_size_ = static_cast<uint64_t>(capa_size_.size() * Factor / 100.0);
-
-    table_ = IntVector{capa_size_.size(), capa_size_.bits() + symb_size_.bits()};
+  plain_hash_trie_r(uint32_t capa_bits, uint32_t symb_bits) {
+    capa_size_ = size_p2{std::max(min_capa_bits, capa_bits)};
+    symb_size_ = size_p2{symb_bits};
+    max_size_ = static_cast<uint64_t>(capa_size_.size() * MaxFactor / 100.0);
+    table_ = compact_vector{capa_size_.size(), capa_size_.bits() + symb_size_.bits()};
   }
 
-  ~PlainHashTrie() = default;
+  ~plain_hash_trie_r() = default;
 
   uint64_t get_root() const {
     assert(size_ != 0);
@@ -46,7 +45,7 @@ class PlainHashTrie {
     assert(symb < symb_size_.size());
 
     if (size_ == 0) {
-      return NIL_ID;
+      return nil_id;
     }
 
     uint64_t key = make_key_(node_id, symb);
@@ -62,7 +61,7 @@ class PlainHashTrie {
       }
       if (table_[i] == 0) {
         // encounter an empty slot
-        return NIL_ID;
+        return nil_id;
       }
       if (table_[i] == key) {
         return i;
@@ -70,7 +69,7 @@ class PlainHashTrie {
     }
   }
 
-  ac_res_type add_child(uint64_t& node_id, uint64_t symb) {
+  bool add_child(uint64_t& node_id, uint64_t symb) {
     assert(node_id < capa_size_.size());
     assert(symb < symb_size_.size());
 
@@ -90,7 +89,7 @@ class PlainHashTrie {
       if (table_[i] == 0) {
         // this slot is empty
         if (size_ == max_size_) {
-          return ac_res_type::NEEDS_TO_EXPAND;
+          return false;  // needs to expand
         }
 
         table_.set(i, key);
@@ -98,12 +97,12 @@ class PlainHashTrie {
         ++size_;
         node_id = i;
 
-        return ac_res_type::SUCCESS;
+        return true;
       }
 
       if (table_[i] == key) {
         node_id = i;
-        return ac_res_type::ALREADY_STORED;
+        return false;  // already stored
       }
     }
   }
@@ -111,26 +110,23 @@ class PlainHashTrie {
   std::pair<uint64_t, uint64_t> get_parent_and_symb(uint64_t node_id) const {
     assert(node_id < capa_size_.size());
 
-    const uint64_t key = table_[node_id];
-
+    uint64_t key = table_[node_id];
     if (key == 0) {
       // root or not exist
-      return {NIL_ID, 0};
+      return {nil_id, 0};
     }
-
     // Returns pair (parent, label)
     return std::make_pair(key >> symb_size_.bits(), key & symb_size_.mask());
   };
 
-  class NodeMap {
+  class node_map {
    public:
-    //!
-    NodeMap() = default;
+    node_map() = default;
 
-    NodeMap(IntVector&& map, BitVector&& done_flags)
+    node_map(compact_vector&& map, bit_vector&& done_flags)
         : map_{std::move(map)}, done_flags_{std::move(done_flags)} {}
 
-    ~NodeMap() = default;
+    ~node_map() = default;
 
     uint64_t operator[](uint64_t i) const {
       return done_flags_[i] ? map_[i] : UINT64_MAX;
@@ -140,30 +136,30 @@ class PlainHashTrie {
       return map_.size();
     }
 
-    NodeMap(const NodeMap&) = delete;
-    NodeMap& operator=(const NodeMap&) = delete;
+    node_map(const node_map&) = delete;
+    node_map& operator=(const node_map&) = delete;
 
-    NodeMap(NodeMap&& rhs) noexcept = default;
-    NodeMap& operator=(NodeMap&& rhs) noexcept = default;
+    node_map(node_map&& rhs) noexcept = default;
+    node_map& operator=(node_map&& rhs) noexcept = default;
 
    private:
-    IntVector map_{};
-    BitVector done_flags_{};
+    compact_vector map_;
+    bit_vector done_flags_;
   };
 
   bool needs_to_expand() const {
     return max_size() <= size();
   }
 
-  NodeMap expand() {
-    PlainHashTrie new_ht{capa_bits() + 1, symb_size_.bits()};
+  node_map expand() {
+    plain_hash_trie_r new_ht{capa_bits() + 1, symb_size_.bits()};
     new_ht.add_root();
 
 #ifdef POPLAR_ENABLE_EX_STATS
     new_ht.num_resize_ = num_resize_ + 1;
 #endif
 
-    BitVector done_flags(capa_size());
+    bit_vector done_flags(capa_size());
     done_flags.set(get_root());
 
     table_.set(get_root(), new_ht.get_root());
@@ -183,7 +179,7 @@ class PlainHashTrie {
 
       do {
         auto [parent, label] = get_parent_and_symb(node_id);
-        assert(parent != NIL_ID);
+        assert(parent != nil_id);
         path.emplace_back(std::make_pair(node_id, label));
         node_id = parent;
       } while (!done_flags[node_id]);
@@ -192,13 +188,13 @@ class PlainHashTrie {
 
       for (auto rit = std::rbegin(path); rit != std::rend(path); ++rit) {
         auto ret = new_ht.add_child(new_node_id, rit->second);
-        assert(ret == ac_res_type::SUCCESS);
+        assert(ret);
         table_.set(rit->first, new_node_id);
         done_flags.set(rit->first);
       }
     }
 
-    NodeMap node_map{std::move(table_), std::move(done_flags)};
+    node_map node_map{std::move(table_), std::move(done_flags)};
     std::swap(*this, new_ht);
 
     return node_map;
@@ -208,55 +204,53 @@ class PlainHashTrie {
   uint64_t size() const {
     return size_;
   }
-
   uint64_t max_size() const {
     return max_size_;
   }
-
   uint64_t capa_size() const {
     return capa_size_.size();
   }
-
   uint32_t capa_bits() const {
     return capa_size_.bits();
   }
-
   uint64_t symb_size() const {
     return symb_size_.size();
   }
-
   uint32_t symb_bits() const {
     return symb_size_.bits();
   }
 
-  void show_stat(std::ostream& os, int level = 0) const {
-    std::string indent(level, '\t');
-    os << indent << "stat:PlainHashTrie\n";
-    os << indent << "\tfactor:" << Factor << "\n";
-    os << indent << "\tsize:" << size() << "\n";
-    os << indent << "\tcapa_size:" << capa_size() << "\n";
-    os << indent << "\tcapa_bits:" << capa_bits() << "\n";
-    os << indent << "\tsymb_size:" << symb_size() << "\n";
-    os << indent << "\tsymb_bits:" << symb_bits() << "\n";
+  boost::property_tree::ptree make_ptree() const {
+    boost::property_tree::ptree pt;
+    pt.put("name", "plain_hash_trie_r");
+    pt.put("random_assignment", random_order);
+    pt.put("factor", double(size()) / capa_size() * 100);
+    pt.put("max_factor", MaxFactor);
+    pt.put("size", size());
+    pt.put("capa_size", capa_size());
+    pt.put("capa_bits", capa_bits());
+    pt.put("symb_size", symb_size());
+    pt.put("symb_bits", symb_bits());
 #ifdef POPLAR_ENABLE_EX_STATS
-    os << level << "\tnum_resize:" << num_resize_ << "\n";
+    pt.put("num_resize", num_resize);
 #endif
+    return pt;
   }
 
-  PlainHashTrie(const PlainHashTrie&) = delete;
-  PlainHashTrie& operator=(const PlainHashTrie&) = delete;
+  plain_hash_trie_r(const plain_hash_trie_r&) = delete;
+  plain_hash_trie_r& operator=(const plain_hash_trie_r&) = delete;
 
-  PlainHashTrie(PlainHashTrie&& rhs) noexcept = default;
-  PlainHashTrie& operator=(PlainHashTrie&& rhs) noexcept = default;
+  plain_hash_trie_r(plain_hash_trie_r&&) noexcept = default;
+  plain_hash_trie_r& operator=(plain_hash_trie_r&&) noexcept = default;
 
  private:
-  IntVector table_{};
-  uint64_t size_{};  // # of registered nodes
-  uint64_t max_size_{};  // Factor% of the capacity
-  size_p2_t capa_size_{};
-  size_p2_t symb_size_{};
+  compact_vector table_;
+  uint64_t size_ = 0;  // # of registered nodes
+  uint64_t max_size_ = 0;  // MaxFactor% of the capacity
+  size_p2 capa_size_;
+  size_p2 symb_size_;
 #ifdef POPLAR_ENABLE_EX_STATS
-  uint64_t num_resize_{};
+  uint64_t num_resize_ = 0;
 #endif
 
   uint64_t make_key_(uint64_t node_id, uint64_t symb) const {
@@ -269,4 +263,4 @@ class PlainHashTrie {
 
 }  // namespace poplar
 
-#endif  // POPLAR_TRIE_PLAIN_HASH_TRIE_HPP
+#endif  // POPLAR_TRIE_PLAIN_HASH_TRIE_RO_HPP

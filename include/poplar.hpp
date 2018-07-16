@@ -1,34 +1,43 @@
 #ifndef POPLAR_TRIE_POPLAR_HPP
 #define POPLAR_TRIE_POPLAR_HPP
 
-#include "poplar/CompactHashTrie.hpp"
-#include "poplar/PlainHashTrie.hpp"
+#include "poplar/compact_hash_trie.hpp"
+#include "poplar/compact_hash_trie_r.hpp"
+#include "poplar/plain_hash_trie.hpp"
+#include "poplar/plain_hash_trie_r.hpp"
 
-#include "poplar/EmbeddedLabelStore.hpp"
-#include "poplar/GroupedLabelStore.hpp"
-#include "poplar/PlainLabelStore.hpp"
+#include "poplar/compact_label_store.hpp"
+#include "poplar/compact_label_store_r.hpp"
+#include "poplar/plain_label_store.hpp"
+#include "poplar/plain_label_store_r.hpp"
 
-#include "poplar/Map.hpp"
+#include "poplar/map.hpp"
 
 namespace poplar {
 
 template <typename Value, uint64_t Lambda = 16>
-using MapPP = Map<PlainHashTrie<>, PlainLabelStore<Value>, Lambda>;
-
-template <typename Value, uint64_t t_chunk_size = 64, uint64_t Lambda = 16>
-using MapPE = Map<PlainHashTrie<>, EmbeddedLabelStore<Value, BitChunk<t_chunk_size>>, Lambda>;
-
-template <typename Value, uint64_t t_chunk_size = 16, uint64_t Lambda = 16>
-using MapPG = Map<PlainHashTrie<>, GroupedLabelStore<Value, BitChunk<t_chunk_size>>, Lambda>;
+using map_pp = map<plain_hash_trie<>, plain_label_store<Value>, Lambda>;
 
 template <typename Value, uint64_t Lambda = 16>
-using MapCP = Map<CompactHashTrie<>, PlainLabelStore<Value>, Lambda>;
+using map_pp_r = map<plain_hash_trie_r<>, plain_label_store_r<Value>, Lambda>;
 
-template <typename Value, uint64_t t_chunk_size = 64, uint64_t Lambda = 16>
-using MapCE = Map<CompactHashTrie<>, EmbeddedLabelStore<Value, BitChunk<t_chunk_size>>, Lambda>;
+template <typename Value, uint64_t ChunkSize = 16, uint64_t Lambda = 16>
+using map_pc = map<plain_hash_trie<>, compact_label_store<Value, ChunkSize>, Lambda>;
 
-template <typename Value, uint64_t t_chunk_size = 16, uint64_t Lambda = 16>
-using MapCG = Map<CompactHashTrie<>, GroupedLabelStore<Value, BitChunk<t_chunk_size>>, Lambda>;
+template <typename Value, uint64_t ChunkSize = 16, uint64_t Lambda = 16>
+using map_pc_r = map<plain_hash_trie_r<>, compact_label_store_r<Value, ChunkSize>, Lambda>;
+
+template <typename Value, uint64_t Lambda = 16>
+using map_cp = map<compact_hash_trie<>, plain_label_store<Value>, Lambda>;
+
+template <typename Value, uint64_t Lambda = 16>
+using map_cp_r = map<compact_hash_trie_r<>, plain_label_store_r<Value>, Lambda>;
+
+template <typename Value, uint64_t ChunkSize = 16, uint64_t Lambda = 16>
+using map_cc = map<compact_hash_trie<>, compact_label_store<Value, ChunkSize>, Lambda>;
+
+template <typename Value, uint64_t ChunkSize = 16, uint64_t Lambda = 16>
+using map_cc_r = map<compact_hash_trie_r<>, compact_label_store_r<Value, ChunkSize>, Lambda>;
 
 }  // namespace poplar
 

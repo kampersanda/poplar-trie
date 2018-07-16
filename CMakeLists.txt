@@ -58,9 +58,6 @@ configure_file(
   ${POPLAR_TRIE_SOURCE_DIR}/include/poplar/poplar_config.hpp
 )
 
-#file(GLOB_RECURSE INCLUDE_FILES "include/*.hpp")
-#add_executable(sample sample/sample.cpp ${INCLUDE_FILES})
-
 include_directories(include)
 
 add_subdirectory(benchmark)

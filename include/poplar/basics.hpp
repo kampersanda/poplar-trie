@@ -9,6 +9,8 @@
 #include <string>
 #include <string_view>
 
+#include <boost/property_tree/json_parser.hpp>
+
 #include "poplar_config.hpp"
 
 namespace poplar {
@@ -18,21 +20,28 @@ using std::uint32_t;
 using std::uint64_t;
 using std::uint8_t;
 
-using ustr_view = std::basic_string_view<uint8_t>;
+struct char_range {
+  const uint8_t* begin = nullptr;
+  const uint8_t* end = nullptr;
 
-inline ustr_view make_ustr_view(const char* str) {
-  return {reinterpret_cast<const uint8_t*>(str), std::strlen(str) + 1};
+  uint8_t operator[](uint64_t i) const {
+    return begin[i];
+  }
+  bool empty() const {
+    return begin == end;
+  }
+  uint64_t length() const {
+    return static_cast<uint64_t>(end - begin);
+  }
+};
+
+inline char_range make_char_range(const char* str) {
+  auto ptr = reinterpret_cast<const uint8_t*>(str);
+  return {ptr, ptr + (std::strlen(str) + 1)};
 }
-inline ustr_view make_ustr_view(const char* str, uint64_t len) {
-  return {reinterpret_cast<const uint8_t*>(str), len + 1};
-}
-inline ustr_view make_ustr_view(const std::string& str) {
+inline char_range make_char_range(const std::string& str) {
   auto ptr = reinterpret_cast<const uint8_t*>(str.c_str());
-  return {ptr, str.size() + 1};
-}
-inline ustr_view make_ustr_view(const std::string_view& str) {
-  auto ptr = reinterpret_cast<const uint8_t*>(str.data());
-  return {ptr, str.size() + 1};
+  return {ptr, ptr + (str.size() + 1)};
 }
 
 constexpr bool is_power2(uint64_t n) {
@@ -52,23 +61,17 @@ constexpr void copy_bytes(uint8_t* dst, const uint8_t* src, uint64_t num) {
   }
 }
 
-enum class ac_res_type { SUCCESS, ALREADY_STORED, NEEDS_TO_EXPAND };
-
-struct decomp_val_t {
-  uint64_t quo;
-  uint64_t mod;
-};
-
+// <quo, mod>
 template <uint64_t N>
-constexpr decomp_val_t decompose_value(uint64_t x) {
+constexpr std::pair<uint64_t, uint64_t> decompose_value(uint64_t x) {
   return {x / N, x % N};
 }
 
-class size_p2_t {
+class size_p2 {
  public:
-  size_p2_t() = default;
+  size_p2() = default;
 
-  explicit size_p2_t(uint32_t bits) : bits_{bits}, mask_{(1ULL << bits) - 1} {}
+  explicit size_p2(uint32_t bits) : bits_{bits}, mask_{(1ULL << bits) - 1} {}
 
   uint32_t bits() const {
     return bits_;
@@ -81,8 +84,8 @@ class size_p2_t {
   }
 
  private:
-  uint32_t bits_{};
-  uint64_t mask_{};
+  uint32_t bits_ = 0;
+  uint64_t mask_ = 0;
 };
 
 }  // namespace poplar

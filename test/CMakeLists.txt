@@ -36,7 +36,7 @@ foreach (TEST_SOURCE ${TEST_SOURCES})
   get_filename_component(TEST_SOURCE_NAME ${TEST_SOURCE} NAME_WE)
   add_executable(${TEST_SOURCE_NAME} ${TEST_SOURCE})
   target_link_libraries(${TEST_SOURCE_NAME} gtest_main)
-  add_test(${TEST_SOURCE_NAME} ${TEST_SOURCE_NAME})
+  add_test(run_${TEST_SOURCE_NAME} ${TEST_SOURCE_NAME})
 endforeach ()
 
 configure_file(words.txt ${CMAKE_CURRENT_BINARY_DIR}/words.txt COPYONLY)
