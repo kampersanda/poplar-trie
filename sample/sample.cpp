@@ -14,7 +14,7 @@ int main() {
     }
     for (int i = 0; i < keys.size(); ++i) {
       const int* ptr = map.find(poplar::make_char_range(keys[i]));
-      if (ptr == nullptr || *ptr != i + 1) {
+      if (ptr == nullptr or *ptr != i + 1) {
         return 1;
       }
       std::cout << keys[i] << ": " << *ptr << std::endl;
@@ -31,7 +31,7 @@ int main() {
     return 1;
   }
 
-  std::cout << "# of keys is " << map.size() << std::endl;
+  std::cout << "#keys = " << map.size() << std::endl;
 
   return 0;
 }
