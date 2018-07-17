@@ -61,7 +61,7 @@ class map {
       key.begin += match;
 
       while (Lambda <= match) {
-        node_id = hash_trie_.find_child(node_id, STEP_SYMB);
+        node_id = hash_trie_.find_child(node_id, step_symb);
         if (node_id == nil_id) {
           return nullptr;
         }
@@ -111,7 +111,7 @@ class map {
       key.begin += match;
 
       while (Lambda <= match) {
-        if (hash_trie_.add_child(node_id, STEP_SYMB)) {
+        if (hash_trie_.add_child(node_id, step_symb)) {
           expand_if_needed_(node_id);
 #ifdef POPLAR_ENABLE_EX_STATS
           ++num_steps_;
@@ -174,7 +174,7 @@ class map {
 
  private:
   static constexpr uint64_t nil_id = HashTrie::nil_id;
-  static constexpr uint64_t STEP_SYMB = UINT8_MAX;  // (UINT8_MAX, 0)
+  static constexpr uint64_t step_symb = UINT8_MAX;  // (UINT8_MAX, 0)
 
   bool is_ready_ = false;
   HashTrie hash_trie_;
