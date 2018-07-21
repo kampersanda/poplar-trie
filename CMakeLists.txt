@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8)
-project(POPLAR_TRIE)
+project(poplar_trie)
 
 if (NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release)
@@ -19,10 +19,6 @@ else ()
 endif ()
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++1z -pthread")
-
-option(POPLAR_ENABLE_EX_STATS
-  "Enable extra stats."
-  OFF)
 
 set(BUILTIN_POPCNT 0)
 
@@ -50,13 +46,12 @@ message(STATUS "CXX_FLAGS are ${CMAKE_CXX_FLAGS}")
 message(STATUS "CXX_FLAGS_DEBUG are ${CMAKE_CXX_FLAGS_DEBUG}")
 message(STATUS "CXX_FLAGS_RELEASE are ${CMAKE_CXX_FLAGS_RELEASE}")
 
+enable_testing()
 include_directories(include)
-add_subdirectory(include)
 
+add_subdirectory(include)
 add_subdirectory(benchmark)
 add_subdirectory(sample)
-
-enable_testing()
 add_subdirectory(test)
 
 
