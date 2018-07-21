@@ -11,8 +11,7 @@
 namespace poplar {
 
 template <uint32_t MaxFactor = 80, uint32_t Dsp1Bits = 3, typename AuxCht = compact_hash_table<7>,
-          typename AuxMap = std::map<uint64_t, uint64_t>,
-          typename Hasher = bijective_hash::split_mix_hasher>
+          typename AuxMap = std::map<uint64_t, uint64_t>, typename Hasher = bijective_hash::split_mix_hasher>
 class compact_hash_trie {
   static_assert(0 < MaxFactor and MaxFactor < 100);
   static_assert(0 < Dsp1Bits and Dsp1Bits < 64);
