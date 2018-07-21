@@ -10,8 +10,8 @@ namespace {
 using namespace poplar;
 using namespace poplar::test;
 
-constexpr uint32_t val_bits = 16;
-constexpr uint64_t val_mask = (1ULL << val_bits) - 1;
+constexpr uint32_t VAL_BITS = 16;
+constexpr uint64_t VAL_MASK = (1ULL << VAL_BITS) - 1;
 
 std::map<uint64_t, uint64_t> create_map(uint32_t univ_bits, uint64_t size) {
   std::map<uint64_t, uint64_t> m;
@@ -21,8 +21,8 @@ std::map<uint64_t, uint64_t> create_map(uint32_t univ_bits, uint64_t size) {
 
   while (m.size() < size) {
     uint64_t key = rnd() & univ_mask;
-    uint64_t val = rnd() & val_mask;
-    if (val == val_mask) {
+    uint64_t val = rnd() & VAL_MASK;
+    if (val == VAL_MASK) {
       val = 0;
     }
     m.insert(std::make_pair(key, val));
@@ -37,7 +37,7 @@ TEST(compact_hash_table_test, Tiny) {
   const uint64_t size = 1ULL << (univ_bits - 1);
 
   auto m = create_map(univ_bits, size);
-  compact_hash_table<val_bits> cht(univ_bits, capa_bits);
+  compact_hash_table<VAL_BITS> cht(univ_bits, capa_bits);
 
   for (auto item : m) {
     cht.set(item.first, item.second);
