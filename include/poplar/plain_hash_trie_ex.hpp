@@ -1,5 +1,5 @@
-#ifndef POPLAR_TRIE_PLAIN_HASH_TRIE_RO_HPP
-#define POPLAR_TRIE_PLAIN_HASH_TRIE_RO_HPP
+#ifndef POPLAR_TRIE_PLAIN_HASH_TRIE_EX_HPP
+#define POPLAR_TRIE_PLAIN_HASH_TRIE_EX_HPP
 
 #include "bit_tools.hpp"
 #include "bit_vector.hpp"
@@ -9,26 +9,27 @@
 namespace poplar {
 
 template <uint32_t MaxFactor = 80, typename Hasher = hash::vigna_hasher>
-class plain_hash_trie_r {
+class plain_hash_trie_ex {
  private:
   static_assert(0 < MaxFactor and MaxFactor < 100);
 
  public:
   static constexpr uint64_t nil_id = UINT64_MAX;
   static constexpr uint32_t min_capa_bits = 16;
-  static constexpr bool random_order = true;
+
+  static constexpr bool ex = true;
 
  public:
-  plain_hash_trie_r() = default;
+  plain_hash_trie_ex() = default;
 
-  plain_hash_trie_r(uint32_t capa_bits, uint32_t symb_bits) {
+  plain_hash_trie_ex(uint32_t capa_bits, uint32_t symb_bits) {
     capa_size_ = size_p2{std::max(min_capa_bits, capa_bits)};
     symb_size_ = size_p2{symb_bits};
     max_size_ = static_cast<uint64_t>(capa_size_.size() * MaxFactor / 100.0);
     table_ = compact_vector{capa_size_.size(), capa_size_.bits() + symb_size_.bits()};
   }
 
-  ~plain_hash_trie_r() = default;
+  ~plain_hash_trie_ex() = default;
 
   uint64_t get_root() const {
     assert(size_ != 0);
@@ -152,7 +153,7 @@ class plain_hash_trie_r {
   }
 
   node_map expand() {
-    plain_hash_trie_r new_ht{capa_bits() + 1, symb_size_.bits()};
+    plain_hash_trie_ex new_ht{capa_bits() + 1, symb_size_.bits()};
     new_ht.add_root();
 
 #ifdef POPLAR_ENABLE_EX_STATS
@@ -222,8 +223,8 @@ class plain_hash_trie_r {
 
   boost::property_tree::ptree make_ptree() const {
     boost::property_tree::ptree pt;
-    pt.put("name", "plain_hash_trie_r");
-    pt.put("random_assignment", random_order);
+    pt.put("name", "plain_hash_trie_ex");
+    pt.put("random_assignment", ex);
     pt.put("factor", double(size()) / capa_size() * 100);
     pt.put("max_factor", MaxFactor);
     pt.put("size", size());
@@ -237,11 +238,11 @@ class plain_hash_trie_r {
     return pt;
   }
 
-  plain_hash_trie_r(const plain_hash_trie_r&) = delete;
-  plain_hash_trie_r& operator=(const plain_hash_trie_r&) = delete;
+  plain_hash_trie_ex(const plain_hash_trie_ex&) = delete;
+  plain_hash_trie_ex& operator=(const plain_hash_trie_ex&) = delete;
 
-  plain_hash_trie_r(plain_hash_trie_r&&) noexcept = default;
-  plain_hash_trie_r& operator=(plain_hash_trie_r&&) noexcept = default;
+  plain_hash_trie_ex(plain_hash_trie_ex&&) noexcept = default;
+  plain_hash_trie_ex& operator=(plain_hash_trie_ex&&) noexcept = default;
 
  private:
   compact_vector table_;
@@ -263,4 +264,4 @@ class plain_hash_trie_r {
 
 }  // namespace poplar
 
-#endif  // POPLAR_TRIE_PLAIN_HASH_TRIE_RO_HPP
+#endif  // POPLAR_TRIE_PLAIN_HASH_TRIE_EX_HPP

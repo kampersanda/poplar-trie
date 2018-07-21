@@ -13,7 +13,7 @@ template <typename Value>
 class plain_label_store {
  public:
   using value_type = Value;
-  static constexpr bool random_order = false;
+  static constexpr bool ex = false;
 
  public:
   plain_label_store() = default;

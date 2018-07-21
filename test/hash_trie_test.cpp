@@ -17,7 +17,7 @@ void insert_keys(HashTrie& ht, const std::vector<std::string>& keys, std::vector
   ht.add_root();
   auto num_nodes = ht.size();
 
-  if constexpr (!HashTrie::random_order) {
+  if constexpr (!HashTrie::ex) {
     ASSERT_EQ(ht.get_root(), 0);
   }
 
@@ -28,13 +28,13 @@ void insert_keys(HashTrie& ht, const std::vector<std::string>& keys, std::vector
 
     for (auto c : keys[i]) {
       if (ht.add_child(node_id, static_cast<uint8_t>(c))) {
-        if constexpr (!HashTrie::random_order) {
+        if constexpr (!HashTrie::ex) {
           ASSERT_EQ(node_id, num_nodes);
         }
 
         ++num_nodes;
 
-        if constexpr (HashTrie::random_order) {
+        if constexpr (HashTrie::ex) {
           if (!ht.needs_to_expand()) {
             continue;
           }
@@ -62,8 +62,7 @@ void insert_keys(HashTrie& ht, const std::vector<std::string>& keys, std::vector
 }
 
 template <typename HashTrie>
-void search_keys(const HashTrie& ht, const std::vector<std::string>& keys,
-                 const std::vector<uint64_t>& ids) {
+void search_keys(const HashTrie& ht, const std::vector<std::string>& keys, const std::vector<uint64_t>& ids) {
   ASSERT_FALSE(keys.empty());
 
   for (uint64_t i = 0; i < keys.size(); ++i) {
@@ -82,7 +81,7 @@ void restore_keys(const HashTrie& ht, const std::vector<std::string>& keys,
                   const std::vector<uint64_t>& ids) {
   ASSERT_FALSE(keys.empty());
 
-  if constexpr (HashTrie::random_order) {
+  if constexpr (HashTrie::ex) {
     std::string restore;
 
     for (uint64_t i = 0; i < ids.size(); ++i) {
@@ -109,8 +108,8 @@ void restore_keys(const HashTrie& ht, const std::vector<std::string>& keys,
 template <typename>
 class hash_trie_test : public ::testing::Test {};
 
-using hash_trie_types = ::testing::Types<plain_hash_trie<>, plain_hash_trie_r<>,
-                                         compact_hash_trie<>, compact_hash_trie_r<>>;
+using hash_trie_types =
+    ::testing::Types<plain_hash_trie<>, plain_hash_trie_ex<>, compact_hash_trie<>, compact_hash_trie_ex<>>;
 
 TYPED_TEST_CASE(hash_trie_test, hash_trie_types);
 

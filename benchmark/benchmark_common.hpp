@@ -46,16 +46,16 @@ using map_types = std::tuple<poplar::map_pp<Value, Lambda>,
                              poplar::map_cc<Value, 16, Lambda>,
                              poplar::map_cc<Value, 32, Lambda>,
                              poplar::map_cc<Value, 64, Lambda>,
-                             poplar::map_pp_r<Value, Lambda>,
-                             poplar::map_pc_r<Value, 8, Lambda>,
-                             poplar::map_pc_r<Value, 16, Lambda>,
-                             poplar::map_pc_r<Value, 32, Lambda>,
-                             poplar::map_pc_r<Value, 64, Lambda>,
-                             poplar::map_cp_r<Value, Lambda>,
-                             poplar::map_cc_r<Value, 8, Lambda>,
-                             poplar::map_cc_r<Value, 16, Lambda>,
-                             poplar::map_cc_r<Value, 32, Lambda>,
-                             poplar::map_cc_r<Value, 64, Lambda>>;
+                             poplar::map_pp_ex<Value, Lambda>,
+                             poplar::map_pc_ex<Value, 8, Lambda>,
+                             poplar::map_pc_ex<Value, 16, Lambda>,
+                             poplar::map_pc_ex<Value, 32, Lambda>,
+                             poplar::map_pc_ex<Value, 64, Lambda>,
+                             poplar::map_cp_ex<Value, Lambda>,
+                             poplar::map_cc_ex<Value, 8, Lambda>,
+                             poplar::map_cc_ex<Value, 16, Lambda>,
+                             poplar::map_cc_ex<Value, 32, Lambda>,
+                             poplar::map_cc_ex<Value, 64, Lambda>>;
 // clang-format on
 
 constexpr size_t NUM_MAPS = std::tuple_size_v<map_types<>>;

@@ -11,20 +11,23 @@ Poplar-trie implements an associative array giving a mapping from key strings to
 The underlying data structure is the DynPDT.
 
 A property of the DynPDT is that the edge labels are drawn from an integer set larger than that of normal tries represented in one byte, so it is important that searching a child can be performed in constant time.
-Poplar-trie solves the task using hash-based trie implementations of the following two classes:
+Poplar-trie solves the task using hash-based trie implementations of the following classes:
 
-- `PlainHashTrie` is a plain representation of a hash table.
-- `CompactHashTrie` is a compact representation of a hash table based on [m-Bonsai](https://arxiv.org/abs/1704.05682).
+- `poplar::plain_hash_trie` and `poplar::plain_hash_trie_r` are trie representations using plain hash tables.
+- `poplar::compact_hash_trie` and `poplar::compact_hash_trie_r` are trie representations using compact hash tables.
+
+The difference between `trie` and `trie_r` is whether the node IDs are defined in insertion order or not.
+
+Actually, 
 
 Another property is that the trie has string labels for each node, so their pointers have to be stored.
-This library includes the three management methods:
+This library includes the following two methods:
 
-- `PlainLabelStore` simply stores all pointers to string labels.
-- `EmbeddedLabelStore` embeds short string labels into spaces of pointers.
-- `GroupedLabelStore` reduces the overhead by grouping pointers in the same manner as [sparsehash](https://github.com/sparsehash/sparsehash).
+- `plain_label_store` simply stores all pointers to string labels.
+- `compact_label_store` relaxes the pointer overhead of `plain_label_store` by grouping pointers.
 
-Class `Map` implements the associative array and takes `HashTrie*` and `LabelStore*` as the template arguments.
-That is to say, there are implementations of six classes.
+Class `poplar::map` implements the associative array and takes `*_hash_trie` and `*_label_store` as the template arguments.
+That is, there are implementations of six classes.
 But, you can easily get the implementations since `poplar.hpp` provides the following aliases:
 
 - `MapPP` = `Map` + `PlainHashTrie` + `PlainLabelStore` (fastest)
@@ -69,38 +72,36 @@ The following code is an easy example of inserting and searching key-value pairs
 #include <poplar.hpp>
 
 int main() {
-  std::vector<std::string> keys = {
-    "Aoba", "Yun", "Hajime", "Hihumi",
-    "Kou", "Rin", "Hazuki", "Umiko", "Nene"
-  };
+  std::vector<std::string> keys = {"Aoba", "Yun",    "Hajime", "Hihumi", "Kou",
+                                   "Rin",  "Hazuki", "Umiko",  "Nene"};
 
-  poplar::MapPP<int> map;
+  poplar::map_pp<int> map;
 
   try {
     for (int i = 0; i < keys.size(); ++i) {
-      int* ptr = map.update(keys[i]);
+      int* ptr = map.update(poplar::make_char_range(keys[i]));
       *ptr = i + 1;
     }
     for (int i = 0; i < keys.size(); ++i) {
-      const int* ptr = map.find(keys[i]);
-      if (ptr == nullptr || *ptr != i + 1) {
+      const int* ptr = map.find(poplar::make_char_range(keys[i]));
+      if (ptr == nullptr or *ptr != i + 1) {
         return 1;
       }
       std::cout << keys[i] << ": " << *ptr << std::endl;
     }
     {
-      const int* ptr = map.find("Hotaru");
+      const int* ptr = map.find(poplar::make_char_range("Hotaru"));
       if (ptr != nullptr) {
         return 1;
       }
       std::cout << "Hotaru: " << -1 << std::endl;
     }
-  } catch (const poplar::Exception& ex) {
+  } catch (const poplar::exception& ex) {
     std::cerr << ex.what() << std::endl;
     return 1;
   }
 
-  std::cout << "# of keys is " << map.size() << std::endl;
+  std::cout << "#keys = " << map.size() << std::endl;
 
   return 0;
 }
@@ -119,10 +120,10 @@ Hazuki: 7
 Umiko: 8
 Nene: 9
 Hotaru: -1
-# of keys is 9
+#keys = 9
 ```
 
-## Benchmarks
+## Benchmarks (of previous version)
 
 The main advantage of Poplar-trie is high space efficiency as can be seen in the following results.
 

@@ -14,13 +14,13 @@ namespace poplar {
 template <typename HashTrie, typename LabelStore, uint64_t Lambda = 16>
 class map {
   static_assert(is_power2(Lambda));
-  static_assert(HashTrie::random_order == LabelStore::random_order);
+  static_assert(HashTrie::ex == LabelStore::ex);
 
  public:
   using this_type = map<HashTrie, LabelStore, Lambda>;  // map Type
   using value_type = typename LabelStore::value_type;  // Value type
 
-  static constexpr bool random_order = HashTrie::random_order;
+  static constexpr bool ex = HashTrie::ex;
 
  public:
   // Generic constructor.
@@ -43,8 +43,7 @@ class map {
   // otherwise returns nullptr.
   const value_type* find(char_range key) const {
     POPLAR_THROW_IF(key.empty(), "key must be a non-empty string.");
-    POPLAR_THROW_IF(*(key.end - 1) != '\0',
-                    "The last character of key must be the null terminator.");
+    POPLAR_THROW_IF(*(key.end - 1) != '\0', "The last character of key must be the null terminator.");
 
     if (!is_ready_ or hash_trie_.size() == 0) {
       return nullptr;
@@ -87,8 +86,7 @@ class map {
   // Inserts the given key and returns the value pointer.
   value_type* update(char_range key) {
     POPLAR_THROW_IF(key.empty(), "key must be a non-empty string.");
-    POPLAR_THROW_IF(*(key.end - 1) != '\0',
-                    "The last character of key must be the null terminator.");
+    POPLAR_THROW_IF(*(key.end - 1) != '\0', "The last character of key must be the null terminator.");
 
     if (hash_trie_.size() == 0) {
       if (!is_ready_) {
@@ -116,7 +114,7 @@ class map {
 #ifdef POPLAR_ENABLE_EX_STATS
           ++num_steps_;
 #endif
-          if constexpr (!random_order) {
+          if constexpr (!ex) {
             label_store_.dummy_associate(node_id);
           }
         }
@@ -192,7 +190,7 @@ class map {
   }
 
   void expand_if_needed_(uint64_t& node_id) {
-    if constexpr (random_order) {
+    if constexpr (ex) {
       if (!hash_trie_.needs_to_expand()) {
         return;
       }

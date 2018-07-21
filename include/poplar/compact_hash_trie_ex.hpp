@@ -1,5 +1,5 @@
-#ifndef POPLAR_TRIE_COMPACT_HASH_TRIE_R_HPP
-#define POPLAR_TRIE_COMPACT_HASH_TRIE_R_HPP
+#ifndef POPLAR_TRIE_COMPACT_HASH_TRIE_EX_HPP
+#define POPLAR_TRIE_COMPACT_HASH_TRIE_EX_HPP
 
 #include <map>
 
@@ -13,12 +13,12 @@ namespace poplar {
 template <uint32_t MaxFactor = 80, uint32_t Dsp1Bits = 3, typename AuxCht = compact_hash_table<7>,
           typename AuxMap = std::map<uint64_t, uint64_t>,
           typename Hasher = bijective_hash::split_mix_hasher>
-class compact_hash_trie_r {
+class compact_hash_trie_ex {
   static_assert(0 < MaxFactor and MaxFactor < 100);
   static_assert(0 < Dsp1Bits and Dsp1Bits < 64);
 
  public:
-  using this_type = compact_hash_trie_r<MaxFactor, Dsp1Bits, AuxCht, AuxMap, Hasher>;
+  using this_type = compact_hash_trie_ex<MaxFactor, Dsp1Bits, AuxCht, AuxMap, Hasher>;
   using aux_cht_type = AuxCht;
   using aux_map_type = AuxMap;
 
@@ -30,12 +30,12 @@ class compact_hash_trie_r {
   static constexpr uint32_t dsp2_bits = aux_cht_type::val_bits;
   static constexpr uint32_t dsp2_mask = aux_cht_type::val_mask;
 
-  static constexpr bool random_order = true;
+  static constexpr bool ex = true;
 
  public:
-  compact_hash_trie_r() = default;
+  compact_hash_trie_ex() = default;
 
-  compact_hash_trie_r(uint32_t capa_bits, uint32_t symb_bits, uint32_t cht_capa_bits = 0) {
+  compact_hash_trie_ex(uint32_t capa_bits, uint32_t symb_bits, uint32_t cht_capa_bits = 0) {
     capa_size_ = size_p2{std::max(min_capa_bits, capa_bits)};
     symb_size_ = size_p2{symb_bits};
 
@@ -46,7 +46,7 @@ class compact_hash_trie_r {
     aux_cht_ = aux_cht_type{capa_size_.bits(), cht_capa_bits};
   }
 
-  ~compact_hash_trie_r() = default;
+  ~compact_hash_trie_ex() = default;
 
   uint64_t get_root() const {
     assert(size_ != 0);
@@ -273,8 +273,8 @@ class compact_hash_trie_r {
 
   boost::property_tree::ptree make_ptree() const {
     boost::property_tree::ptree pt;
-    pt.put("name", "compact_hash_trie_r");
-    pt.put("random_assignment", random_order);
+    pt.put("name", "compact_hash_trie_ex");
+    pt.put("random_assignment", ex);
     pt.put("factor", double(size()) / capa_size() * 100);
     pt.put("max_factor", MaxFactor);
     pt.put("dsp1st_bits", dsp1_bits);
@@ -295,11 +295,11 @@ class compact_hash_trie_r {
     return pt;
   }
 
-  compact_hash_trie_r(const compact_hash_trie_r&) = delete;
-  compact_hash_trie_r& operator=(const compact_hash_trie_r&) = delete;
+  compact_hash_trie_ex(const compact_hash_trie_ex&) = delete;
+  compact_hash_trie_ex& operator=(const compact_hash_trie_ex&) = delete;
 
-  compact_hash_trie_r(compact_hash_trie_r&&) noexcept = default;
-  compact_hash_trie_r& operator=(compact_hash_trie_r&&) noexcept = default;
+  compact_hash_trie_ex(compact_hash_trie_ex&&) noexcept = default;
+  compact_hash_trie_ex& operator=(compact_hash_trie_ex&&) noexcept = default;
 
  private:
   Hasher hasher_;
@@ -401,4 +401,4 @@ class compact_hash_trie_r {
 
 }  // namespace poplar
 
-#endif  // POPLAR_TRIE_COMPACT_HASH_TRIE_R_HPP
+#endif  // POPLAR_TRIE_COMPACT_HASH_TRIE_EX_HPP

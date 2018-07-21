@@ -1,5 +1,5 @@
-#ifndef POPLAR_TRIE_PLAIN_LABEL_STORE_RO_HPP
-#define POPLAR_TRIE_PLAIN_LABEL_STORE_RO_HPP
+#ifndef POPLAR_TRIE_PLAIN_LABEL_STORE_EX_HPP
+#define POPLAR_TRIE_PLAIN_LABEL_STORE_EX_HPP
 
 #include <memory>
 #include <vector>
@@ -10,18 +10,18 @@
 namespace poplar {
 
 template <typename Value>
-class plain_label_store_r {
+class plain_label_store_ex {
  public:
   using value_type = Value;
 
-  static constexpr bool random_order = true;
+  static constexpr bool ex = true;
 
  public:
-  plain_label_store_r() = default;
+  plain_label_store_ex() = default;
 
-  explicit plain_label_store_r(uint32_t capa_bits) : ptrs_(1ULL << capa_bits) {}
+  explicit plain_label_store_ex(uint32_t capa_bits) : ptrs_(1ULL << capa_bits) {}
 
-  ~plain_label_store_r() = default;
+  ~plain_label_store_ex() = default;
 
   std::pair<const value_type*, uint64_t> compare(uint64_t pos, char_range key) const {
     assert(ptrs_[pos]);
@@ -82,7 +82,7 @@ class plain_label_store_r {
 
   boost::property_tree::ptree make_ptree() const {
     boost::property_tree::ptree pt;
-    pt.put("name", "plain_label_store_r");
+    pt.put("name", "plain_label_store_ex");
     pt.put("size", size());
     pt.put("capa_size", capa_size());
 #ifdef POPLAR_ENABLE_EX_STATS
@@ -92,11 +92,11 @@ class plain_label_store_r {
     return pt;
   }
 
-  plain_label_store_r(const plain_label_store_r&) = delete;
-  plain_label_store_r& operator=(const plain_label_store_r&) = delete;
+  plain_label_store_ex(const plain_label_store_ex&) = delete;
+  plain_label_store_ex& operator=(const plain_label_store_ex&) = delete;
 
-  plain_label_store_r(plain_label_store_r&&) noexcept = default;
-  plain_label_store_r& operator=(plain_label_store_r&&) noexcept = default;
+  plain_label_store_ex(plain_label_store_ex&&) noexcept = default;
+  plain_label_store_ex& operator=(plain_label_store_ex&&) noexcept = default;
 
  private:
   std::vector<std::unique_ptr<uint8_t[]>> ptrs_;
@@ -109,4 +109,4 @@ class plain_label_store_r {
 
 }  // namespace poplar
 
-#endif  // POPLAR_TRIE_PLAIN_LABEL_STORE_RO_HPP
+#endif  // POPLAR_TRIE_PLAIN_LABEL_STORE_EX_HPP
