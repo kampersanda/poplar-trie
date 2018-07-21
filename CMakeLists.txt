@@ -50,9 +50,8 @@ message(STATUS "CXX_FLAGS are ${CMAKE_CXX_FLAGS}")
 message(STATUS "CXX_FLAGS_DEBUG are ${CMAKE_CXX_FLAGS_DEBUG}")
 message(STATUS "CXX_FLAGS_RELEASE are ${CMAKE_CXX_FLAGS_RELEASE}")
 
-file(REMOVE ${POPLAR_TRIE_SOURCE_DIR}/include/poplar/poplar_config.hpp)
-
 include_directories(include)
+add_subdirectory(include)
 
 add_subdirectory(benchmark)
 add_subdirectory(sample)
@@ -60,7 +59,4 @@ add_subdirectory(sample)
 enable_testing()
 add_subdirectory(test)
 
-file(GLOB INTERNAL_HEADERS "${POPLAR_TRIE_SOURCE_DIR}/include/poplar/*.hpp")
-install(FILES include/poplar.hpp DESTINATION include)
-install(FILES ${INTERNAL_HEADERS} DESTINATION include/poplar)
 
