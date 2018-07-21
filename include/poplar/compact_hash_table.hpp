@@ -8,8 +8,7 @@
 
 namespace poplar {
 
-template <uint32_t ValBits, uint32_t MaxFactor = 80,
-          typename Hasher = bijective_hash::split_mix_hasher>
+template <uint32_t ValBits, uint32_t MaxFactor = 80, typename Hasher = bijective_hash::split_mix_hasher>
 class compact_hash_table {
   static_assert(0 < MaxFactor and MaxFactor < 100);
 
@@ -36,8 +35,7 @@ class compact_hash_table {
     max_size_ = static_cast<uint64_t>(capa_size_.size() * MaxFactor / 100.0);
 
     hasher_ = Hasher{univ_size_.bits()};
-    table_ =
-        compact_vector{capa_size_.size(), quo_size_.bits() + val_bits + 2, (val_mask << 2) | 1ULL};
+    table_ = compact_vector{capa_size_.size(), quo_size_.bits() + val_bits + 2, (val_mask << 2) | 1ULL};
   }
 
   ~compact_hash_table() = default;

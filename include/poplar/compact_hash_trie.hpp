@@ -11,15 +11,15 @@
 namespace poplar {
 
 template <uint32_t MaxFactor = 80, uint32_t Dsp1Bits = 3, typename AuxCht = compact_hash_table<7>,
-          typename AuxMap = std::map<uint64_t, uint64_t>, typename Hasher = bijective_hash::split_mix_hasher>
+          typename Hasher = bijective_hash::split_mix_hasher>
 class compact_hash_trie {
   static_assert(0 < MaxFactor and MaxFactor < 100);
   static_assert(0 < Dsp1Bits and Dsp1Bits < 64);
 
  public:
-  using this_type = compact_hash_trie<MaxFactor, Dsp1Bits, AuxCht, AuxMap, Hasher>;
+  using this_type = compact_hash_trie<MaxFactor, Dsp1Bits, AuxCht, Hasher>;
   using aux_cht_type = AuxCht;
-  using aux_map_type = AuxMap;
+  using aux_map_type = std::map<uint64_t, uint64_t>;
 
   static constexpr uint64_t nil_id = UINT64_MAX;
   static constexpr uint32_t min_capa_bits = 16;
