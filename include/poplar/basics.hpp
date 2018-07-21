@@ -11,7 +11,7 @@
 
 #include <boost/property_tree/json_parser.hpp>
 
-#include "poplar_config.hpp"
+// #define POPLAR_ENABLE_EX_STATS
 
 namespace poplar {
 

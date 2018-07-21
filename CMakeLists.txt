@@ -52,11 +52,6 @@ message(STATUS "CXX_FLAGS_RELEASE are ${CMAKE_CXX_FLAGS_RELEASE}")
 
 file(REMOVE ${POPLAR_TRIE_SOURCE_DIR}/include/poplar/poplar_config.hpp)
 
-configure_file(
-  ${POPLAR_TRIE_SOURCE_DIR}/include/poplar/poplar_config.hpp.in
-  ${POPLAR_TRIE_SOURCE_DIR}/include/poplar/poplar_config.hpp
-)
-
 include_directories(include)
 
 add_subdirectory(benchmark)
