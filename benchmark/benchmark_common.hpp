@@ -33,6 +33,13 @@ inline std::string realname() {
   int status;
   return abi::__cxa_demangle(typeid(T).name(), nullptr, nullptr, &status);
 }
+template <typename T>
+inline std::string short_realname() {
+  auto name = realname<T>();
+  name = std::regex_replace(name, std::regex{R"( |poplar::)"}, "");
+  name = std::regex_replace(name, std::regex{R"((\d+)ul{0,2})"}, "$1");
+  return name;
+}
 
 // clang-format off
 template <typename Value = int, uint64_t Lambda = 16>
@@ -68,7 +75,7 @@ constexpr void list_all(const char* pfx, std::ostream& os) {
     list_all<Types, N - 1>(pfx, os);
   }
   using type = std::tuple_element_t<N - 1, Types>;
-  os << pfx << std::setw(2) << N << ": " << realname<type>() << "\n";
+  os << pfx << std::setw(2) << N << ": " << short_realname<type>() << "\n";
 }
 
 template <size_t N>
