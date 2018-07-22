@@ -138,33 +138,37 @@ Hotaru: -1
 #keys = 9
 ```
 
-## Benchmarks (of previous version)
+## Benchmarks
 
 The main advantage of Poplar-trie is high space efficiency as can be seen in the following results.
 
-The experiments were carried out on Intel Xeon E5 @3.5 GHz CPU, with 32 GB of RAM, running Mac OS X 10.12.
-The codes were compiled using Apple LLVM version 8 (clang-8) with optimization -O3.
-The dictionaries were constructed by inserting all page titles from Japanese Wikipedia (32.3 MiB) in random order.
+The experiments were carried out on Intel Core i7 @3.5 GHz CPU, with 16 GB of RAM, running Mac OS X 10.13.
+The codes were compiled using Apple LLVM version 9.1.0 with optimization -O3.
+The dictionaries were constructed by inserting all page titles from Japanese Wikipedia (38.3 MiB) in random order.
 The value type is `int`.
 The maximum resident set size during construction was measured using the `/usr/bin/time` command.
 The insertion time was also measured using `std::chrono::duration_cast`.
 And, search time for the same strings was measured.
 
 | Implementation | Space (MiB) | Insertion (micros / key) | Search (micros / key) |
-|----------------|------------:|----------------------------:|-------------------------:|
-| `MapPP` | 80.4 | **0.68** | 0.48 |
-| `MapPE` | 75.6 | 0.91 | 0.57 |
-| `MapPG` | 47.2 | 1.71 | 0.80 |
-| `MapCP` | 65.5 | 0.81 | 0.54 |
-| `MapCE` | 61.6 | 1.00 | 0.61 |
-| `MapCG` | **42.3** | 1.62 | 0.85 |
-| [JudySL](http://judy.sourceforge.net) | 72.7 | 0.73 | 0.49 |
-| [hat-trie](https://github.com/dcjones/hat-trie) | 74.5 | 0.97 | **0.25** |
-| [cedarpp](http://www.tkl.iis.u-tokyo.ac.jp/~ynaga/cedar/) | 94.7 | 0.69 | 0.42 |
+|-----------|-------:|------:|------:|
+| `map_pp` | 121.2 | 0.79 | 0.90 |
+| `map_pc` | 80.0 | 0.83 | 1.03 |
+| `map_cp` | 89.5 | 1.01 | 0.98 |
+| `map_cc` | 62.4 | 0.98 | 0.88 |
+| `map_pp_ex` | 134.8 | 0.75 | 0.54 |
+| `map_pc_ex` | 69.4 | 1.88 | 0.80 |
+| `map_cp_ex` | 103.2 | 1.07 | 0.67 |
+| `map_cc_ex` | 53.9 | 1.95 | 0.82 |
+| [JudySL](http://judy.sourceforge.net) | 81.7 | 0.72 | 0.55 |
+| [hat-trie](https://github.com/dcjones/hat-trie) | 76.3 | 0.83 | 0.17 |
+| [libart](https://github.com/armon/libart) | 149.4 | 0.73 | 0.71 |
+| [cedarpp](http://www.tkl.iis.u-tokyo.ac.jp/~ynaga/cedar/) | 154.4 | 0.92 | 0.57 |
 
 ## Todo
 
 - Support the deletion operation
+- Improve the time performance
 - Add comments to the codes
 - Create the API document
 
