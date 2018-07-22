@@ -39,12 +39,12 @@ But, you can easily get the implementations since `poplar.hpp` provides the foll
 | alias | hash trie | label store |
 |:--|:--|:--|
 |`map_pp`|`plain_hash_trie`|`plain_label_store`|
-|`map_pp_ex`|`plain_hash_trie_ex`|`plain_label_store_ex`|
 |`map_pc`|`plain_hash_trie`|`compact_label_store`|
-|`map_pc_ex`|`plain_hash_trie_ex`|`compact_label_store_ex`|
 |`map_cp`|`compact_hash_trie`|`plain_label_store`|
-|`map_cp_ex`|`compact_hash_trie_ex`|`plain_label_store_ex`|
 |`map_cc`|`compact_hash_trie`|`compact_label_store`|
+|`map_pp_ex`|`plain_hash_trie_ex`|`plain_label_store_ex`|
+|`map_pc_ex`|`plain_hash_trie_ex`|`compact_label_store_ex`|
+|`map_cp_ex`|`compact_hash_trie_ex`|`plain_label_store_ex`|
 |`map_cc_ex`|`compact_hash_trie_ex`|`compact_label_store_ex`|
 
 
