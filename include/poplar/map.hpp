@@ -17,8 +17,8 @@ class map {
   static_assert(HashTrie::ex == LabelStore::ex);
 
  public:
-  using this_type = map<HashTrie, LabelStore, Lambda>;  // map Type
-  using value_type = typename LabelStore::value_type;  // Value type
+  using this_type = map<HashTrie, LabelStore, Lambda>;
+  using value_type = typename LabelStore::value_type;
 
   static constexpr bool ex = HashTrie::ex;
 
