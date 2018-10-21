@@ -83,7 +83,7 @@ class compact_vector {
   std::vector<uint64_t> chunks_;
   uint64_t size_ = 0;
   uint64_t mask_ = 0;
-  uint32_t width_ = 0;
+  uint64_t width_ = 0;
 };
 
 }  // namespace poplar
