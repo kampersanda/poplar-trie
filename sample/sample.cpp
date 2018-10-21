@@ -5,7 +5,7 @@ int main() {
   std::vector<std::string> keys = {"Aoba", "Yun",    "Hajime", "Hihumi", "Kou",
                                    "Rin",  "Hazuki", "Umiko",  "Nene"};
 
-  poplar::map_pp<int> map;
+  poplar::plain_hash_map<int> map;
 
   try {
     for (int i = 0; i < keys.size(); ++i) {

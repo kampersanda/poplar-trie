@@ -48,14 +48,10 @@ void search_keys(Map& map, const std::vector<std::string>& keys) {
 }
 
 // clang-format off
-using map_types = ::testing::Types<map_pp<value_type>,
-                                   map_pp_ex<value_type>,
-                                   map_pc<value_type>,
-                                   map_pc_ex<value_type>,
-                                   map_cp<value_type>,
-                                   map_cp_ex<value_type>,
-                                   map_cc<value_type>,
-                                   map_cc_ex<value_type>>;
+using map_types = ::testing::Types<plain_hash_map<value_type>,
+                                   compact_hash_map<value_type>,
+                                   plain_bonsai_map<value_type>,
+                                   compact_bonsai_map<value_type>>;
 // clang-format on
 
 template <typename>

@@ -43,26 +43,16 @@ inline std::string short_realname() {
 
 // clang-format off
 template <typename Value = int, uint64_t Lambda = 16>
-using map_types = std::tuple<poplar::map_pp<Value, Lambda>,
-                             poplar::map_pc<Value, 8, Lambda>,
-                             poplar::map_pc<Value, 16, Lambda>,
-                             poplar::map_pc<Value, 32, Lambda>,
-                             poplar::map_pc<Value, 64, Lambda>,
-                             poplar::map_cp<Value, Lambda>,
-                             poplar::map_cc<Value, 8, Lambda>,
-                             poplar::map_cc<Value, 16, Lambda>,
-                             poplar::map_cc<Value, 32, Lambda>,
-                             poplar::map_cc<Value, 64, Lambda>,
-                             poplar::map_pp_ex<Value, Lambda>,
-                             poplar::map_pc_ex<Value, 8, Lambda>,
-                             poplar::map_pc_ex<Value, 16, Lambda>,
-                             poplar::map_pc_ex<Value, 32, Lambda>,
-                             poplar::map_pc_ex<Value, 64, Lambda>,
-                             poplar::map_cp_ex<Value, Lambda>,
-                             poplar::map_cc_ex<Value, 8, Lambda>,
-                             poplar::map_cc_ex<Value, 16, Lambda>,
-                             poplar::map_cc_ex<Value, 32, Lambda>,
-                             poplar::map_cc_ex<Value, 64, Lambda>>;
+using map_types = std::tuple<poplar::plain_hash_map<Value, Lambda>,
+                             poplar::compact_hash_map<Value, 8, Lambda>,
+                             poplar::compact_hash_map<Value, 16, Lambda>,
+                             poplar::compact_hash_map<Value, 32, Lambda>,
+                             poplar::compact_hash_map<Value, 64, Lambda>,
+                             poplar::plain_bonsai_map<Value, Lambda>,
+                             poplar::compact_bonsai_map<Value, 8, Lambda>,
+                             poplar::compact_bonsai_map<Value, 16, Lambda>,
+                             poplar::compact_bonsai_map<Value, 32, Lambda>,
+                             poplar::compact_bonsai_map<Value, 64, Lambda>>;
 // clang-format on
 
 constexpr size_t NUM_MAPS = std::tuple_size_v<map_types<>>;
