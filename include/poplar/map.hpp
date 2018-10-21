@@ -95,7 +95,14 @@ class map {
       // The first insertion
       ++size_;
       hash_trie_.add_root();
-      return label_store_.associate(hash_trie_.get_root(), key);
+
+      if constexpr (trie_type == trie_types::HASH_TRIE) {
+        // assert(hash_trie_.get_root() == label_store_.size());
+        return label_store_.append(key);
+      }
+      if constexpr (trie_type == trie_types::BONSAI_TRIE) {
+        return label_store_.insert(hash_trie_.get_root(), key);
+      }
     }
 
     auto node_id = hash_trie_.get_root();
@@ -115,7 +122,8 @@ class map {
           ++num_steps_;
 #endif
           if constexpr (trie_type == trie_types::HASH_TRIE) {
-            label_store_.dummy_associate(node_id);
+            assert(node_id == label_store_.size());
+            label_store_.append_dummy();
           }
         }
         match -= Lambda;
@@ -131,7 +139,14 @@ class map {
         expand_if_needed_(node_id);
         ++key.begin;
         ++size_;
-        return label_store_.associate(node_id, key);
+
+        if constexpr (trie_type == trie_types::HASH_TRIE) {
+          assert(node_id == label_store_.size());
+          return label_store_.append(key);
+        }
+        if constexpr (trie_type == trie_types::BONSAI_TRIE) {
+          return label_store_.insert(node_id, key);
+        }
       }
 
       ++key.begin;

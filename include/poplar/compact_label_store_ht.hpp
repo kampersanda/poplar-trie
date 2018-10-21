@@ -61,10 +61,8 @@ class compact_label_store_ht {
     return {reinterpret_cast<const value_type*>(ptr + length), length + 1};
   };
 
-  value_type* associate(uint64_t pos, char_range key) {
-    assert(pos == size_);
-
-    ++size_;
+  value_type* append(char_range key) {
+    uint64_t pos = size_++;
     auto [group_id, offset] = decompose_value<ChunkSize>(pos);
 
     if (pos != 0 and offset == 0) {
@@ -89,10 +87,8 @@ class compact_label_store_ht {
   }
 
   // Associate a dummy label
-  void dummy_associate(uint64_t pos) {
-    assert(pos == size_);
-
-    ++size_;
+  void append_dummy() {
+    uint64_t pos = size_++;
     auto [group_id, offset] = decompose_value<ChunkSize>(pos);
 
     if (pos != 0 and offset == 0) {

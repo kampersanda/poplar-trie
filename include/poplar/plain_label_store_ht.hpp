@@ -20,58 +20,64 @@ class plain_label_store_ht {
   plain_label_store_ht() = default;
 
   explicit plain_label_store_ht(uint32_t capa_bits) {
+    chars_.reserve(1ULL << capa_bits);
     ptrs_.reserve(1ULL << capa_bits);
+    ptrs_.emplace_back(0);
   }
 
   ~plain_label_store_ht() = default;
 
   std::pair<const value_type*, uint64_t> compare(uint64_t pos, char_range key) const {
-    assert(pos < ptrs_.size());
-    assert(ptrs_[pos]);
+    assert(pos + 1 < ptrs_.size());
 
-    const uint8_t* ptr = ptrs_[pos].get();
+    const uint8_t* ptr = chars_.data() + ptrs_[pos];
+    uint64_t alloc = ptrs_[pos + 1] - ptrs_[pos];
 
     if (key.empty()) {
+      assert(sizeof(value_type) == alloc);
       return {reinterpret_cast<const value_type*>(ptr), 0};
     }
 
-    for (uint64_t i = 0; i < key.length(); ++i) {
+    assert(sizeof(value_type) <= alloc);
+
+    uint64_t length = alloc - sizeof(value_type);
+    for (uint64_t i = 0; i < length; ++i) {
       if (key[i] != ptr[i]) {
         return {nullptr, i};
       }
     }
 
-    return {reinterpret_cast<const value_type*>(ptr + key.length()), key.length()};
+    if (key[length] != '\0') {
+      return {nullptr, length};
+    }
+
+    return {reinterpret_cast<const value_type*>(ptr + length), length + 1};
   }
 
-  value_type* associate(uint64_t pos, char_range key) {
-    assert(pos == ptrs_.size());
-
-    uint64_t length = key.length();
-    auto new_uptr = std::make_unique<uint8_t[]>(length + sizeof(value_type));
-    auto ptr = new_uptr.get();
-    copy_bytes(ptr, key.begin, length);
-
+  value_type* append(char_range key) {
 #ifdef POPLAR_ENABLE_EX_STATS
     max_length_ = std::max(max_length_, length);
     sum_length_ += length;
 #endif
 
-    auto ret = reinterpret_cast<value_type*>(ptr + length);
-    *ret = static_cast<value_type>(0);
+    uint64_t length = key.empty() ? 0 : key.length() - 1;
+    std::copy(key.begin, key.begin + length, std::back_inserter(chars_));
 
-    ptrs_.emplace_back(std::move(new_uptr));
+    const size_t vpos = chars_.size();
+    for (size_t i = 0; i < sizeof(value_type); ++i) {
+      chars_.emplace_back(0);
+    }
 
-    return ret;
+    ptrs_.emplace_back(chars_.size());
+    return reinterpret_cast<value_type*>(chars_.data() + vpos);
   }
 
-  void dummy_associate(uint64_t pos) {
-    assert(pos == ptrs_.size());
-    ptrs_.emplace_back(nullptr);
+  void append_dummy() {
+    ptrs_.emplace_back(chars_.size());
   }
 
   uint64_t size() const {
-    return ptrs_.size();
+    return ptrs_.size() - 1;
   }
   uint64_t capa_size() const {
     return ptrs_.capacity();
@@ -96,7 +102,8 @@ class plain_label_store_ht {
   plain_label_store_ht& operator=(plain_label_store_ht&&) noexcept = default;
 
  private:
-  std::vector<std::unique_ptr<uint8_t[]>> ptrs_;
+  std::vector<uint8_t> chars_;
+  std::vector<uint64_t> ptrs_;
 #ifdef POPLAR_ENABLE_EX_STATS
   uint64_t max_length_ = 0;
   uint64_t sum_length_ = 0;

@@ -62,7 +62,7 @@ class compact_label_store_bt {
     return {reinterpret_cast<const value_type*>(ptr + length), length + 1};
   };
 
-  value_type* associate(uint64_t pos, char_range key) {
+  value_type* insert(uint64_t pos, char_range key) {
     auto [chunk_id, pos_in_chunk] = decompose_value<ChunkSize>(pos);
 
     assert(!chunks_[chunk_id].get(pos_in_chunk));

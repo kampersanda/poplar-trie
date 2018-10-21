@@ -41,7 +41,7 @@ class plain_label_store_bt {
     return {reinterpret_cast<const value_type*>(ptr + key.length()), key.length()};
   }
 
-  value_type* associate(uint64_t pos, char_range key) {
+  value_type* insert(uint64_t pos, char_range key) {
     assert(!ptrs_[pos]);
 
     ++size_;
