@@ -17,7 +17,7 @@ class compact_label_store_ex {
   using value_type = Value;
   using chunk_type = bit_chunk<ChunkSize>;
 
-  static constexpr bool ex = true;
+  static constexpr auto trie_type = trie_types::BONSAI_TRIE;
 
  public:
   compact_label_store_ex() = default;

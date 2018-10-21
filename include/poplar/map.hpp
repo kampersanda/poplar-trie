@@ -11,16 +11,16 @@ namespace poplar {
 
 // Associative array implementation with string keys based on a dynamic
 // path-decomposed trie.
-template <typename HashTrie, typename LabelStore, uint64_t Lambda = 16>
+template <typename Trie, typename LabelStore, uint64_t Lambda = 16>
 class map {
   static_assert(is_power2(Lambda));
-  static_assert(HashTrie::ex == LabelStore::ex);
+  static_assert(Trie::trie_type == LabelStore::trie_type);
 
  public:
-  using this_type = map<HashTrie, LabelStore, Lambda>;
+  using this_type = map<Trie, LabelStore, Lambda>;
   using value_type = typename LabelStore::value_type;
 
-  static constexpr bool ex = HashTrie::ex;
+  static constexpr auto trie_type = Trie::trie_type;
 
  public:
   // Generic constructor.
@@ -30,7 +30,7 @@ class map {
   // 2**capa_bits.
   explicit map(uint32_t capa_bits) {
     is_ready_ = true;
-    hash_trie_ = HashTrie{capa_bits, 8 + bit_tools::get_num_bits(Lambda - 1)};
+    hash_trie_ = Trie{capa_bits, 8 + bit_tools::get_num_bits(Lambda - 1)};
     label_store_ = LabelStore{hash_trie_.capa_bits()};
     codes_.fill(UINT8_MAX);
     codes_[0] = static_cast<uint8_t>(num_codes_++);  // terminator
@@ -114,7 +114,7 @@ class map {
 #ifdef POPLAR_ENABLE_EX_STATS
           ++num_steps_;
 #endif
-          if constexpr (!ex) {
+          if constexpr (trie_type == trie_types::HASH_TRIE) {
             label_store_.dummy_associate(node_id);
           }
         }
@@ -171,11 +171,11 @@ class map {
   map& operator=(map&&) noexcept = default;
 
  private:
-  static constexpr uint64_t nil_id = HashTrie::nil_id;
+  static constexpr uint64_t nil_id = Trie::nil_id;
   static constexpr uint64_t step_symb = UINT8_MAX;  // (UINT8_MAX, 0)
 
   bool is_ready_ = false;
-  HashTrie hash_trie_;
+  Trie hash_trie_;
   LabelStore label_store_;
   std::array<uint8_t, 256> codes_ = {};
   uint32_t num_codes_ = 0;
@@ -190,7 +190,7 @@ class map {
   }
 
   void expand_if_needed_(uint64_t& node_id) {
-    if constexpr (ex) {
+    if constexpr (trie_type == trie_types::BONSAI_TRIE) {
       if (!hash_trie_.needs_to_expand()) {
         return;
       }

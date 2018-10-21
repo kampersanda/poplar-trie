@@ -28,7 +28,7 @@ class compact_hash_trie {
   static constexpr uint32_t dsp2_bits = aux_cht_type::val_bits;
   static constexpr uint32_t dsp2_mask = aux_cht_type::val_mask;
 
-  static constexpr bool ex = false;
+  static constexpr auto trie_type = trie_types::HASH_TRIE;
 
  public:
   compact_hash_trie() = default;
@@ -135,7 +135,6 @@ class compact_hash_trie {
   boost::property_tree::ptree make_ptree() const {
     boost::property_tree::ptree pt;
     pt.put("name", "compact_hash_trie");
-    pt.put("random_assignment", ex);
     pt.put("factor", double(size()) / capa_size() * 100);
     pt.put("max_factor", MaxFactor);
     pt.put("dsp1st_bits", dsp1_bits);

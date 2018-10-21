@@ -14,7 +14,7 @@ class plain_label_store_ex {
  public:
   using value_type = Value;
 
-  static constexpr bool ex = true;
+  static constexpr auto trie_type = trie_types::BONSAI_TRIE;
 
  public:
   plain_label_store_ex() = default;

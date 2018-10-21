@@ -16,7 +16,7 @@ class compact_label_store {
   using this_type = compact_label_store<Value, ChunkSize>;
   using value_type = Value;
 
-  static constexpr bool ex = false;
+  static constexpr auto trie_type = trie_types::HASH_TRIE;
 
  public:
   compact_label_store() = default;

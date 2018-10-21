@@ -17,7 +17,7 @@ class plain_bonsai_trie {
   static constexpr uint64_t nil_id = UINT64_MAX;
   static constexpr uint32_t min_capa_bits = 16;
 
-  static constexpr bool ex = true;
+  static constexpr auto trie_type = trie_types::BONSAI_TRIE;
 
  public:
   plain_bonsai_trie() = default;
@@ -224,7 +224,6 @@ class plain_bonsai_trie {
   boost::property_tree::ptree make_ptree() const {
     boost::property_tree::ptree pt;
     pt.put("name", "plain_bonsai_trie");
-    pt.put("random_assignment", ex);
     pt.put("factor", double(size()) / capa_size() * 100);
     pt.put("max_factor", MaxFactor);
     pt.put("size", size());

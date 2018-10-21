@@ -20,7 +20,8 @@ class plain_hash_trie {
 
   static constexpr uint64_t nil_id = UINT64_MAX;
   static constexpr uint32_t min_capa_bits = 16;
-  static constexpr bool ex = false;
+
+  static constexpr auto trie_type = trie_types::HASH_TRIE;
 
  public:
   plain_hash_trie() = default;

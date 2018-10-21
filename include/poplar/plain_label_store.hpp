@@ -13,7 +13,8 @@ template <typename Value>
 class plain_label_store {
  public:
   using value_type = Value;
-  static constexpr bool ex = false;
+
+  static constexpr auto trie_type = trie_types::HASH_TRIE;
 
  public:
   plain_label_store() = default;

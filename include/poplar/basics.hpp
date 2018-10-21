@@ -20,6 +20,8 @@ using std::uint32_t;
 using std::uint64_t;
 using std::uint8_t;
 
+enum class trie_types : uint8_t { HASH_TRIE, BONSAI_TRIE };
+
 struct char_range {
   const uint8_t* begin = nullptr;
   const uint8_t* end = nullptr;
