@@ -119,6 +119,23 @@ inline uint64_t popcnt(uint64_t x, uint64_t i) {
   return popcnt(static_cast<uint64_t>(x & ((1ULL << i) - 1)));
 }
 
+constexpr uint64_t select(uint64_t x, uint64_t r) {
+  assert(r != 0);
+  // #ifdef __SSE4_2__
+  // #else
+  // #endif
+  for (uint64_t i = 0; i < 64; ++i) {
+    if (get_bit(x, i)) {
+      if (r == 1) {
+        return i;
+      }
+      --r;
+    }
+  }
+  // should not come
+  return 0;
+}
+
 #ifndef __SSE4_2__
 constexpr uint32_t MSB_TABLE[256] = {
     0, 0, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4,

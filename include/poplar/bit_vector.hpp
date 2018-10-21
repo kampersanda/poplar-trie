@@ -53,7 +53,6 @@ class bit_vector {
     chunks_.back() |= static_cast<uint64_t>(bit) << pos_in_chunk;
     ++size_;
   }
-
   void append_bits(uint64_t bits, uint32_t len) {
     assert(len == 64 or (bits >> len) == 0);
 
