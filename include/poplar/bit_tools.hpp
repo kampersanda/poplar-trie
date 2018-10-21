@@ -182,6 +182,12 @@ constexpr uint32_t ceil_log2(uint64_t x) {
   return (x > 1) ? msb(x - 1) + 1 : 0;
 }
 
+template <typename T = uint64_t>
+uint64_t words_for(uint64_t bits) {
+  uint64_t word_bits = sizeof(T) * 8;
+  return (bits + word_bits - 1) / word_bits;
+}
+
 }  // namespace poplar::bit_tools
 
 #endif  // POPLAR_TRIE_BIT_TOOLS_HPP
