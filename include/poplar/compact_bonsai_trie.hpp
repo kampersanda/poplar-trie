@@ -1,5 +1,5 @@
-#ifndef POPLAR_TRIE_COMPACT_HASH_TRIE_EX_HPP
-#define POPLAR_TRIE_COMPACT_HASH_TRIE_EX_HPP
+#ifndef POPLAR_TRIE_COMPACT_BONSAI_TRIE_HPP
+#define POPLAR_TRIE_COMPACT_BONSAI_TRIE_HPP
 
 #include <map>
 
@@ -12,12 +12,12 @@ namespace poplar {
 
 template <uint32_t MaxFactor = 80, uint32_t Dsp1Bits = 3, typename AuxCht = compact_hash_table<7>,
           typename Hasher = bijective_hash::split_mix_hasher>
-class compact_hash_trie_ex {
+class compact_bonsai_trie {
   static_assert(0 < MaxFactor and MaxFactor < 100);
   static_assert(0 < Dsp1Bits and Dsp1Bits < 64);
 
  public:
-  using this_type = compact_hash_trie_ex<MaxFactor, Dsp1Bits, AuxCht, Hasher>;
+  using this_type = compact_bonsai_trie<MaxFactor, Dsp1Bits, AuxCht, Hasher>;
   using aux_cht_type = AuxCht;
   using aux_map_type = std::map<uint64_t, uint64_t>;
 
@@ -32,9 +32,9 @@ class compact_hash_trie_ex {
   static constexpr bool ex = true;
 
  public:
-  compact_hash_trie_ex() = default;
+  compact_bonsai_trie() = default;
 
-  compact_hash_trie_ex(uint32_t capa_bits, uint32_t symb_bits, uint32_t cht_capa_bits = 0) {
+  compact_bonsai_trie(uint32_t capa_bits, uint32_t symb_bits, uint32_t cht_capa_bits = 0) {
     capa_size_ = size_p2{std::max(min_capa_bits, capa_bits)};
     symb_size_ = size_p2{symb_bits};
 
@@ -45,7 +45,7 @@ class compact_hash_trie_ex {
     aux_cht_ = aux_cht_type{capa_size_.bits(), cht_capa_bits};
   }
 
-  ~compact_hash_trie_ex() = default;
+  ~compact_bonsai_trie() = default;
 
   uint64_t get_root() const {
     assert(size_ != 0);
@@ -271,7 +271,7 @@ class compact_hash_trie_ex {
 
   boost::property_tree::ptree make_ptree() const {
     boost::property_tree::ptree pt;
-    pt.put("name", "compact_hash_trie_ex");
+    pt.put("name", "compact_bonsai_trie");
     pt.put("random_assignment", ex);
     pt.put("factor", double(size()) / capa_size() * 100);
     pt.put("max_factor", MaxFactor);
@@ -293,11 +293,11 @@ class compact_hash_trie_ex {
     return pt;
   }
 
-  compact_hash_trie_ex(const compact_hash_trie_ex&) = delete;
-  compact_hash_trie_ex& operator=(const compact_hash_trie_ex&) = delete;
+  compact_bonsai_trie(const compact_bonsai_trie&) = delete;
+  compact_bonsai_trie& operator=(const compact_bonsai_trie&) = delete;
 
-  compact_hash_trie_ex(compact_hash_trie_ex&&) noexcept = default;
-  compact_hash_trie_ex& operator=(compact_hash_trie_ex&&) noexcept = default;
+  compact_bonsai_trie(compact_bonsai_trie&&) noexcept = default;
+  compact_bonsai_trie& operator=(compact_bonsai_trie&&) noexcept = default;
 
  private:
   Hasher hasher_;
@@ -399,4 +399,4 @@ class compact_hash_trie_ex {
 
 }  // namespace poplar
 
-#endif  // POPLAR_TRIE_COMPACT_HASH_TRIE_EX_HPP
+#endif  // POPLAR_TRIE_COMPACT_BONSAI_TRIE_HPP

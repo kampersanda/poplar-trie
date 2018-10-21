@@ -109,7 +109,7 @@ template <typename>
 class hash_trie_test : public ::testing::Test {};
 
 using hash_trie_types =
-    ::testing::Types<plain_hash_trie<>, plain_hash_trie_ex<>, compact_hash_trie<>, compact_hash_trie_ex<>>;
+    ::testing::Types<plain_hash_trie<>, plain_bonsai_trie<>, compact_hash_trie<>, compact_bonsai_trie<>>;
 
 TYPED_TEST_CASE(hash_trie_test, hash_trie_types);
 
