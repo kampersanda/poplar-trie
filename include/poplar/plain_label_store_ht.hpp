@@ -1,11 +1,9 @@
 #ifndef POPLAR_TRIE_PLAIN_LABEL_STORE_HT_HPP
 #define POPLAR_TRIE_PLAIN_LABEL_STORE_HT_HPP
 
-#include <memory>
 #include <vector>
 
 #include "basics.hpp"
-#include "compact_vector.hpp"
 
 namespace poplar {
 
