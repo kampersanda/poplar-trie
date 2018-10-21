@@ -1,5 +1,5 @@
-#ifndef POPLAR_TRIE_COMPACT_LABEL_STORE_EX_HPP
-#define POPLAR_TRIE_COMPACT_LABEL_STORE_EX_HPP
+#ifndef POPLAR_TRIE_COMPACT_LABEL_STORE_BT_HPP
+#define POPLAR_TRIE_COMPACT_LABEL_STORE_BT_HPP
 
 #include <iostream>
 #include <memory>
@@ -11,21 +11,21 @@
 namespace poplar {
 
 template <typename Value, uint64_t ChunkSize = 16>
-class compact_label_store_ex {
+class compact_label_store_bt {
  public:
-  using this_type = compact_label_store_ex<Value, ChunkSize>;
+  using this_type = compact_label_store_bt<Value, ChunkSize>;
   using value_type = Value;
   using chunk_type = bit_chunk<ChunkSize>;
 
   static constexpr auto trie_type = trie_types::BONSAI_TRIE;
 
  public:
-  compact_label_store_ex() = default;
+  compact_label_store_bt() = default;
 
-  explicit compact_label_store_ex(uint32_t capa_bits)
+  explicit compact_label_store_bt(uint32_t capa_bits)
       : ptrs_((1ULL << capa_bits) / ChunkSize), chunks_(ptrs_.size()) {}
 
-  ~compact_label_store_ex() = default;
+  ~compact_label_store_bt() = default;
 
   std::pair<const value_type*, uint64_t> compare(uint64_t pos, char_range key) const {
     auto [chunk_id, pos_in_chunk] = decompose_value<ChunkSize>(pos);
@@ -161,7 +161,7 @@ class compact_label_store_ex {
 
   boost::property_tree::ptree make_ptree() const {
     boost::property_tree::ptree pt;
-    pt.put("name", "compact_label_store_ex");
+    pt.put("name", "compact_label_store_bt");
     pt.put("chunk_size", ChunkSize);
     pt.put("size", size());
     pt.put("capa_size", capa_size());
@@ -172,11 +172,11 @@ class compact_label_store_ex {
     return pt;
   }
 
-  compact_label_store_ex(const compact_label_store_ex&) = delete;
-  compact_label_store_ex& operator=(const compact_label_store_ex&) = delete;
+  compact_label_store_bt(const compact_label_store_bt&) = delete;
+  compact_label_store_bt& operator=(const compact_label_store_bt&) = delete;
 
-  compact_label_store_ex(compact_label_store_ex&&) noexcept = default;
-  compact_label_store_ex& operator=(compact_label_store_ex&&) noexcept = default;
+  compact_label_store_bt(compact_label_store_bt&&) noexcept = default;
+  compact_label_store_bt& operator=(compact_label_store_bt&&) noexcept = default;
 
  private:
   std::vector<std::unique_ptr<uint8_t[]>> ptrs_;
@@ -271,4 +271,4 @@ class compact_label_store_ex {
 
 }  // namespace poplar
 
-#endif  // POPLAR_TRIE_COMPACT_LABEL_STORE_EX_HPP
+#endif  // POPLAR_TRIE_COMPACT_LABEL_STORE_BT_HPP

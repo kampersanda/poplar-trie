@@ -1,5 +1,5 @@
-#ifndef POPLAR_TRIE_PLAIN_LABEL_STORE_EX_HPP
-#define POPLAR_TRIE_PLAIN_LABEL_STORE_EX_HPP
+#ifndef POPLAR_TRIE_PLAIN_LABEL_STORE_HT_HPP
+#define POPLAR_TRIE_PLAIN_LABEL_STORE_HT_HPP
 
 #include <memory>
 #include <vector>
@@ -10,20 +10,23 @@
 namespace poplar {
 
 template <typename Value>
-class plain_label_store_ex {
+class plain_label_store_ht {
  public:
   using value_type = Value;
 
-  static constexpr auto trie_type = trie_types::BONSAI_TRIE;
+  static constexpr auto trie_type = trie_types::HASH_TRIE;
 
  public:
-  plain_label_store_ex() = default;
+  plain_label_store_ht() = default;
 
-  explicit plain_label_store_ex(uint32_t capa_bits) : ptrs_(1ULL << capa_bits) {}
+  explicit plain_label_store_ht(uint32_t capa_bits) {
+    ptrs_.reserve(1ULL << capa_bits);
+  }
 
-  ~plain_label_store_ex() = default;
+  ~plain_label_store_ht() = default;
 
   std::pair<const value_type*, uint64_t> compare(uint64_t pos, char_range key) const {
+    assert(pos < ptrs_.size());
     assert(ptrs_[pos]);
 
     const uint8_t* ptr = ptrs_[pos].get();
@@ -42,13 +45,11 @@ class plain_label_store_ex {
   }
 
   value_type* associate(uint64_t pos, char_range key) {
-    assert(!ptrs_[pos]);
-
-    ++size_;
+    assert(pos == ptrs_.size());
 
     uint64_t length = key.length();
-    ptrs_[pos] = std::make_unique<uint8_t[]>(length + sizeof(value_type));
-    auto ptr = ptrs_[pos].get();
+    auto new_uptr = std::make_unique<uint8_t[]>(length + sizeof(value_type));
+    auto ptr = new_uptr.get();
     copy_bytes(ptr, key.begin, length);
 
 #ifdef POPLAR_ENABLE_EX_STATS
@@ -59,30 +60,26 @@ class plain_label_store_ex {
     auto ret = reinterpret_cast<value_type*>(ptr + length);
     *ret = static_cast<value_type>(0);
 
+    ptrs_.emplace_back(std::move(new_uptr));
+
     return ret;
   }
 
-  template <typename T>
-  void expand(const T& pos_map) {
-    std::vector<std::unique_ptr<uint8_t[]>> new_ptrs(capa_size() * 2);
-    for (uint64_t i = 0; i < pos_map.size(); ++i) {
-      if (pos_map[i] != UINT64_MAX) {
-        new_ptrs[pos_map[i]] = std::move(ptrs_[i]);
-      }
-    }
-    ptrs_ = std::move(new_ptrs);
+  void dummy_associate(uint64_t pos) {
+    assert(pos == ptrs_.size());
+    ptrs_.emplace_back(nullptr);
   }
 
   uint64_t size() const {
-    return size_;
+    return ptrs_.size();
   }
   uint64_t capa_size() const {
-    return ptrs_.size();
+    return ptrs_.capacity();
   }
 
   boost::property_tree::ptree make_ptree() const {
     boost::property_tree::ptree pt;
-    pt.put("name", "plain_label_store_ex");
+    pt.put("name", "plain_label_store_ht");
     pt.put("size", size());
     pt.put("capa_size", capa_size());
 #ifdef POPLAR_ENABLE_EX_STATS
@@ -92,15 +89,14 @@ class plain_label_store_ex {
     return pt;
   }
 
-  plain_label_store_ex(const plain_label_store_ex&) = delete;
-  plain_label_store_ex& operator=(const plain_label_store_ex&) = delete;
+  plain_label_store_ht(const plain_label_store_ht&) = delete;
+  plain_label_store_ht& operator=(const plain_label_store_ht&) = delete;
 
-  plain_label_store_ex(plain_label_store_ex&&) noexcept = default;
-  plain_label_store_ex& operator=(plain_label_store_ex&&) noexcept = default;
+  plain_label_store_ht(plain_label_store_ht&&) noexcept = default;
+  plain_label_store_ht& operator=(plain_label_store_ht&&) noexcept = default;
 
  private:
   std::vector<std::unique_ptr<uint8_t[]>> ptrs_;
-  uint64_t size_ = 0;
 #ifdef POPLAR_ENABLE_EX_STATS
   uint64_t max_length_ = 0;
   uint64_t sum_length_ = 0;
@@ -109,4 +105,4 @@ class plain_label_store_ex {
 
 }  // namespace poplar
 
-#endif  // POPLAR_TRIE_PLAIN_LABEL_STORE_EX_HPP
+#endif  // POPLAR_TRIE_PLAIN_LABEL_STORE_HT_HPP
