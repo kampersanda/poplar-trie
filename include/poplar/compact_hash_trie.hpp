@@ -1,25 +1,24 @@
 #ifndef POPLAR_TRIE_COMPACT_HASH_TRIE_HPP
 #define POPLAR_TRIE_COMPACT_HASH_TRIE_HPP
 
-#include <map>
-
 #include "bijective_hash.hpp"
 #include "bit_vector.hpp"
 #include "compact_hash_table.hpp"
 #include "compact_vector.hpp"
+#include "standard_hash_table.hpp"
 
 namespace poplar {
 
-template <uint32_t MaxFactor = 80, uint32_t Dsp1Bits = 3, typename AuxCht = compact_hash_table<7>,
-          typename Hasher = bijective_hash::split_mix_hasher>
+template <uint32_t MaxFactor = 80, uint32_t Dsp1Bits = 3, class AuxCht = compact_hash_table<7>,
+          class AuxMap = standard_hash_table<>, class Hasher = bijective_hash::split_mix_hasher>
 class compact_hash_trie {
   static_assert(0 < MaxFactor and MaxFactor < 100);
   static_assert(0 < Dsp1Bits and Dsp1Bits < 64);
 
  public:
-  using this_type = compact_hash_trie<MaxFactor, Dsp1Bits, AuxCht, Hasher>;
+  using this_type = compact_hash_trie<MaxFactor, Dsp1Bits, AuxCht, AuxMap, Hasher>;
   using aux_cht_type = AuxCht;
-  using aux_map_type = std::map<uint64_t, uint64_t>;
+  using aux_map_type = AuxMap;
 
   static constexpr uint64_t nil_id = UINT64_MAX;
   static constexpr uint32_t min_capa_bits = 16;
@@ -203,9 +202,7 @@ class compact_hash_trie {
       return dsp + dsp1_mask;
     }
 
-    auto it = aux_map_.find(slot_id);
-    assert(it != aux_map_.end());
-    return it->second;
+    return aux_map_.get(slot_id);
   }
 
   bool compare_dsp_(uint64_t slot_id, uint64_t rhs) const {
@@ -225,9 +222,9 @@ class compact_hash_trie {
       return false;
     }
 
-    auto it = aux_map_.find(slot_id);
-    assert(it != aux_map_.end());
-    return it->second == rhs;
+    auto val = aux_map_.get(slot_id);
+    assert(val != UINT64_MAX);
+    return val == rhs;
   }
 
   void update_slot_(uint64_t slot_id, uint64_t quo, uint64_t dsp, uint64_t node_id) {
@@ -244,7 +241,7 @@ class compact_hash_trie {
       if (_dsp < dsp2_mask) {
         aux_cht_.set(slot_id, _dsp);
       } else {
-        aux_map_.insert(std::make_pair(slot_id, dsp));
+        aux_map_.set(slot_id, dsp);
       }
     }
 
