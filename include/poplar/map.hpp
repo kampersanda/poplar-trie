@@ -103,6 +103,8 @@ class map {
       if constexpr (trie_type == trie_types::BONSAI_TRIE) {
         return label_store_.insert(hash_trie_.get_root(), key);
       }
+      // should not come
+      assert(false);
     }
 
     auto node_id = hash_trie_.get_root();
@@ -146,6 +148,8 @@ class map {
         if constexpr (trie_type == trie_types::BONSAI_TRIE) {
           return label_store_.insert(node_id, key);
         }
+        // should not come
+        assert(false);
       }
 
       ++key.begin;
