@@ -41,30 +41,6 @@ inline std::string short_realname() {
   return name;
 }
 
-// clang-format off
-template <typename Value = int, uint64_t Lambda = 16>
-using map_types = std::tuple<poplar::plain_hash_map<Value, Lambda>,
-                             poplar::compact_hash_map<Value, Lambda>,
-                             poplar::plain_bonsai_map<Value, Lambda>,
-                             poplar::compact_bonsai_map<Value, 8, Lambda>,
-                             poplar::compact_bonsai_map<Value, 16, Lambda>,
-                             poplar::compact_bonsai_map<Value, 32, Lambda>,
-                             poplar::compact_bonsai_map<Value, 64, Lambda>>;
-// clang-format on
-
-constexpr size_t NUM_MAPS = std::tuple_size_v<map_types<>>;
-
-template <typename Types, size_t N = std::tuple_size_v<Types>>
-constexpr void list_all(const char* pfx, std::ostream& os) {
-  static_assert(N != 0);
-
-  if constexpr (N > 1) {
-    list_all<Types, N - 1>(pfx, os);
-  }
-  using type = std::tuple_element_t<N - 1, Types>;
-  os << pfx << std::setw(2) << N << ": " << short_realname<type>() << "\n";
-}
-
 template <size_t N>
 inline double get_average(const std::array<double, N>& ary) {
   double sum = 0.0;
