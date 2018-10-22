@@ -20,28 +20,107 @@ class sparse_set {
   sparse_set() = default;
   ~sparse_set() = default;
 
-  void append(bool bit) {
-    if ((size_ % SMALL_BLOCK_SIZE) == 0) {
+  void append(uint64_t x) {
+    assert(univ_ <= x);
+
+    for (uint64_t i = univ_; i < x; ++i) {
+      push_bit_(false);
+    }
+    push_bit_(true);
+  }
+
+  uint64_t access(uint64_t rank) const {
+    assert(rank < size_);
+    auto ans = access_<false>(rank);
+    return ans.first;
+  }
+
+  std::pair<uint64_t, uint64_t> access_pair(uint64_t rank) const {
+    assert(rank + 1 < size_);
+    return access_<true>(rank);
+  }
+
+  uint64_t univ() const {
+    return univ_;
+  }
+  uint64_t size() const {
+    return size_;
+  }
+
+  sparse_set(const sparse_set&) = delete;
+  sparse_set& operator=(const sparse_set&) = delete;
+
+  sparse_set(sparse_set&& rhs) noexcept = default;
+  sparse_set& operator=(sparse_set&& rhs) noexcept = default;
+
+ private:
+  static uint8_t CODE_LEN_TABLE[65];
+  static uint64_t COMB_TABLE[65][65];
+
+  bit_vector codes_;  // veriable-length offsets of each class
+  std::vector<uint64_t> ptrs_;  // beginning positions of each offset in LARGE_BLOCK
+  std::vector<uint8_t> small_ranks_;  // class ids (rankSmallBlocks)
+  std::vector<uint64_t> large_ranks_;  // for LARGE_BLOCKs (rankBlocks)
+  std::vector<uint64_t> select_ptrs_;  // for SELECT_BLOCKs (selectOneInds)
+  uint64_t size_ = 0;
+  uint64_t univ_ = 0;
+  uint64_t block_buf_ = 0;  // of last
+  uint64_t block_rank_ = 0;  // of last
+
+  void push_bit_(bool bit) {
+    if ((univ_ % SMALL_BLOCK_SIZE) == 0) {
       write_block_();
     }
     if (bit) {
-      block_buf_ |= (1ULL << (size_ % SMALL_BLOCK_SIZE));
-      if ((num_1s_ % SELECT_BLOCK_SIZE) == 0) {
-        select_ptrs_.push_back(size_ / LARGE_BLOCK_SIZE);
+      block_buf_ |= (1ULL << (univ_ % SMALL_BLOCK_SIZE));
+      if ((size_ % SELECT_BLOCK_SIZE) == 0) {
+        select_ptrs_.push_back(univ_ / LARGE_BLOCK_SIZE);
       }
-      ++num_1s_;
+      ++size_;
       ++block_rank_;
     }
-    ++size_;
+    ++univ_;
   }
 
-  uint64_t select(uint64_t rank) const {
-    if (rank >= num_1s_ - block_rank_) {
-      uint64_t last_rank = rank - (num_1s_ - block_rank_);
-      return last_block_ptr() + bit_tools::select(block_buf_, last_rank + 1);
+  void write_block_() {
+    if (univ_ != 0) {
+      small_ranks_.push_back(static_cast<uint8_t>(block_rank_));
+      uint8_t code_len = CODE_LEN_TABLE[block_rank_];
+      uint64_t code = enum_encode(block_buf_, block_rank_);
+      codes_.append_bits(code, code_len);
+      block_buf_ = 0;
+      block_rank_ = 0;
     }
-    uint64_t i = rank / SELECT_BLOCK_SIZE;
-    uint64_t large_block = select_ptrs_[i];
+    if ((univ_ % LARGE_BLOCK_SIZE) == 0) {
+      large_ranks_.push_back(size_);
+      ptrs_.push_back(codes_.size());
+    }
+  }
+
+  uint64_t last_block_beg() const {
+    if (univ_ == 0) {
+      return 0;
+    }
+    return ((univ_ - 1) / SMALL_BLOCK_SIZE) * SMALL_BLOCK_SIZE;
+  }
+
+  template <bool Pair>
+  std::pair<uint64_t, uint64_t> access_(uint64_t rank) const {
+    assert(rank + uint64_t(Pair) < size_);
+
+    if (rank >= size_ - block_rank_) {
+      uint64_t last_rank = rank - (size_ - block_rank_);
+      uint64_t last_beg = last_block_beg();
+
+      std::pair<uint64_t, uint64_t> ans = {0, 0};
+      ans.first = last_beg + bit_tools::select(block_buf_, last_rank + 1);
+      if (Pair) {
+        ans.second = last_beg + bit_tools::select(block_buf_, last_rank + 2);
+      }
+      return ans;
+    }
+
+    uint64_t large_block = select_ptrs_[rank / SELECT_BLOCK_SIZE];
     for (; large_block < large_ranks_.size(); ++large_block) {
       if (rank < large_ranks_[large_block]) {
         break;
@@ -60,55 +139,39 @@ class sparse_set {
       remain -= small_rank;
       ptr += CODE_LEN_TABLE[small_rank];
     }
+
     uint64_t small_rank = small_ranks_[small_block];
     uint64_t code = codes_.get_bits(ptr, CODE_LEN_TABLE[small_rank]);
-    return small_block * SMALL_BLOCK_SIZE + enum_select(code, small_rank, remain);
-  }
 
-  uint64_t size() const {
-    return size_;
-  }
+    uint64_t offset = small_block * SMALL_BLOCK_SIZE;
 
-  sparse_set(const sparse_set&) = delete;
-  sparse_set& operator=(const sparse_set&) = delete;
-
-  sparse_set(sparse_set&& rhs) noexcept = default;
-  sparse_set& operator=(sparse_set&& rhs) noexcept = default;
-
- private:
-  static uint8_t CODE_LEN_TABLE[65];
-  static uint64_t COMB_TABLE[65][65];
-
-  bit_vector codes_;  // offsets of each class
-  std::vector<uint64_t> ptrs_;  // beginning positions of each offset in LARGE_BLOCK
-  std::vector<uint8_t> small_ranks_;  // class ids (rankSmallBlocks)
-  std::vector<uint64_t> large_ranks_;  // for LARGE_BLOCKs (rankBlocks)
-  std::vector<uint64_t> select_ptrs_;  // for SELECT_BLOCKs (selectOneInds)
-  uint64_t size_ = 0;
-  uint64_t num_1s_ = 0;
-  uint64_t block_buf_ = 0;  // of last
-  uint64_t block_rank_ = 0;  // of last
-
-  void write_block_() {
-    if (size_ != 0) {
-      small_ranks_.emplace_back(static_cast<uint8_t>(block_rank_));
-      uint8_t code_len = CODE_LEN_TABLE[block_rank_];
-      uint64_t code = enum_encode(block_buf_, block_rank_);
-      codes_.append_bits(code, code_len);
-      block_buf_ = 0;
-      block_rank_ = 0;
+    if (!Pair) {
+      return {offset + enum_select(code, small_rank, remain), 0};
     }
-    if ((size_ % LARGE_BLOCK_SIZE) == 0) {
-      ptrs_.push_back(codes_.size());
-      large_ranks_.push_back(num_1s_);
-    }
-  }
 
-  uint64_t last_block_ptr() const {
-    if (size_ == 0) {
-      return 0;
+    if (remain < small_rank) {
+      auto [s1, s2] = enum_select2(code, small_rank, remain);
+      return {offset + s1, offset + s2};
     }
-    return ((size_ - 1) / SMALL_BLOCK_SIZE) * SMALL_BLOCK_SIZE;
+
+    uint64_t ans1 = offset + enum_select(code, small_rank, remain);
+    if (rank + 1 >= size_ - block_rank_) {
+      uint64_t last_rank = rank - (size_ - block_rank_);
+      return {ans1, last_block_beg() + bit_tools::select(block_buf_, last_rank + 2)};
+    }
+
+    do {
+      ptr += CODE_LEN_TABLE[small_rank++];
+      small_rank = small_ranks_[++small_block];
+      if (small_rank != 0) {
+        break;
+      }
+    } while (small_block < small_ranks_.size());
+    assert(small_block < small_ranks_.size());
+
+    code = codes_.get_bits(ptr, CODE_LEN_TABLE[small_rank]);
+    uint64_t ans2 = small_block * SMALL_BLOCK_SIZE + enum_select(code, small_rank, 1);
+    return {ans1, ans2};
   }
 
   static uint64_t enum_encode(uint64_t val, uint32_t class_id) {
@@ -122,11 +185,13 @@ class sparse_set {
         --class_id;
       }
     }
+    assert(class_id == 0);
     return code;
   }
 
   static uint64_t enum_select(uint64_t code, uint64_t class_id, uint64_t rank) {
-    assert(rank != 0);
+    assert((rank != 0) and (rank <= class_id));
+
     if (CODE_LEN_TABLE[class_id] == SMALL_BLOCK_SIZE) {
       return bit_tools::select(code, rank);
     }
@@ -141,7 +206,32 @@ class sparse_set {
         code -= comb;
       }
     }
+    assert(false);
     return 0;  // should not come
+  }
+
+  static std::pair<uint64_t, uint64_t> enum_select2(uint64_t code, uint64_t class_id, uint64_t rank) {
+    assert((rank != 0) and (rank < class_id));
+
+    if (CODE_LEN_TABLE[class_id] == SMALL_BLOCK_SIZE) {
+      return {bit_tools::select(code, rank), bit_tools::select(code, rank + 1)};
+    }
+    uint64_t tmp = 0;
+    for (uint64_t i = 0; i < SMALL_BLOCK_SIZE; ++i) {
+      uint64_t comb = COMB_TABLE[SMALL_BLOCK_SIZE - i - 1][class_id];
+      if (code >= comb) {
+        if (rank == 1) {
+          tmp = i;
+        } else if (rank == 0) {
+          return {tmp, i};
+        }
+        --rank;
+        --class_id;
+        code -= comb;
+      }
+    }
+    assert(false);
+    return {0, 0};  // should not come
   }
 };
 
