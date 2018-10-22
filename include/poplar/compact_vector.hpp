@@ -3,7 +3,7 @@
 
 #include <vector>
 
-#include "basics.hpp"
+#include "bit_tools.hpp"
 #include "exception.hpp"
 
 namespace poplar {
@@ -18,7 +18,7 @@ class compact_vector {
     size_ = size;
     mask_ = (1ULL << width) - 1;
     width_ = width;
-    chunks_.resize(size_ * width_ / 64 + 1, 0);
+    chunks_.resize(bit_tools::words_for(size_ * width_), 0);
   }
 
   compact_vector(uint64_t size, uint32_t width, uint64_t init) : compact_vector{size, width} {
@@ -31,7 +31,7 @@ class compact_vector {
 
   void resize(uint64_t size) {
     size_ = size;
-    chunks_.resize(size_ * width_ / 64 + 1);
+    chunks_.resize(bit_tools::words_for(size_ * width_));
   }
 
   uint64_t operator[](uint64_t i) const {

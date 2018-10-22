@@ -16,6 +16,10 @@ class bit_vector {
     size_ = size;
   }
 
+  void reserve(uint64_t capa) {
+    chunks_.reserve(bit_tools::words_for(capa));
+  }
+
   ~bit_vector() = default;
 
   bool operator[](uint64_t i) const {
