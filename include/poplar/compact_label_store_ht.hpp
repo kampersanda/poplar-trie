@@ -30,9 +30,6 @@ class compact_label_store_ht {
   std::pair<const value_type*, uint64_t> compare(uint64_t pos, char_range key) const {
     assert(pos + 1 < ptrs_.size());
 
-    // uint64_t beg = ptrs_.access(pos);
-    // uint64_t end = ptrs_.access(pos + 1);
-
     auto [beg, end] = ptrs_.access_pair(pos);
 
     const uint8_t* char_ptr = chars_.data() + beg;
@@ -60,13 +57,11 @@ class compact_label_store_ht {
   };
 
   value_type* append(char_range key) {
-#ifdef POPLAR_ENABLE_EX_STATS
-    max_length_ = std::max(max_length_, length);
-    sum_length_ += length;
-#endif
-
     uint64_t length = key.empty() ? 0 : key.length() - 1;
     std::copy(key.begin, key.begin + length, std::back_inserter(chars_));
+
+    max_length_ = std::max(max_length_, length);
+    sum_length_ += length;
 
     const size_t vpos = chars_.size();
     for (size_t i = 0; i < sizeof(value_type); ++i) {
@@ -111,10 +106,8 @@ class compact_label_store_ht {
  private:
   std::vector<uint8_t> chars_;
   sparse_set ptrs_;
-#ifdef POPLAR_ENABLE_EX_STATS
   uint64_t max_length_ = 0;
   uint64_t sum_length_ = 0;
-#endif
 };
 
 }  // namespace poplar
