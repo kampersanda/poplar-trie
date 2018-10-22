@@ -18,7 +18,7 @@ class plain_label_store_ht {
   plain_label_store_ht() = default;
 
   explicit plain_label_store_ht(uint32_t capa_bits) {
-    chars_.reserve(1ULL << capa_bits);
+    chars_.reserve((1ULL << capa_bits) * sizeof(value_type));
     ptrs_.reserve(1ULL << capa_bits);
     ptrs_.emplace_back(0);
   }

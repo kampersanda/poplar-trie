@@ -20,6 +20,14 @@ class sparse_set {
   sparse_set() = default;
   ~sparse_set() = default;
 
+  void reserve(uint64_t capa) {  // capa for univ
+    codes_.reserve(capa);
+    ptrs_.reserve(capa / LARGE_BLOCK_SIZE);
+    small_ranks_.reserve(capa / SMALL_BLOCK_SIZE);
+    large_ranks_.reserve(capa / LARGE_BLOCK_SIZE);
+    select_ptrs_.reserve(capa / SELECT_BLOCK_SIZE);
+  }
+
   void append(uint64_t x) {
     assert(univ_ <= x);
 

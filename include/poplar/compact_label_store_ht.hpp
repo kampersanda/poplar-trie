@@ -21,7 +21,9 @@ class compact_label_store_ht {
   compact_label_store_ht() = default;
 
   explicit compact_label_store_ht(uint32_t capa_bits) {
-    chars_.reserve(1ULL << capa_bits);
+    uint64_t capa = (1ULL << capa_bits) * sizeof(value_type);
+    chars_.reserve(capa);
+    ptrs_.reserve(capa);
     ptrs_.append(0);
   }
 
