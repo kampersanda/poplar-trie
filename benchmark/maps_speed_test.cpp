@@ -99,6 +99,9 @@ int speed_test(const char* key_name, const char* query_name, uint32_t capa_bits)
   show_stat(out, indent, "update_us_key", update_time);
   show_stat(out, indent, "find_us_query", find_time);
 
+  show_stat(out, indent, "update_runs", UPDATE_RUNS);
+  show_stat(out, indent, "find_runs", FIND_RUNS);
+
   show_stat(out, indent, "ok", ok);
   show_stat(out, indent, "ng", ng);
 
