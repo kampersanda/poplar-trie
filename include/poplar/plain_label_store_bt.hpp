@@ -62,7 +62,7 @@ class plain_label_store_bt {
 
   template <typename T>
   void expand(const T& pos_map) {
-    std::vector<std::unique_ptr<uint8_t[]>> new_ptrs(capa_size() * 2);
+    std::vector<std::unique_ptr<uint8_t[]>> new_ptrs(ptrs_.size() * 2);
     for (uint64_t i = 0; i < pos_map.size(); ++i) {
       if (pos_map[i] != UINT64_MAX) {
         new_ptrs[pos_map[i]] = std::move(ptrs_[i]);
