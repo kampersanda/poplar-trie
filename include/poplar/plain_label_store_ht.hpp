@@ -28,19 +28,19 @@ class plain_label_store_ht {
   std::pair<const value_type*, uint64_t> compare(uint64_t pos, char_range key) const {
     assert(pos + 1 < ptrs_.size());
 
-    const uint8_t* ptr = chars_.data() + ptrs_[pos];
+    const uint8_t* char_ptr = chars_.data() + ptrs_[pos];
     uint64_t alloc = ptrs_[pos + 1] - ptrs_[pos];
 
     if (key.empty()) {
       assert(sizeof(value_type) == alloc);
-      return {reinterpret_cast<const value_type*>(ptr), 0};
+      return {reinterpret_cast<const value_type*>(char_ptr), 0};
     }
 
     assert(sizeof(value_type) <= alloc);
 
     uint64_t length = alloc - sizeof(value_type);
     for (uint64_t i = 0; i < length; ++i) {
-      if (key[i] != ptr[i]) {
+      if (key[i] != char_ptr[i]) {
         return {nullptr, i};
       }
     }
@@ -49,7 +49,7 @@ class plain_label_store_ht {
       return {nullptr, length};
     }
 
-    return {reinterpret_cast<const value_type*>(ptr + length), length + 1};
+    return {reinterpret_cast<const value_type*>(char_ptr + length), length + 1};
   }
 
   value_type* append(char_range key) {

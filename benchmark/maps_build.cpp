@@ -57,7 +57,7 @@ int main(int argc, char* argv[]) {
 
   cmdline::parser p;
   p.add<std::string>("key_fn", 'k', "input file name of keywords", true);
-  p.add<std::string>("map_type", 't', "plain_hash/rrr_hash/plain_bonsai/compact_bonsai", true);
+  p.add<std::string>("map_type", 't', "plain_bonsai/compact_bonsai/plain_hash/compact_hash/rrr_hash", true);
   p.add<uint32_t>("chunk_size", 'c', "chunk size for compact_bonsai_map", false, 16);
   p.add<uint32_t>("capa_bits", 'b', "#bits of initial capacity", false, 16);
   p.parse_check(argc, argv);
@@ -70,11 +70,7 @@ int main(int argc, char* argv[]) {
   using value_type = int;
   constexpr uint64_t lambda = 16;
 
-  if (map_type == "plain_hash") {
-    return build<plain_hash_map<value_type, lambda>>(key_fn.c_str(), capa_bits);
-  } else if (map_type == "rrr_hash") {
-    return build<rrr_hash_map<value_type, lambda>>(key_fn.c_str(), capa_bits);
-  } else if (map_type == "plain_bonsai") {
+  if (map_type == "plain_bonsai") {
     return build<plain_bonsai_map<value_type, lambda>>(key_fn.c_str(), capa_bits);
   } else if (map_type == "compact_bonsai") {
     switch (chunk_size) {
@@ -89,6 +85,23 @@ int main(int argc, char* argv[]) {
       default:
         break;
     }
+  } else if (map_type == "plain_hash") {
+    return build<plain_hash_map<value_type, lambda>>(key_fn.c_str(), capa_bits);
+  } else if (map_type == "compact_hash") {
+    switch (chunk_size) {
+      case 8:
+        return build<compact_hash_map<value_type, 8, lambda>>(key_fn.c_str(), capa_bits);
+      case 16:
+        return build<compact_hash_map<value_type, 16, lambda>>(key_fn.c_str(), capa_bits);
+      case 32:
+        return build<compact_hash_map<value_type, 32, lambda>>(key_fn.c_str(), capa_bits);
+      case 64:
+        return build<compact_hash_map<value_type, 64, lambda>>(key_fn.c_str(), capa_bits);
+      default:
+        break;
+    }
+  } else if (map_type == "rrr_hash") {
+    return build<rrr_hash_map<value_type, lambda>>(key_fn.c_str(), capa_bits);
   }
 
   std::cerr << p.usage() << std::endl;

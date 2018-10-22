@@ -98,6 +98,25 @@ inline void show_stat(std::ostream& os, const std::string& indent, const char* k
   os << indent << k << ':' << v << '\n';
 }
 
+template <uint64_t N>
+struct chunk_type_traits;
+template <>
+struct chunk_type_traits<8> {
+  using type = uint8_t;
+};
+template <>
+struct chunk_type_traits<16> {
+  using type = uint16_t;
+};
+template <>
+struct chunk_type_traits<32> {
+  using type = uint32_t;
+};
+template <>
+struct chunk_type_traits<64> {
+  using type = uint64_t;
+};
+
 }  // namespace poplar
 
 #endif  // POPLAR_TRIE_BASICS_HPP
