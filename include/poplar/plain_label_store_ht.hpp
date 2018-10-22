@@ -75,9 +75,6 @@ class plain_label_store_ht {
   uint64_t size() const {
     return ptrs_.size() - 1;
   }
-  uint64_t capa_size() const {
-    return ptrs_.capacity();
-  }
   uint64_t max_length() const {
     return max_length_;
   }
@@ -89,7 +86,6 @@ class plain_label_store_ht {
     auto indent = get_indent(n);
     show_stat(os, indent, "name", "plain_label_store_ht");
     show_stat(os, indent, "size", size());
-    show_stat(os, indent, "capa_size", capa_size());
     show_stat(os, indent, "max_length", max_length());
     show_stat(os, indent, "ave_length", ave_length());
   }
