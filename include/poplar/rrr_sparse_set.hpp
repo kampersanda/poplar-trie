@@ -11,10 +11,10 @@ namespace poplar {
 // https://github.com/hillbig/rsdic
 class rrr_sparse_set {
  public:
-  static constexpr uint64_t SMALL_BLOCK_SIZE = 64;
-  static constexpr uint64_t LARGE_BLOCK_SIZE = 1024;
-  static constexpr uint64_t SELECT_BLOCK_SIZE = 4096;
-  static constexpr uint64_t NUM_SB_PER_LB = LARGE_BLOCK_SIZE / SMALL_BLOCK_SIZE;
+  static constexpr uint64_t small_block_size = 64;
+  static constexpr uint64_t large_block_size = 1024;
+  static constexpr uint64_t select_block_size = 4096;
+  static constexpr uint64_t num_sb_per_lb = large_block_size / small_block_size;
 
  public:
   rrr_sparse_set() = default;
@@ -22,10 +22,10 @@ class rrr_sparse_set {
 
   void reserve(uint64_t capa) {  // capa for univ
     codes_.reserve(capa);
-    ptrs_.reserve(capa / LARGE_BLOCK_SIZE);
-    small_ranks_.reserve(capa / SMALL_BLOCK_SIZE);
-    large_ranks_.reserve(capa / LARGE_BLOCK_SIZE);
-    select_ptrs_.reserve(capa / SELECT_BLOCK_SIZE);
+    ptrs_.reserve(capa / large_block_size);
+    small_ranks_.reserve(capa / small_block_size);
+    large_ranks_.reserve(capa / large_block_size);
+    select_ptrs_.reserve(capa / select_block_size);
   }
 
   void append(uint64_t x) {
@@ -84,13 +84,13 @@ class rrr_sparse_set {
   uint64_t block_rank_ = 0;  // of last
 
   void push_bit_(bool bit) {
-    if ((univ_ % SMALL_BLOCK_SIZE) == 0) {
+    if ((univ_ % small_block_size) == 0) {
       write_block_();
     }
     if (bit) {
-      block_buf_ |= (1ULL << (univ_ % SMALL_BLOCK_SIZE));
-      if ((size_ % SELECT_BLOCK_SIZE) == 0) {
-        select_ptrs_.push_back(univ_ / LARGE_BLOCK_SIZE);
+      block_buf_ |= (1ULL << (univ_ % small_block_size));
+      if ((size_ % select_block_size) == 0) {
+        select_ptrs_.push_back(univ_ / large_block_size);
       }
       ++size_;
       ++block_rank_;
@@ -107,7 +107,7 @@ class rrr_sparse_set {
       block_buf_ = 0;
       block_rank_ = 0;
     }
-    if ((univ_ % LARGE_BLOCK_SIZE) == 0) {
+    if ((univ_ % large_block_size) == 0) {
       large_ranks_.push_back(size_);
       ptrs_.push_back(codes_.size());
     }
@@ -117,7 +117,7 @@ class rrr_sparse_set {
     if (univ_ == 0) {
       return 0;
     }
-    return ((univ_ - 1) / SMALL_BLOCK_SIZE) * SMALL_BLOCK_SIZE;
+    return ((univ_ - 1) / small_block_size) * small_block_size;
   }
 
   template <bool Pair>
@@ -136,7 +136,7 @@ class rrr_sparse_set {
       return ans;
     }
 
-    uint64_t large_block = select_ptrs_[rank / SELECT_BLOCK_SIZE];
+    uint64_t large_block = select_ptrs_[rank / select_block_size];
     for (; large_block < large_ranks_.size(); ++large_block) {
       if (rank < large_ranks_[large_block]) {
         break;
@@ -144,7 +144,7 @@ class rrr_sparse_set {
     }
     --large_block;
 
-    uint64_t small_block = large_block * NUM_SB_PER_LB;
+    uint64_t small_block = large_block * num_sb_per_lb;
     uint64_t ptr = ptrs_[large_block];
     uint64_t remain = rank - large_ranks_[large_block] + 1;
     for (; small_block < small_ranks_.size(); ++small_block) {
@@ -159,7 +159,7 @@ class rrr_sparse_set {
     uint64_t small_rank = small_ranks_[small_block];
     uint64_t code = codes_.get_bits(ptr, CODE_LEN_TABLE[small_rank]);
 
-    uint64_t offset = small_block * SMALL_BLOCK_SIZE;
+    uint64_t offset = small_block * small_block_size;
 
     if (!Pair) {
       return {offset + enum_select(code, small_rank, remain), 0};
@@ -186,18 +186,18 @@ class rrr_sparse_set {
     assert(small_block < small_ranks_.size());
 
     code = codes_.get_bits(ptr, CODE_LEN_TABLE[small_rank]);
-    uint64_t ans2 = small_block * SMALL_BLOCK_SIZE + enum_select(code, small_rank, 1);
+    uint64_t ans2 = small_block * small_block_size + enum_select(code, small_rank, 1);
     return {ans1, ans2};
   }
 
   static uint64_t enum_encode(uint64_t val, uint32_t class_id) {
-    if (CODE_LEN_TABLE[class_id] == SMALL_BLOCK_SIZE) {
+    if (CODE_LEN_TABLE[class_id] == small_block_size) {
       return val;
     }
     uint64_t code = 0;
-    for (uint64_t i = 0; i < SMALL_BLOCK_SIZE; ++i) {
+    for (uint64_t i = 0; i < small_block_size; ++i) {
       if (bit_tools::get_bit(val, i)) {
-        code += COMB_TABLE[SMALL_BLOCK_SIZE - i - 1][class_id];
+        code += COMB_TABLE[small_block_size - i - 1][class_id];
         --class_id;
       }
     }
@@ -208,11 +208,11 @@ class rrr_sparse_set {
   static uint64_t enum_select(uint64_t code, uint64_t class_id, uint64_t rank) {
     assert((rank != 0) and (rank <= class_id));
 
-    if (CODE_LEN_TABLE[class_id] == SMALL_BLOCK_SIZE) {
+    if (CODE_LEN_TABLE[class_id] == small_block_size) {
       return bit_tools::select(code, rank);
     }
-    for (uint64_t i = 0; i < SMALL_BLOCK_SIZE; ++i) {
-      uint64_t comb = COMB_TABLE[SMALL_BLOCK_SIZE - i - 1][class_id];
+    for (uint64_t i = 0; i < small_block_size; ++i) {
+      uint64_t comb = COMB_TABLE[small_block_size - i - 1][class_id];
       if (code >= comb) {
         if (rank == 1) {
           return i;
@@ -229,12 +229,12 @@ class rrr_sparse_set {
   static std::pair<uint64_t, uint64_t> enum_select2(uint64_t code, uint64_t class_id, uint64_t rank) {
     assert((rank != 0) and (rank < class_id));
 
-    if (CODE_LEN_TABLE[class_id] == SMALL_BLOCK_SIZE) {
+    if (CODE_LEN_TABLE[class_id] == small_block_size) {
       return {bit_tools::select(code, rank), bit_tools::select(code, rank + 1)};
     }
     uint64_t tmp = 0;
-    for (uint64_t i = 0; i < SMALL_BLOCK_SIZE; ++i) {
-      uint64_t comb = COMB_TABLE[SMALL_BLOCK_SIZE - i - 1][class_id];
+    for (uint64_t i = 0; i < small_block_size; ++i) {
+      uint64_t comb = COMB_TABLE[small_block_size - i - 1][class_id];
       if (code >= comb) {
         if (rank == 1) {
           tmp = i;
