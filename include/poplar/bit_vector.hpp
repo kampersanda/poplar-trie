@@ -54,12 +54,13 @@ class bit_vector {
     ++size_;
   }
   void append_bits(uint64_t bits, uint32_t len) {
-    assert(len == 64 or (bits >> len) == 0);
+    assert((len == 64) or (bits >> len) == 0);
 
     if (len == 0) {
       return;
     }
-    uint64_t pos_in_chunk = len % 64;
+
+    uint64_t pos_in_chunk = size_ % 64;
     size_ += len;
     if (pos_in_chunk == 0) {
       chunks_.push_back(bits);
