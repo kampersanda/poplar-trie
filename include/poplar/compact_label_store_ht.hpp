@@ -5,15 +5,14 @@
 #include <memory>
 #include <vector>
 
-#include "bit_chunk.hpp"
-#include "vbyte.hpp"
+#include "sparse_set.hpp"
 
 namespace poplar {
 
-template <typename Value, uint64_t ChunkSize = 16>
+template <typename Value>
 class compact_label_store_ht {
  public:
-  using this_type = compact_label_store_ht<Value, ChunkSize>;
+  using this_type = compact_label_store_ht<Value>;
   using value_type = Value;
 
   static constexpr auto trie_type = trie_types::HASH_TRIE;
@@ -22,33 +21,33 @@ class compact_label_store_ht {
   compact_label_store_ht() = default;
 
   explicit compact_label_store_ht(uint32_t capa_bits) {
-    ptrs_.reserve((1ULL << capa_bits) / ChunkSize);
+    chars_.reserve(1ULL << capa_bits);
+    ptrs_.append(0);
   }
 
   ~compact_label_store_ht() = default;
 
   std::pair<const value_type*, uint64_t> compare(uint64_t pos, char_range key) const {
-    assert(pos < size_);
+    assert(pos + 1 < ptrs_.size());
 
-    auto [group_id, offset] = decompose_value<ChunkSize>(pos);
-    auto ptr = group_id < ptrs_.size() ? ptrs_[group_id].get() : char_buf_.data();
+    // uint64_t beg = ptrs_.access(pos);
+    // uint64_t end = ptrs_.access(pos + 1);
 
-    uint64_t alloc = 0;
-    for (uint64_t i = 0; i < offset; ++i) {
-      ptr += vbyte::decode(ptr, alloc);
-      ptr += alloc;
-    }
-    ptr += vbyte::decode(ptr, alloc);
+    auto [beg, end] = ptrs_.access_pair(pos);
+
+    const uint8_t* char_ptr = chars_.data() + beg;
+    uint64_t alloc = end - beg;
 
     if (key.empty()) {
-      return {reinterpret_cast<const value_type*>(ptr), 0};
+      assert(sizeof(value_type) == alloc);
+      return {reinterpret_cast<const value_type*>(char_ptr), 0};
     }
 
     assert(sizeof(value_type) <= alloc);
 
     uint64_t length = alloc - sizeof(value_type);
     for (uint64_t i = 0; i < length; ++i) {
-      if (key[i] != ptr[i]) {
+      if (key[i] != char_ptr[i]) {
         return {nullptr, i};
       }
     }
@@ -57,57 +56,43 @@ class compact_label_store_ht {
       return {nullptr, length};
     }
 
-    // +1 considers the terminator '\0'
-    return {reinterpret_cast<const value_type*>(ptr + length), length + 1};
+    return {reinterpret_cast<const value_type*>(char_ptr + length), length + 1};
   };
 
   value_type* append(char_range key) {
-    uint64_t pos = size_++;
-    auto [group_id, offset] = decompose_value<ChunkSize>(pos);
-
-    if (pos != 0 and offset == 0) {
-      release_buffer_();
-    }
-
 #ifdef POPLAR_ENABLE_EX_STATS
-    max_length_ = std::max<uint64_t>(max_length_, key.length());
-    sum_length_ += key.length();
+    max_length_ = std::max(max_length_, length);
+    sum_length_ += length;
 #endif
 
     uint64_t length = key.empty() ? 0 : key.length() - 1;
-    vbyte::append(char_buf_, length + sizeof(value_type));
-    std::copy(key.begin, key.begin + length, std::back_inserter(char_buf_));
+    std::copy(key.begin, key.begin + length, std::back_inserter(chars_));
 
-    const size_t vpos = char_buf_.size();
+    const size_t vpos = chars_.size();
     for (size_t i = 0; i < sizeof(value_type); ++i) {
-      char_buf_.emplace_back(0);
+      chars_.emplace_back(0);
     }
+    ptrs_.append(chars_.size());
 
-    return reinterpret_cast<value_type*>(char_buf_.data() + vpos);
+    return reinterpret_cast<value_type*>(chars_.data() + vpos);
   }
 
   // Associate a dummy label
   void append_dummy() {
-    uint64_t pos = size_++;
-    auto [group_id, offset] = decompose_value<ChunkSize>(pos);
-
-    if (pos != 0 and offset == 0) {
-      release_buffer_();
-    }
-    vbyte::append(char_buf_, 0);
+    chars_.emplace_back(0);
+    ptrs_.append(chars_.size());
   }
 
   uint64_t size() const {
-    return size_;
+    return ptrs_.size() - 1;
   }
   uint64_t capa_size() const {
-    return ptrs_.capacity() * ChunkSize;
+    return 0;
   }
 
   boost::property_tree::ptree make_ptree() const {
     boost::property_tree::ptree pt;
     pt.put("name", "compact_label_store_ht");
-    pt.put("ChunkSize", ChunkSize);
     pt.put("size", size());
     pt.put("capa_size", capa_size());
 #ifdef POPLAR_ENABLE_EX_STATS
@@ -124,21 +109,12 @@ class compact_label_store_ht {
   compact_label_store_ht& operator=(compact_label_store_ht&&) noexcept = default;
 
  private:
-  std::vector<std::unique_ptr<uint8_t[]>> ptrs_;
-  std::vector<uint8_t> char_buf_;
-  uint64_t size_ = 0;
-
+  std::vector<uint8_t> chars_;
+  sparse_set ptrs_;
 #ifdef POPLAR_ENABLE_EX_STATS
   uint64_t max_length_ = 0;
   uint64_t sum_length_ = 0;
 #endif
-
-  void release_buffer_() {
-    auto new_uptr = std::make_unique<uint8_t[]>(char_buf_.size());
-    copy_bytes(new_uptr.get(), char_buf_.data(), char_buf_.size());
-    ptrs_.emplace_back(std::move(new_uptr));
-    char_buf_.clear();
-  }
 };
 
 }  // namespace poplar
