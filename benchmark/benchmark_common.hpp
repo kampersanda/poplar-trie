@@ -44,10 +44,7 @@ inline std::string short_realname() {
 // clang-format off
 template <typename Value = int, uint64_t Lambda = 16>
 using map_types = std::tuple<poplar::plain_hash_map<Value, Lambda>,
-                             poplar::compact_hash_map<Value, 8, Lambda>,
-                             poplar::compact_hash_map<Value, 16, Lambda>,
-                             poplar::compact_hash_map<Value, 32, Lambda>,
-                             poplar::compact_hash_map<Value, 64, Lambda>,
+                             poplar::compact_hash_map<Value, Lambda>,
                              poplar::plain_bonsai_map<Value, Lambda>,
                              poplar::compact_bonsai_map<Value, 8, Lambda>,
                              poplar::compact_bonsai_map<Value, 16, Lambda>,
