@@ -57,7 +57,7 @@ int main(int argc, char* argv[]) {
 
   cmdline::parser p;
   p.add<std::string>("key_fn", 'k', "input file name of keywords", true);
-  p.add<std::string>("map_type", 't', "plain_hash/compact_hash/plain_bonsai/compact_bonsai", true);
+  p.add<std::string>("map_type", 't', "plain_hash/rrr_hash/plain_bonsai/compact_bonsai", true);
   p.add<uint32_t>("chunk_size", 'c', "chunk size for compact_bonsai_map", false, 16);
   p.add<uint32_t>("capa_bits", 'b', "#bits of initial capacity", false, 16);
   p.parse_check(argc, argv);
@@ -72,8 +72,8 @@ int main(int argc, char* argv[]) {
 
   if (map_type == "plain_hash") {
     return build<plain_hash_map<value_type, lambda>>(key_fn.c_str(), capa_bits);
-  } else if (map_type == "compact_hash") {
-    return build<compact_hash_map<value_type, lambda>>(key_fn.c_str(), capa_bits);
+  } else if (map_type == "rrr_hash") {
+    return build<rrr_hash_map<value_type, lambda>>(key_fn.c_str(), capa_bits);
   } else if (map_type == "plain_bonsai") {
     return build<plain_bonsai_map<value_type, lambda>>(key_fn.c_str(), capa_bits);
   } else if (map_type == "compact_bonsai") {

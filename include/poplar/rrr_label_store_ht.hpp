@@ -1,33 +1,33 @@
-#ifndef POPLAR_TRIE_COMPACT_LABEL_STORE_HT_HPP
-#define POPLAR_TRIE_COMPACT_LABEL_STORE_HT_HPP
+#ifndef POPLAR_TRIE_RRR_LABEL_STORE_HT_HPP
+#define POPLAR_TRIE_RRR_LABEL_STORE_HT_HPP
 
 #include <iostream>
 #include <memory>
 #include <vector>
 
-#include "sparse_set.hpp"
+#include "rrr_sparse_set.hpp"
 
 namespace poplar {
 
 template <typename Value>
-class compact_label_store_ht {
+class rrr_label_store_ht {
  public:
-  using this_type = compact_label_store_ht<Value>;
+  using this_type = rrr_label_store_ht<Value>;
   using value_type = Value;
 
   static constexpr auto trie_type = trie_types::HASH_TRIE;
 
  public:
-  compact_label_store_ht() = default;
+  rrr_label_store_ht() = default;
 
-  explicit compact_label_store_ht(uint32_t capa_bits) {
+  explicit rrr_label_store_ht(uint32_t capa_bits) {
     uint64_t capa = (1ULL << capa_bits) * sizeof(value_type);
     chars_.reserve(capa);
     ptrs_.reserve(capa);
     ptrs_.append(0);
   }
 
-  ~compact_label_store_ht() = default;
+  ~rrr_label_store_ht() = default;
 
   std::pair<const value_type*, uint64_t> compare(uint64_t pos, char_range key) const {
     assert(pos + 1 < ptrs_.size());
@@ -92,7 +92,7 @@ class compact_label_store_ht {
 
   void show_stats(std::ostream& os, int n = 0) const {
     auto indent = get_indent(n);
-    show_stat(os, indent, "name", "compact_label_store_ht");
+    show_stat(os, indent, "name", "rrr_label_store_ht");
     show_stat(os, indent, "size", size());
     show_stat(os, indent, "max_length", max_length());
     show_stat(os, indent, "ave_length", ave_length());
@@ -100,19 +100,19 @@ class compact_label_store_ht {
     ptrs_.show_stats(os, n + 1);
   }
 
-  compact_label_store_ht(const compact_label_store_ht&) = delete;
-  compact_label_store_ht& operator=(const compact_label_store_ht&) = delete;
+  rrr_label_store_ht(const rrr_label_store_ht&) = delete;
+  rrr_label_store_ht& operator=(const rrr_label_store_ht&) = delete;
 
-  compact_label_store_ht(compact_label_store_ht&&) noexcept = default;
-  compact_label_store_ht& operator=(compact_label_store_ht&&) noexcept = default;
+  rrr_label_store_ht(rrr_label_store_ht&&) noexcept = default;
+  rrr_label_store_ht& operator=(rrr_label_store_ht&&) noexcept = default;
 
  private:
   std::vector<uint8_t> chars_;
-  sparse_set ptrs_;
+  rrr_sparse_set ptrs_;
   uint64_t max_length_ = 0;
   uint64_t sum_length_ = 0;
 };
 
 }  // namespace poplar
 
-#endif  // POPLAR_TRIE_COMPACT_LABEL_STORE_HT_HPP
+#endif  // POPLAR_TRIE_RRR_LABEL_STORE_HT_HPP

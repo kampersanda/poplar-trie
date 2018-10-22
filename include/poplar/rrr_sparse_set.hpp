@@ -1,5 +1,5 @@
-#ifndef POPLAR_TRIE_SPARSE_SET_HPP
-#define POPLAR_TRIE_SPARSE_SET_HPP
+#ifndef POPLAR_TRIE_RRR_SPARSE_SET_HPP
+#define POPLAR_TRIE_RRR_SPARSE_SET_HPP
 
 #include <vector>
 
@@ -9,7 +9,7 @@ namespace poplar {
 
 // RRR
 // https://github.com/hillbig/rsdic
-class sparse_set {
+class rrr_sparse_set {
  public:
   static constexpr uint64_t SMALL_BLOCK_SIZE = 64;
   static constexpr uint64_t LARGE_BLOCK_SIZE = 1024;
@@ -17,8 +17,8 @@ class sparse_set {
   static constexpr uint64_t NUM_SB_PER_LB = LARGE_BLOCK_SIZE / SMALL_BLOCK_SIZE;
 
  public:
-  sparse_set() = default;
-  ~sparse_set() = default;
+  rrr_sparse_set() = default;
+  ~rrr_sparse_set() = default;
 
   void reserve(uint64_t capa) {  // capa for univ
     codes_.reserve(capa);
@@ -57,17 +57,17 @@ class sparse_set {
 
   void show_stats(std::ostream& os, int n = 0) const {
     auto indent = get_indent(n);
-    show_stat(os, indent, "name", "sparse_set");
+    show_stat(os, indent, "name", "rrr_sparse_set");
     show_stat(os, indent, "size", size());
     show_stat(os, indent, "univ", univ());
     show_stat(os, indent, "density", double(size()) / univ());
   }
 
-  sparse_set(const sparse_set&) = delete;
-  sparse_set& operator=(const sparse_set&) = delete;
+  rrr_sparse_set(const rrr_sparse_set&) = delete;
+  rrr_sparse_set& operator=(const rrr_sparse_set&) = delete;
 
-  sparse_set(sparse_set&& rhs) noexcept = default;
-  sparse_set& operator=(sparse_set&& rhs) noexcept = default;
+  rrr_sparse_set(rrr_sparse_set&& rhs) noexcept = default;
+  rrr_sparse_set& operator=(rrr_sparse_set&& rhs) noexcept = default;
 
  private:
   static uint8_t CODE_LEN_TABLE[65];
@@ -251,12 +251,12 @@ class sparse_set {
   }
 };
 
-uint8_t sparse_set::CODE_LEN_TABLE[65] = {0,  6,  11, 16, 20, 23, 27, 30, 33, 35, 38, 40, 42, 44, 46, 64, 64,
-                                          64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64,
-                                          64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 46,
-                                          44, 42, 40, 38, 35, 33, 30, 27, 23, 20, 16, 11, 6,  0};
+uint8_t rrr_sparse_set::CODE_LEN_TABLE[65] = {
+    0,  6,  11, 16, 20, 23, 27, 30, 33, 35, 38, 40, 42, 44, 46, 64, 64, 64, 64, 64, 64, 64,
+    64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64,
+    64, 64, 64, 64, 64, 64, 46, 44, 42, 40, 38, 35, 33, 30, 27, 23, 20, 16, 11, 6,  0};
 // clang-format off
-uint64_t sparse_set::COMB_TABLE[65][65] = {
+uint64_t rrr_sparse_set::COMB_TABLE[65][65] = {
 		{1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
 		{1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
 		{1, 2, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
@@ -326,4 +326,4 @@ uint64_t sparse_set::COMB_TABLE[65][65] = {
 
 }  // namespace poplar
 
-#endif  // POPLAR_TRIE_SPARSE_SET_HPP
+#endif  // POPLAR_TRIE_RRR_SPARSE_SET_HPP

@@ -2,7 +2,7 @@
 #include <poplar.hpp>
 #include <random>
 
-#include <poplar/sparse_set.hpp>
+#include <poplar/rrr_sparse_set.hpp>
 
 #include "test_common.hpp"
 
@@ -16,7 +16,7 @@ constexpr uint64_t N = 10000;
 void test_access(uint64_t factor) {
   // std::vector<bool> bits;
   std::vector<uint64_t> selects;
-  sparse_set set;
+  rrr_sparse_set rrr_set;
 
   {
     std::random_device rnd;
@@ -24,16 +24,16 @@ void test_access(uint64_t factor) {
       uint64_t x = rnd() % 100;
       if (x < factor) {
         selects.push_back(i);
-        set.append(i);
+        rrr_set.append(i);
       }
     }
   }
 
   for (uint64_t i = 0; i < selects.size(); ++i) {
-    ASSERT_EQ(selects[i], set.access(i));
+    ASSERT_EQ(selects[i], rrr_set.access(i));
   }
   for (uint64_t i = 0; i < selects.size() - 1; ++i) {
-    auto [s1, s2] = set.access_pair(i);
+    auto [s1, s2] = rrr_set.access_pair(i);
     ASSERT_EQ(selects[i], s1);
     ASSERT_EQ(selects[i + 1], s2);
   }

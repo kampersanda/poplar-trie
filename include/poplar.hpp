@@ -7,9 +7,9 @@
 #include "poplar/plain_hash_trie.hpp"
 
 #include "poplar/compact_label_store_bt.hpp"
-#include "poplar/compact_label_store_ht.hpp"
 #include "poplar/plain_label_store_bt.hpp"
 #include "poplar/plain_label_store_ht.hpp"
+#include "poplar/rrr_label_store_ht.hpp"
 
 #include "poplar/map.hpp"
 
@@ -19,7 +19,7 @@ template <typename Value, uint64_t Lambda = 16>
 using plain_hash_map = map<plain_hash_trie<>, plain_label_store_ht<Value>, Lambda>;
 
 template <typename Value, uint64_t Lambda = 16>
-using compact_hash_map = map<compact_hash_trie<>, compact_label_store_ht<Value>, Lambda>;
+using rrr_hash_map = map<compact_hash_trie<>, rrr_label_store_ht<Value>, Lambda>;
 
 template <typename Value, uint64_t Lambda = 16>
 using plain_bonsai_map = map<plain_bonsai_trie<>, plain_label_store_bt<Value>, Lambda>;
