@@ -140,21 +140,16 @@ class compact_hash_table {
     return capa_size_.bits();
   }
 
-  boost::property_tree::ptree make_ptree() const {
-    boost::property_tree::ptree pt;
-    pt.put("name", "compact_hash_table");
-    pt.put("factor", double(size()) / capa_size() * 100);
-    pt.put("max_factor", MaxFactor);
-    pt.put("size", size());
-    pt.put("univ_size", univ_size());
-    pt.put("univ_bits", univ_bits());
-    pt.put("capa_size", capa_size());
-    pt.put("capa_bits", capa_bits());
-#ifdef POPLAR_ENABLE_EX_STATS
-    pt.put("num_resize", num_resize_);
-#endif
-    pt.add_child("hasher", hasher_.make_ptree());
-    return pt;
+  void show_stats(std::ostream& os, int n = 0) const {
+    auto indent = get_indent(n);
+    show_stat(os, indent, "name", "compact_hash_table");
+    show_stat(os, indent, "factor", double(size()) / capa_size() * 100);
+    show_stat(os, indent, "max_factor", MaxFactor);
+    show_stat(os, indent, "size", size());
+    show_stat(os, indent, "capa_size", capa_size());
+    show_stat(os, indent, "num_resize", num_resize_);
+    show_stat(os, indent, "hasher");
+    hasher_.show_stats(os, n + 1);
   }
 
   compact_hash_table(const compact_hash_table&) = delete;
@@ -173,10 +168,7 @@ class compact_hash_table {
   size_p2 quo_size_;
   uint64_t quo_shift_ = 0;
   uint64_t quo_invmask_ = 0;  // For setter
-
-#ifdef POPLAR_ENABLE_EX_STATS
   uint64_t num_resize_ = 0;
-#endif
 
   uint64_t find_ass_cbit_(uint64_t slot_id) const {
     uint64_t dummy = 0;
@@ -221,10 +213,7 @@ class compact_hash_table {
 
   void expand_() {
     this_type new_cht{univ_size_.bits(), capa_size_.bits() + 1};
-
-#ifdef POPLAR_ENABLE_EX_STATS
     new_cht.num_resize_ = num_resize_ + 1;
-#endif
 
     // Find the first vacant slot
     uint64_t i = 0;

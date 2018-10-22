@@ -9,7 +9,7 @@
 #include <string>
 #include <string_view>
 
-#include <boost/property_tree/json_parser.hpp>
+// #include <boost/property_tree/json_parser.hpp>
 
 // #define POPLAR_ENABLE_EX_STATS
 
@@ -89,6 +89,18 @@ class size_p2 {
   uint32_t bits_ = 0;
   uint64_t mask_ = 0;
 };
+
+inline std::string get_indent(int n) {
+  return std::string(n, '\t');
+}
+
+inline void show_stat(std::ostream& os, const std::string& indent, const char* k) {
+  os << indent << k << "->\n";
+}
+template <class V>
+inline void show_stat(std::ostream& os, const std::string& indent, const char* k, const V& v) {
+  os << indent << k << ':' << v << '\n';
+}
 
 }  // namespace poplar
 

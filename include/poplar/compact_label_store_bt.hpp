@@ -72,10 +72,8 @@ class compact_label_store_bt {
 
     ++size_;
 
-#ifdef POPLAR_ENABLE_EX_STATS
     max_length_ = std::max<uint64_t>(max_length_, key.length());
     sum_length_ += key.length();
-#endif
 
     if (!ptrs_[chunk_id]) {
       // First association in the group
@@ -146,10 +144,8 @@ class compact_label_store_bt {
     }
 
     new_ls.size_ = size_;
-#ifdef POPLAR_ENABLE_EX_STATS
     new_ls.max_length_ = max_length_;
     new_ls.sum_length_ = sum_length_;
-#endif
 
     *this = std::move(new_ls);
   }
@@ -160,18 +156,21 @@ class compact_label_store_bt {
   uint64_t capa_size() const {
     return ptrs_.size() * ChunkSize;
   }
+  uint64_t max_length() const {
+    return max_length_;
+  }
+  double ave_length() const {
+    return double(sum_length_) / size();
+  }
 
-  boost::property_tree::ptree make_ptree() const {
-    boost::property_tree::ptree pt;
-    pt.put("name", "compact_label_store_bt");
-    pt.put("chunk_size", ChunkSize);
-    pt.put("size", size());
-    pt.put("capa_size", capa_size());
-#ifdef POPLAR_ENABLE_EX_STATS
-    pt.put("max_length", max_length_);
-    pt.put("ave_length", double(sum_length_) / size());
-#endif
-    return pt;
+  void show_stats(std::ostream& os, int n = 0) const {
+    auto indent = get_indent(n);
+    show_stat(os, indent, "name", "compact_label_store_bt");
+    show_stat(os, indent, "size", size());
+    show_stat(os, indent, "capa_size", capa_size());
+    show_stat(os, indent, "max_length", max_length());
+    show_stat(os, indent, "ave_length", ave_length());
+    show_stat(os, indent, "chunk_size", ChunkSize);
   }
 
   compact_label_store_bt(const compact_label_store_bt&) = delete;
@@ -184,10 +183,8 @@ class compact_label_store_bt {
   std::vector<std::unique_ptr<uint8_t[]>> ptrs_;
   std::vector<chunk_type> chunks_;
   uint64_t size_ = 0;
-#ifdef POPLAR_ENABLE_EX_STATS
   uint64_t max_length_ = 0;
   uint64_t sum_length_ = 0;
-#endif
 
   std::pair<uint64_t, uint64_t> get_allocs_(uint64_t chunk_id, uint64_t pos_in_chunk) {
     assert(bit_tools::get_bit(chunks_[chunk_id], pos_in_chunk));

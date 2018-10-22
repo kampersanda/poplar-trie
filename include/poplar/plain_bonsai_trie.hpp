@@ -156,9 +156,7 @@ class plain_bonsai_trie {
     plain_bonsai_trie new_ht{capa_bits() + 1, symb_size_.bits()};
     new_ht.add_root();
 
-#ifdef POPLAR_ENABLE_EX_STATS
     new_ht.num_resize_ = num_resize_ + 1;
-#endif
 
     bit_vector done_flags(capa_size());
     done_flags.set(get_root());
@@ -221,20 +219,15 @@ class plain_bonsai_trie {
     return symb_size_.bits();
   }
 
-  boost::property_tree::ptree make_ptree() const {
-    boost::property_tree::ptree pt;
-    pt.put("name", "plain_bonsai_trie");
-    pt.put("factor", double(size()) / capa_size() * 100);
-    pt.put("max_factor", MaxFactor);
-    pt.put("size", size());
-    pt.put("capa_size", capa_size());
-    pt.put("capa_bits", capa_bits());
-    pt.put("symb_size", symb_size());
-    pt.put("symb_bits", symb_bits());
-#ifdef POPLAR_ENABLE_EX_STATS
-    pt.put("num_resize", num_resize);
-#endif
-    return pt;
+  void show_stats(std::ostream& os, int n = 0) const {
+    auto indent = get_indent(n);
+    show_stat(os, indent, "name", "plain_bonsai_trie");
+    show_stat(os, indent, "factor", double(size()) / capa_size() * 100);
+    show_stat(os, indent, "max_factor", MaxFactor);
+    show_stat(os, indent, "size", size());
+    show_stat(os, indent, "capa_bits", capa_bits());
+    show_stat(os, indent, "symb_bits", symb_bits());
+    show_stat(os, indent, "num_resize", num_resize_);
   }
 
   plain_bonsai_trie(const plain_bonsai_trie&) = delete;
@@ -249,9 +242,7 @@ class plain_bonsai_trie {
   uint64_t max_size_ = 0;  // MaxFactor% of the capacity
   size_p2 capa_size_;
   size_p2 symb_size_;
-#ifdef POPLAR_ENABLE_EX_STATS
   uint64_t num_resize_ = 0;
-#endif
 
   uint64_t make_key_(uint64_t node_id, uint64_t symb) const {
     return (node_id << symb_size_.bits()) | symb;

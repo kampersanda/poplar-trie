@@ -138,12 +138,11 @@ class split_mix_hasher {
     return univ_size_.bits();
   }
 
-  boost::property_tree::ptree make_ptree() const {
-    boost::property_tree::ptree pt;
-    pt.put("name", "split_mix_hasher");
-    pt.put("size", size());
-    pt.put("bits", bits());
-    return pt;
+  void show_stats(std::ostream& os, int n = 0) const {
+    auto indent = get_indent(n);
+    show_stat(os, indent, "name", "split_mix_hasher");
+    show_stat(os, indent, "size", size());
+    show_stat(os, indent, "bits", bits());
   }
 
  private:

@@ -12,12 +12,6 @@ constexpr int FIND_RUNS = 1;
 
 template <class Map>
 int speed_test(const char* key_name, const char* query_name, uint32_t capa_bits) {
-  boost::property_tree::ptree pt;
-  pt.put("map_name", realname<Map>());
-  pt.put("key_name", key_name);
-  pt.put("query_name", query_name);
-  pt.put("capa_bits", capa_bits);
-
   std::vector<std::string> keys;
   {
     std::ifstream ifs{key_name};
@@ -91,15 +85,24 @@ int speed_test(const char* key_name, const char* query_name, uint32_t capa_bits)
     find_time = get_average(times);
   }
 
-  pt.put("num_keys", num_keys);
-  pt.put("num_queries", num_queries);
-  pt.put("update_us_key", update_time);
-  pt.put("find_us_query", find_time);
-  pt.put("ok", ok);
-  pt.put("ng", ng);
-  pt.add_child("map", map.make_ptree());
+  std::ostream& out = std::cout;
+  auto indent = get_indent(0);
 
-  boost::property_tree::write_json(std::cout, pt);
+  show_stat(out, indent, "map_name", realname<Map>());
+  show_stat(out, indent, "key_name", key_name);
+  show_stat(out, indent, "query_name", query_name);
+  show_stat(out, indent, "init_capa_bits", capa_bits);
+
+  show_stat(out, indent, "num_keys", num_keys);
+  show_stat(out, indent, "num_queries", num_queries);
+  show_stat(out, indent, "update_us_key", update_time);
+  show_stat(out, indent, "find_us_query", find_time);
+
+  show_stat(out, indent, "ok", ok);
+  show_stat(out, indent, "ng", ng);
+
+  show_stat(out, indent, "map");
+  map.show_stats(out, 1);
 
   return 0;
 }

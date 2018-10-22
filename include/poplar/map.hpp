@@ -118,9 +118,8 @@ class map {
       while (Lambda <= match) {
         if (hash_trie_.add_child(node_id, step_symb)) {
           expand_if_needed_(node_id);
-#ifdef POPLAR_ENABLE_EX_STATS
           ++num_steps_;
-#endif
+
           if constexpr (trie_type == trie_types::HASH_TRIE) {
             assert(node_id == label_store_.size());
             label_store_.append_dummy();
@@ -165,18 +164,16 @@ class map {
     return hash_trie_.capa_size();
   }
 
-  auto make_ptree() const {
-    boost::property_tree::ptree pt;
-    pt.put("name", "map");
-    pt.put("lambda", Lambda);
-    pt.put("size", size());
-    pt.put("capa_size", capa_size());
-#ifdef POPLAR_ENABLE_EX_STATS
-    pt.put("rate_steps", double(num_steps_) / hash_trie_.size());
-#endif
-    pt.add_child("hash_trie", hash_trie_.make_ptree());
-    pt.add_child("label_store", label_store_.make_ptree());
-    return pt;
+  void show_stats(std::ostream& os, int n = 0) const {
+    auto indent = get_indent(n);
+    show_stat(os, indent, "name", "map");
+    show_stat(os, indent, "lambda", Lambda);
+    show_stat(os, indent, "size", size());
+    show_stat(os, indent, "rate_steps", double(num_steps_) / hash_trie_.size());
+    show_stat(os, indent, "hash_trie");
+    hash_trie_.show_stats(os, n + 1);
+    show_stat(os, indent, "label_store");
+    label_store_.show_stats(os, n + 1);
   }
 
   map(const map&) = delete;
@@ -195,9 +192,7 @@ class map {
   std::array<uint8_t, 256> codes_ = {};
   uint32_t num_codes_ = 0;
   uint64_t size_ = 0;
-#ifdef POPLAR_ENABLE_EX_STATS
   uint64_t num_steps_ = 0;
-#endif
 
   uint64_t make_symb_(uint8_t c, uint64_t match) const {
     assert(codes_[c] != UINT8_MAX);

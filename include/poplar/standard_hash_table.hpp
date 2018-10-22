@@ -76,19 +76,15 @@ class standard_hash_table {
     return capa_size_.bits();
   }
 
-#ifdef POPLAR_ENABLE_BOOST_PTREE
-  boost::property_tree::ptree make_ptree() const {
-    boost::property_tree::ptree pt;
-    pt.put("name", "standard_hash_table");
-    pt.put("factor", double(size()) / capa_size() * 100);
-    pt.put("max_factor", MaxFactor);
-    pt.put("size", size());
-    pt.put("capa_size", capa_size());
-    pt.put("capa_bits", capa_bits());
-    pt.put("num_resize", num_resize_);
-    return pt;
+  void show_stats(std::ostream& os, int n = 0) const {
+    auto indent = get_indent(n);
+    show_stat(os, indent, "name", "standard_hash_table");
+    show_stat(os, indent, "factor", double(size()) / capa_size() * 100);
+    show_stat(os, indent, "max_factor", MaxFactor);
+    show_stat(os, indent, "size", size());
+    show_stat(os, indent, "capa_size", capa_size());
+    show_stat(os, indent, "num_resize", num_resize_);
   }
-#endif
 
   standard_hash_table(const standard_hash_table&) = delete;
   standard_hash_table& operator=(const standard_hash_table&) = delete;
@@ -106,9 +102,7 @@ class standard_hash_table {
   uint64_t size_ = 0;  // # of registered nodes
   uint64_t max_size_ = 0;  // MaxFactor% of the capacity
   size_p2 capa_size_;
-#ifdef POPLAR_ENABLE_BOOST_PTREE
   uint64_t num_resize_ = 0;
-#endif
 
   uint64_t init_id_(uint64_t key) const {
     return Hasher::hash(key) & capa_size_.mask();
@@ -119,9 +113,7 @@ class standard_hash_table {
 
   void expand_() {
     this_type new_ht{capa_size_.bits() + 1};
-#ifdef POPLAR_ENABLE_BOOST_PTREE
     new_ht.num_resize_ = num_resize_ + 1;
-#endif
 
     for (uint64_t i = 0; i < table_.size(); ++i) {
       if (table_[i].key != UINT64_MAX) {

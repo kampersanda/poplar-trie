@@ -34,13 +34,17 @@ int build(const char* key_name, uint32_t capa_bits) {
     std::cerr << ex.what() << std::endl;
   }
 
-  boost::property_tree::ptree pt;
-  pt.put("map_name", realname<Map>());
-  pt.put("key_name", key_name);
-  pt.put("capa_bits", capa_bits);
-  pt.put("num_keys", num_keys);
-  pt.put("elapsed_sec", elapsed_sec);
-  boost::property_tree::write_json(std::cout, pt);
+  std::ostream& out = std::cout;
+  auto indent = get_indent(0);
+
+  show_stat(out, indent, "map_name", realname<Map>());
+  show_stat(out, indent, "key_name", key_name);
+  show_stat(out, indent, "init_capa_bits", capa_bits);
+  show_stat(out, indent, "num_keys", num_keys);
+  show_stat(out, indent, "elapsed_sec", elapsed_sec);
+
+  show_stat(out, indent, "map");
+  map.show_stats(out, 1);
 
   return 0;
 }

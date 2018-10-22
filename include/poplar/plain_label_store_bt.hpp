@@ -51,10 +51,8 @@ class plain_label_store_bt {
     auto ptr = ptrs_[pos].get();
     copy_bytes(ptr, key.begin, length);
 
-#ifdef POPLAR_ENABLE_EX_STATS
     max_length_ = std::max(max_length_, length);
     sum_length_ += length;
-#endif
 
     auto ret = reinterpret_cast<value_type*>(ptr + length);
     *ret = static_cast<value_type>(0);
@@ -79,17 +77,20 @@ class plain_label_store_bt {
   uint64_t capa_size() const {
     return ptrs_.size();
   }
+  uint64_t max_length() const {
+    return max_length_;
+  }
+  double ave_length() const {
+    return double(sum_length_) / size();
+  }
 
-  boost::property_tree::ptree make_ptree() const {
-    boost::property_tree::ptree pt;
-    pt.put("name", "plain_label_store_bt");
-    pt.put("size", size());
-    pt.put("capa_size", capa_size());
-#ifdef POPLAR_ENABLE_EX_STATS
-    pt.put("max_length", max_length_);
-    pt.put("ave_length", double(sum_length_) / size());
-#endif
-    return pt;
+  void show_stats(std::ostream& os, int n = 0) const {
+    auto indent = get_indent(n);
+    show_stat(os, indent, "name", "plain_label_store_bt");
+    show_stat(os, indent, "size", size());
+    show_stat(os, indent, "capa_size", capa_size());
+    show_stat(os, indent, "max_length", max_length());
+    show_stat(os, indent, "ave_length", ave_length());
   }
 
   plain_label_store_bt(const plain_label_store_bt&) = delete;
@@ -101,10 +102,8 @@ class plain_label_store_bt {
  private:
   std::vector<std::unique_ptr<uint8_t[]>> ptrs_;
   uint64_t size_ = 0;
-#ifdef POPLAR_ENABLE_EX_STATS
   uint64_t max_length_ = 0;
   uint64_t sum_length_ = 0;
-#endif
 };
 
 }  // namespace poplar

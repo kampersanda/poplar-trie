@@ -120,20 +120,15 @@ class plain_hash_trie {
     return symb_size_.bits();
   }
 
-  auto make_ptree() const {
-    boost::property_tree::ptree pt;
-    pt.put("name", "plain_hash_trie");
-    pt.put("factor", double(size()) / capa_size() * 100);
-    pt.put("max_factor", MaxFactor);
-    pt.put("size", size());
-    pt.put("capa_size", capa_size());
-    pt.put("capa_bits", capa_bits());
-    pt.put("symb_size", symb_size());
-    pt.put("symb_bits", symb_bits());
-#ifdef POPLAR_ENABLE_EX_STATS
-    pt.put("num_resize", num_resize);
-#endif
-    return pt;
+  void show_stats(std::ostream& os, int n = 0) const {
+    auto indent = get_indent(n);
+    show_stat(os, indent, "name", "plain_hash_trie");
+    show_stat(os, indent, "factor", double(size()) / capa_size() * 100);
+    show_stat(os, indent, "max_factor", MaxFactor);
+    show_stat(os, indent, "size", size());
+    show_stat(os, indent, "capa_bits", capa_bits());
+    show_stat(os, indent, "symb_bits", symb_bits());
+    show_stat(os, indent, "num_resize", num_resize_);
   }
 
   plain_hash_trie(const plain_hash_trie&) = delete;
@@ -149,9 +144,7 @@ class plain_hash_trie {
   uint64_t max_size_ = 0;  // MaxFactor% of the capacity
   size_p2 capa_size_;
   size_p2 symb_size_;
-#ifdef POPLAR_ENABLE_EX_STATS
   uint64_t num_resize_ = 0;
-#endif
 
   uint64_t make_key_(uint64_t node_id, uint64_t symb) const {
     return (node_id << symb_size_.bits()) | symb;
@@ -165,9 +158,7 @@ class plain_hash_trie {
 
   void expand_() {
     this_type new_ht{capa_bits() + 1, symb_bits()};
-#ifdef POPLAR_ENABLE_EX_STATS
     new_ht.num_resize_ = num_resize_ + 1;
-#endif
 
     for (uint64_t i = 0; i < capa_size_.size(); ++i) {
       uint64_t child_id = ids_[i];

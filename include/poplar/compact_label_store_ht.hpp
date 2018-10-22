@@ -84,17 +84,20 @@ class compact_label_store_ht {
   uint64_t capa_size() const {
     return 0;
   }
+  uint64_t max_length() const {
+    return max_length_;
+  }
+  double ave_length() const {
+    return double(sum_length_) / size();
+  }
 
-  boost::property_tree::ptree make_ptree() const {
-    boost::property_tree::ptree pt;
-    pt.put("name", "compact_label_store_ht");
-    pt.put("size", size());
-    pt.put("capa_size", capa_size());
-#ifdef POPLAR_ENABLE_EX_STATS
-    pt.put("max_length", max_length_);
-    pt.put("ave_length", double(sum_length_) / size());
-#endif
-    return pt;
+  void show_stats(std::ostream& os, int n = 0) const {
+    auto indent = get_indent(n);
+    show_stat(os, indent, "name", "compact_label_store_ht");
+    show_stat(os, indent, "size", size());
+    show_stat(os, indent, "capa_size", capa_size());
+    show_stat(os, indent, "max_length", max_length());
+    show_stat(os, indent, "ave_length", ave_length());
   }
 
   compact_label_store_ht(const compact_label_store_ht&) = delete;
