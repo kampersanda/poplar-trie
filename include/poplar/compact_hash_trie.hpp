@@ -141,7 +141,7 @@ class compact_hash_trie {
     show_stat(os, indent, "rate_dsp1st", double(num_dsps_[0]) / size());
     show_stat(os, indent, "rate_dsp2nd", double(num_dsps_[1]) / size());
     show_stat(os, indent, "rate_dsp3rd", double(num_dsps_[2]) / size());
-    show_stat(os, indent, "hasher");
+    show_stat(os, indent, "hasher_");
     hasher_.show_stats(os, n + 1);
     show_stat(os, indent, "aux_cht_");
     aux_cht_.show_stats(os, n + 1);

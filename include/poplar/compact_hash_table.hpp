@@ -148,7 +148,7 @@ class compact_hash_table {
     show_stat(os, indent, "size", size());
     show_stat(os, indent, "capa_size", capa_size());
     show_stat(os, indent, "num_resize", num_resize_);
-    show_stat(os, indent, "hasher");
+    show_stat(os, indent, "hasher_");
     hasher_.show_stats(os, n + 1);
   }
 

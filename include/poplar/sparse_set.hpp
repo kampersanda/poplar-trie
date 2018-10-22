@@ -48,11 +48,19 @@ class sparse_set {
     return access_<true>(rank);
   }
 
+  uint64_t size() const {
+    return size_;
+  }
   uint64_t univ() const {
     return univ_;
   }
-  uint64_t size() const {
-    return size_;
+
+  void show_stats(std::ostream& os, int n = 0) const {
+    auto indent = get_indent(n);
+    show_stat(os, indent, "name", "sparse_set");
+    show_stat(os, indent, "size", size());
+    show_stat(os, indent, "univ", univ());
+    show_stat(os, indent, "density", double(size()) / univ());
   }
 
   sparse_set(const sparse_set&) = delete;
