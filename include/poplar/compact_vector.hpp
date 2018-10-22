@@ -4,6 +4,7 @@
 #include <vector>
 
 #include "basics.hpp"
+#include "exception.hpp"
 
 namespace poplar {
 
@@ -12,7 +13,7 @@ class compact_vector {
   compact_vector() = default;
 
   compact_vector(uint64_t size, uint32_t width) {
-    assert(width < 64);
+    POPLAR_THROW_IF(64 <= width, "width overflow.");
 
     size_ = size;
     mask_ = (1ULL << width) - 1;
