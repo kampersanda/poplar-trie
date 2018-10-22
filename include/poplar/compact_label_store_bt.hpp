@@ -126,7 +126,7 @@ class compact_label_store_bt {
 
   template <typename T>
   void expand(const T& pos_map) {
-    this_type new_ls(bit_tools::get_num_bits(ptrs_.size() * ChunkSize));
+    this_type new_ls(bit_tools::ceil_log2(ptrs_.size() * ChunkSize * 2));
 
     for (uint64_t pos = 0; pos < pos_map.size(); ++pos) {
       auto [chunk_id, pos_in_chunk] = decompose_value<ChunkSize>(pos);

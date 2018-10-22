@@ -317,9 +317,9 @@ constexpr uint32_t msb(uint64_t x) {
 #endif
 }
 
-constexpr uint32_t get_num_bits(uint64_t x) {
-  return msb(x) + 1;
-}
+// constexpr uint32_t get_num_bits(uint64_t x) {
+//   return msb(x) + 1;
+// }
 
 constexpr uint32_t ceil_log2(uint64_t x) {
   return (x > 1) ? msb(x - 1) + 1 : 0;

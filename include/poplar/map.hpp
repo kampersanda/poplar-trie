@@ -30,7 +30,7 @@ class map {
   // 2**capa_bits.
   explicit map(uint32_t capa_bits) {
     is_ready_ = true;
-    hash_trie_ = Trie{capa_bits, 8 + bit_tools::get_num_bits(Lambda - 1)};
+    hash_trie_ = Trie{capa_bits, 8 + bit_tools::ceil_log2(Lambda)};
     label_store_ = LabelStore{hash_trie_.capa_bits()};
     codes_.fill(UINT8_MAX);
     codes_[0] = static_cast<uint8_t>(num_codes_++);  // terminator
