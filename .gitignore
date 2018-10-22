@@ -33,6 +33,7 @@
 
 # My Def
 build/
+release-build/
 cmake-build-debug/
 .idea/
 .DS_Store
