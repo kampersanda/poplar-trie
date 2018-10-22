@@ -9,10 +9,6 @@
 #include <string>
 #include <string_view>
 
-// #include <boost/property_tree/json_parser.hpp>
-
-// #define POPLAR_ENABLE_EX_STATS
-
 namespace poplar {
 
 using std::uint16_t;
