@@ -4,6 +4,7 @@
 #include <vector>
 
 #include "basics.hpp"
+#include "exception.hpp"
 
 namespace poplar {
 
@@ -13,12 +14,12 @@ class plain_label_store_ht {
   using value_type = Value;
 
   static constexpr auto trie_type = trie_types::HASH_TRIE;
+  static constexpr uint64_t page_size = 1U << 16;
 
  public:
   plain_label_store_ht() = default;
 
   explicit plain_label_store_ht(uint32_t capa_bits) {
-    chars_.reserve((1ULL << capa_bits) * sizeof(value_type));
     ptrs_.reserve(1ULL << capa_bits);
     ptrs_.emplace_back(0);
   }
@@ -28,7 +29,7 @@ class plain_label_store_ht {
   std::pair<const value_type*, uint64_t> compare(uint64_t pos, char_range key) const {
     assert(pos + 1 < ptrs_.size());
 
-    const uint8_t* char_ptr = chars_.data() + ptrs_[pos];
+    const uint8_t* char_ptr = chars_[pos / page_size].data() + ptrs_[pos];
     uint64_t alloc = ptrs_[pos + 1] - ptrs_[pos];
 
     if (key.empty()) {
@@ -53,23 +54,42 @@ class plain_label_store_ht {
   }
 
   value_type* append(char_range key) {
+    const uint64_t pos = ptrs_.size() - 1;
+    const uint64_t page_id = pos / page_size;
+    if (chars_.size() <= page_id) {
+      chars_.back().shrink_to_fit();
+      chars_.emplace_back();
+    }
+
+    std::vector<uint8_t>& chars = chars_[page_id];
+
     uint64_t length = key.empty() ? 0 : key.length() - 1;
-    std::copy(key.begin, key.begin + length, std::back_inserter(chars_));
+    std::copy(key.begin, key.begin + length, std::back_inserter(chars));
 
     max_length_ = std::max(max_length_, length);
     sum_length_ += length;
 
-    const size_t vpos = chars_.size();
+    const size_t vpos = chars.size();
     for (size_t i = 0; i < sizeof(value_type); ++i) {
-      chars_.emplace_back(0);
+      chars.emplace_back(0);
     }
 
-    ptrs_.emplace_back(chars_.size());
-    return reinterpret_cast<value_type*>(chars_.data() + vpos);
+    POPLAR_THROW_IF(UINT32_MAX < chars.size(), "ptr value overflows.");
+    ptrs_.emplace_back(chars.size());
+    return reinterpret_cast<value_type*>(chars.data() + vpos);
   }
 
   void append_dummy() {
-    ptrs_.emplace_back(chars_.size());
+    const uint64_t pos = ptrs_.size() - 1;
+    const uint64_t page_id = pos / page_size;
+    if (chars_.size() <= page_id) {
+      chars_.back().shrink_to_fit();
+      chars_.emplace_back();
+    }
+    std::vector<uint8_t>& chars = chars_[page_id];
+
+    POPLAR_THROW_IF(UINT32_MAX < chars.size(), "ptr value overflows.");
+    ptrs_.emplace_back(chars.size());
   }
 
   uint64_t size() const {
@@ -97,8 +117,8 @@ class plain_label_store_ht {
   plain_label_store_ht& operator=(plain_label_store_ht&&) noexcept = default;
 
  private:
-  std::vector<uint8_t> chars_;
-  std::vector<uint64_t> ptrs_;
+  std::vector<std::vector<uint8_t>> chars_;
+  std::vector<uint32_t> ptrs_;
   uint64_t max_length_ = 0;
   uint64_t sum_length_ = 0;
 };
