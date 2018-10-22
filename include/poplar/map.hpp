@@ -170,9 +170,9 @@ class map {
     show_stat(os, indent, "lambda", Lambda);
     show_stat(os, indent, "size", size());
     show_stat(os, indent, "rate_steps", double(num_steps_) / hash_trie_.size());
-    show_stat(os, indent, "hash_trie");
+    show_stat(os, indent, "hash_trie_");
     hash_trie_.show_stats(os, n + 1);
-    show_stat(os, indent, "label_store");
+    show_stat(os, indent, "label_store_");
     label_store_.show_stats(os, n + 1);
   }
 
