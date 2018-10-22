@@ -1,6 +1,7 @@
 #include <iostream>
 
 #include "benchmark_common.hpp"
+#include "cmdline.h"
 
 namespace {
 
@@ -18,7 +19,7 @@ int build(const char* key_name, uint32_t capa_bits) {
   size_t num_keys = 0;
   double elapsed_sec = 0.0;
 
-  auto map = Map{capa_bits};
+  Map map{capa_bits};
 
   try {
     std::string key;
@@ -49,49 +50,47 @@ int build(const char* key_name, uint32_t capa_bits) {
   return 0;
 }
 
-template <size_t N = 0>
-int build_with_id(int id, const char* key_name, uint32_t capa_bits) {
-  if constexpr (N >= NUM_MAPS) {
-    return 1;
-  } else {
-    if (id - 1 == N) {
-      return build<std::tuple_element_t<N, map_types<>>>(key_name, capa_bits);
-    }
-    return build_with_id<N + 1>(id, key_name, capa_bits);
-  }
-}
-
-void show_usage(const char* exe, std::ostream& os) {
-  os << exe << " <type> <key> <capa>\n";
-  os << "<type>  type ID of maps\n";
-  list_all<map_types<>>("  ", os);
-  os << "<key>   path of input keywords\n";
-  os << "<capa>  #bits of initial capacity (optional)\n";
-  os.flush();
-}
-
 }  // namespace
 
 int main(int argc, char* argv[]) {
   std::ios::sync_with_stdio(false);
 
-  if (argc < 3 or 4 < argc) {
-    show_usage(argv[0], std::cerr);
-    return 1;
+  cmdline::parser p;
+  p.add<std::string>("key_fn", 'k', "input file name of keywords", true);
+  p.add<std::string>("map_type", 't', "plain_hash/compact_hash/plain_bonsai/compact_bonsai", true);
+  p.add<uint32_t>("chunk_size", 'c', "chunk size for compact_bonsai_map", false, 16);
+  p.add<uint32_t>("capa_bits", 'b', "#bits of initial capacity", false, 16);
+  p.parse_check(argc, argv);
+
+  auto key_fn = p.get<std::string>("key_fn");
+  auto map_type = p.get<std::string>("map_type");
+  auto chunk_size = p.get<uint32_t>("chunk_size");
+  auto capa_bits = p.get<uint32_t>("capa_bits");
+
+  using value_type = int;
+  constexpr uint64_t lambda = 16;
+
+  if (map_type == "plain_hash") {
+    return build<plain_hash_map<value_type, lambda>>(key_fn.c_str(), capa_bits);
+  } else if (map_type == "compact_hash") {
+    return build<compact_hash_map<value_type, lambda>>(key_fn.c_str(), capa_bits);
+  } else if (map_type == "plain_bonsai") {
+    return build<plain_bonsai_map<value_type, lambda>>(key_fn.c_str(), capa_bits);
+  } else if (map_type == "compact_bonsai") {
+    switch (chunk_size) {
+      case 8:
+        return build<compact_bonsai_map<value_type, 8, lambda>>(key_fn.c_str(), capa_bits);
+      case 16:
+        return build<compact_bonsai_map<value_type, 16, lambda>>(key_fn.c_str(), capa_bits);
+      case 32:
+        return build<compact_bonsai_map<value_type, 32, lambda>>(key_fn.c_str(), capa_bits);
+      case 64:
+        return build<compact_bonsai_map<value_type, 64, lambda>>(key_fn.c_str(), capa_bits);
+      default:
+        break;
+    }
   }
 
-  int map_id = std::stoi(argv[1]);
-  if (map_id < 1 or NUM_MAPS < map_id) {
-    show_usage(argv[0], std::cerr);
-    return 1;
-  }
-
-  const char* key_name = argv[2];
-
-  uint32_t capa_bits = 0;
-  if (3 < argc) {
-    capa_bits = static_cast<uint32_t>(std::stoi(argv[3]));
-  }
-
-  return build_with_id(map_id, key_name, capa_bits);
+  std::cerr << p.usage() << std::endl;
+  return 1;
 }
