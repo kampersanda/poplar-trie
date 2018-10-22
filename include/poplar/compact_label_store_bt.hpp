@@ -12,23 +12,6 @@ namespace poplar {
 template <uint64_t N>
 struct chunk_type_traits;
 
-template <>
-struct chunk_type_traits<8> {
-  using type = uint8_t;
-};
-template <>
-struct chunk_type_traits<16> {
-  using type = uint16_t;
-};
-template <>
-struct chunk_type_traits<32> {
-  using type = uint32_t;
-};
-template <>
-struct chunk_type_traits<64> {
-  using type = uint64_t;
-};
-
 template <typename Value, uint64_t ChunkSize = 16>
 class compact_label_store_bt {
  public:
@@ -286,6 +269,23 @@ class compact_label_store_bt {
     copy_bytes(new_ptr, ptr, fr_alloc.second);
     ptrs_[chunk_id] = std::move(new_unique);
   }
+};
+
+template <>
+struct chunk_type_traits<8> {
+  using type = uint8_t;
+};
+template <>
+struct chunk_type_traits<16> {
+  using type = uint16_t;
+};
+template <>
+struct chunk_type_traits<32> {
+  using type = uint32_t;
+};
+template <>
+struct chunk_type_traits<64> {
+  using type = uint64_t;
 };
 
 }  // namespace poplar
