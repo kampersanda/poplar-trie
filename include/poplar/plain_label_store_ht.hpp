@@ -28,8 +28,9 @@ class plain_label_store_ht {
 
   std::pair<const value_type*, uint64_t> compare(uint64_t pos, char_range key) const {
     assert(pos + 1 < ptrs_.size());
+    assert(pos / page_size < char_pages_.size());
 
-    const uint8_t* char_ptr = chars_[pos / page_size].data() + ptrs_[pos];
+    const uint8_t* char_ptr = char_pages_[pos / page_size].data() + ptrs_[pos];
     uint64_t alloc = ptrs_[pos + 1] - ptrs_[pos];
 
     if (key.empty()) {
@@ -54,14 +55,15 @@ class plain_label_store_ht {
   }
 
   value_type* append(char_range key) {
-    const uint64_t pos = ptrs_.size() - 1;
-    const uint64_t page_id = pos / page_size;
-    if (chars_.size() <= page_id) {
-      chars_.back().shrink_to_fit();
-      chars_.emplace_back();
+    const uint64_t page_id = (ptrs_.size() - 1) / page_size;
+    if (char_pages_.size() <= page_id) {
+      if (!char_pages_.empty()) {
+        // char_pages_.back().shrink_to_fit();
+      }
+      char_pages_.emplace_back();
     }
 
-    std::vector<uint8_t>& chars = chars_[page_id];
+    std::vector<uint8_t>& chars = char_pages_[page_id];
 
     uint64_t length = key.empty() ? 0 : key.length() - 1;
     std::copy(key.begin, key.begin + length, std::back_inserter(chars));
@@ -80,13 +82,14 @@ class plain_label_store_ht {
   }
 
   void append_dummy() {
-    const uint64_t pos = ptrs_.size() - 1;
-    const uint64_t page_id = pos / page_size;
-    if (chars_.size() <= page_id) {
-      chars_.back().shrink_to_fit();
-      chars_.emplace_back();
+    const uint64_t page_id = (ptrs_.size() - 1) / page_size;
+    if (char_pages_.size() <= page_id) {
+      if (!char_pages_.empty()) {
+        // char_pages_.back().shrink_to_fit();
+      }
+      char_pages_.emplace_back();
     }
-    std::vector<uint8_t>& chars = chars_[page_id];
+    std::vector<uint8_t>& chars = char_pages_[page_id];
 
     POPLAR_THROW_IF(UINT32_MAX < chars.size(), "ptr value overflows.");
     ptrs_.emplace_back(chars.size());
@@ -117,7 +120,7 @@ class plain_label_store_ht {
   plain_label_store_ht& operator=(plain_label_store_ht&&) noexcept = default;
 
  private:
-  std::vector<std::vector<uint8_t>> chars_;
+  std::vector<std::vector<uint8_t>> char_pages_;
   std::vector<uint32_t> ptrs_;
   uint64_t max_length_ = 0;
   uint64_t sum_length_ = 0;
