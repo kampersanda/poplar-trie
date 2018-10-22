@@ -5,17 +5,36 @@
 #include <memory>
 #include <vector>
 
-#include "bit_chunk.hpp"
 #include "vbyte.hpp"
 
 namespace poplar {
+
+template <uint64_t N>
+struct chunk_type_traits;
+
+template <>
+struct chunk_type_traits<8> {
+  using type = uint8_t;
+};
+template <>
+struct chunk_type_traits<16> {
+  using type = uint16_t;
+};
+template <>
+struct chunk_type_traits<32> {
+  using type = uint32_t;
+};
+template <>
+struct chunk_type_traits<64> {
+  using type = uint64_t;
+};
 
 template <typename Value, uint64_t ChunkSize = 16>
 class compact_label_store_bt {
  public:
   using this_type = compact_label_store_bt<Value, ChunkSize>;
   using value_type = Value;
-  using chunk_type = bit_chunk<ChunkSize>;
+  using chunk_type = typename chunk_type_traits<ChunkSize>::type;
 
   static constexpr auto trie_type = trie_types::BONSAI_TRIE;
 
@@ -31,10 +50,10 @@ class compact_label_store_bt {
     auto [chunk_id, pos_in_chunk] = decompose_value<ChunkSize>(pos);
 
     assert(ptrs_[chunk_id]);
-    assert(chunks_[chunk_id].get(pos_in_chunk));
+    assert(bit_tools::get_bit(chunks_[chunk_id], pos_in_chunk));
 
     const uint8_t* ptr = ptrs_[chunk_id].get();
-    const uint64_t offset = chunks_[chunk_id].popcnt(pos_in_chunk);
+    const uint64_t offset = bit_tools::popcnt(chunks_[chunk_id], pos_in_chunk);
 
     uint64_t alloc = 0;
     for (uint64_t i = 0; i < offset; ++i) {
@@ -65,8 +84,8 @@ class compact_label_store_bt {
   value_type* insert(uint64_t pos, char_range key) {
     auto [chunk_id, pos_in_chunk] = decompose_value<ChunkSize>(pos);
 
-    assert(!chunks_[chunk_id].get(pos_in_chunk));
-    chunks_[chunk_id].set(pos_in_chunk);
+    assert(!bit_tools::get_bit(chunks_[chunk_id], pos_in_chunk));
+    bit_tools::set_bit(chunks_[chunk_id], pos_in_chunk);
 
     ++size_;
 
@@ -188,14 +207,14 @@ class compact_label_store_bt {
 #endif
 
   std::pair<uint64_t, uint64_t> get_allocs_(uint64_t chunk_id, uint64_t pos_in_chunk) {
-    assert(chunks_[chunk_id].get(pos_in_chunk));
+    assert(bit_tools::get_bit(chunks_[chunk_id], pos_in_chunk));
 
     const uint8_t* ptr = ptrs_[chunk_id].get();
     assert(ptr != nullptr);
 
     // -1 means the difference of the above bit_tools::set_bit
-    const uint64_t num = chunks_[chunk_id].popcnt() - 1;
-    const uint64_t offset = chunks_[chunk_id].popcnt(pos_in_chunk);
+    const uint64_t num = bit_tools::popcnt(chunks_[chunk_id]) - 1;
+    const uint64_t offset = bit_tools::popcnt(chunks_[chunk_id], pos_in_chunk);
 
     uint64_t front_alloc = 0, back_alloc = 0;
 
@@ -214,7 +233,7 @@ class compact_label_store_bt {
   }
 
   char_range get_slice_(uint64_t chunk_id, uint64_t pos_in_chunk) const {
-    if (!chunks_[chunk_id].get(pos_in_chunk)) {
+    if (!bit_tools::get_bit(chunks_[chunk_id], pos_in_chunk)) {
       // pos indicates a step node
       return {nullptr, nullptr};
     }
@@ -222,7 +241,7 @@ class compact_label_store_bt {
     const uint8_t* ptr = ptrs_[chunk_id].get();
     assert(ptr != nullptr);
 
-    const uint64_t offset = chunks_[chunk_id].popcnt(pos_in_chunk);
+    const uint64_t offset = bit_tools::popcnt(chunks_[chunk_id], pos_in_chunk);
 
     // Proceeds the target position
     uint64_t len = 0;
@@ -236,9 +255,9 @@ class compact_label_store_bt {
   }
 
   void set_slice_(uint64_t chunk_id, uint64_t pos_in_chunk, char_range new_slice) {
-    assert(!chunks_[chunk_id].get(pos_in_chunk));
+    assert(!bit_tools::get_bit(chunks_[chunk_id], pos_in_chunk));
 
-    chunks_[chunk_id].set(pos_in_chunk);
+    bit_tools::set_bit(chunks_[chunk_id], pos_in_chunk);
     const uint8_t* ptr = ptrs_[chunk_id].get();
 
     if (ptr == nullptr) {
