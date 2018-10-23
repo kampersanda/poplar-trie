@@ -86,6 +86,14 @@ class size_p2 {
   uint64_t mask_ = 0;
 };
 
+template <uint64_t GrowthSize, typename T>
+constexpr void append_with_fixed_growth(std::vector<T>& vec, T x) {
+  if ((GrowthSize != 0) and (vec.size() == vec.capacity())) {
+    vec.reserve(vec.capacity() + GrowthSize);
+  }
+  vec.push_back(x);
+}
+
 inline std::string get_indent(int n) {
   return std::string(n, '\t');
 }

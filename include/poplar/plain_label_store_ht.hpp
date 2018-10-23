@@ -15,6 +15,7 @@ class plain_label_store_ht {
 
   static constexpr auto trie_type = trie_types::HASH_TRIE;
   static constexpr uint64_t page_size = 1U << 16;
+  static constexpr uint64_t growth_size = 1U << 16;
 
  public:
   plain_label_store_ht() = default;
@@ -30,8 +31,13 @@ class plain_label_store_ht {
     assert(pos + 1 < ptrs_.size());
     assert(pos / page_size < char_pages_.size());
 
-    const uint8_t* char_ptr = char_pages_[pos / page_size].data() + ptrs_[pos];
-    uint64_t alloc = ptrs_[pos + 1] - ptrs_[pos];
+    uint64_t cur_ptr = ptrs_[pos];
+    if ((pos % page_size) == 0) {
+      cur_ptr = 0;  // then ptrs_[pos] == char_pages_[pos / page_size - 1].size()
+    }
+
+    const uint8_t* char_ptr = char_pages_[pos / page_size].data() + cur_ptr;
+    uint64_t alloc = ptrs_[pos + 1] - cur_ptr;
 
     if (key.empty()) {
       assert(sizeof(value_type) == alloc);
@@ -57,23 +63,21 @@ class plain_label_store_ht {
   value_type* append(char_range key) {
     const uint64_t page_id = (ptrs_.size() - 1) / page_size;
     if (char_pages_.size() <= page_id) {
-      if (!char_pages_.empty()) {
-        // char_pages_.back().shrink_to_fit();
-      }
       char_pages_.emplace_back();
     }
-
     std::vector<uint8_t>& chars = char_pages_[page_id];
 
     uint64_t length = key.empty() ? 0 : key.length() - 1;
-    std::copy(key.begin, key.begin + length, std::back_inserter(chars));
+    for (uint64_t i = 0; i < length; ++i) {
+      append_with_fixed_growth<growth_size>(chars, key.begin[i]);
+    }
 
     max_length_ = std::max(max_length_, length);
     sum_length_ += length;
 
     const size_t vpos = chars.size();
     for (size_t i = 0; i < sizeof(value_type); ++i) {
-      chars.emplace_back(0);
+      append_with_fixed_growth<growth_size>(chars, uint8_t(0));
     }
 
     POPLAR_THROW_IF(UINT32_MAX < chars.size(), "ptr value overflows.");
@@ -84,9 +88,6 @@ class plain_label_store_ht {
   void append_dummy() {
     const uint64_t page_id = (ptrs_.size() - 1) / page_size;
     if (char_pages_.size() <= page_id) {
-      if (!char_pages_.empty()) {
-        // char_pages_.back().shrink_to_fit();
-      }
       char_pages_.emplace_back();
     }
     std::vector<uint8_t>& chars = char_pages_[page_id];

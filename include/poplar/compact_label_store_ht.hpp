@@ -18,12 +18,12 @@ class compact_label_store_ht {
 
   static constexpr auto trie_type = trie_types::HASH_TRIE;
   static constexpr uint64_t page_size = 1U << 16;
+  static constexpr uint64_t growth_size = 1U << 16;
 
  public:
   compact_label_store_ht() = default;
 
   explicit compact_label_store_ht(uint32_t capa_bits) {
-    // chars_.reserve((1ULL << capa_bits) * sizeof(value_type));
     ptrs_.reserve((1ULL << capa_bits) / ChunkSize);
   }
 
@@ -34,6 +34,8 @@ class compact_label_store_ht {
     assert(pos / page_size < char_pages_.size());
 
     auto [group_id, offset] = decompose_value<ChunkSize>(pos);
+
+    assert(ptrs_[group_id] < char_pages_[pos / page_size].size());
     auto char_ptr = char_pages_[pos / page_size].data() + ptrs_[group_id];
 
     uint64_t alloc = 0;
@@ -67,9 +69,6 @@ class compact_label_store_ht {
   value_type* append(char_range key) {
     const uint64_t page_id = size_ / page_size;
     if (char_pages_.size() <= page_id) {
-      if (!char_pages_.empty()) {
-        // char_pages_.back().shrink_to_fit();
-      }
       char_pages_.emplace_back();
     }
     std::vector<uint8_t>& chars = char_pages_[page_id];
@@ -81,15 +80,17 @@ class compact_label_store_ht {
     }
 
     uint64_t length = key.empty() ? 0 : key.length() - 1;
-    vbyte::append(chars, length + sizeof(value_type));
-    std::copy(key.begin, key.begin + length, std::back_inserter(chars));
+    vbyte::append<append_with_fixed_growth<growth_size, uint8_t>>(chars, length + sizeof(value_type));
+    for (uint64_t i = 0; i < length; ++i) {
+      append_with_fixed_growth<growth_size>(chars, key.begin[i]);
+    }
 
     max_length_ = std::max<uint64_t>(max_length_, key.length());
     sum_length_ += key.length();
 
     const size_t vpos = chars.size();
     for (size_t i = 0; i < sizeof(value_type); ++i) {
-      chars.emplace_back(0);
+      append_with_fixed_growth<growth_size>(chars, uint8_t(0));
     }
 
     return reinterpret_cast<value_type*>(chars.data() + vpos);
@@ -99,9 +100,6 @@ class compact_label_store_ht {
   void append_dummy() {
     const uint64_t page_id = size_ / page_size;
     if (char_pages_.size() <= page_id) {
-      if (!char_pages_.empty()) {
-        // char_pages_.back().shrink_to_fit();
-      }
       char_pages_.emplace_back();
     }
     std::vector<uint8_t>& chars = char_pages_[page_id];
@@ -111,7 +109,7 @@ class compact_label_store_ht {
       POPLAR_THROW_IF(UINT32_MAX < chars.size(), "ptr value overflows.");
       ptrs_.push_back(chars.size());
     }
-    vbyte::append(chars, 0);
+    vbyte::append<append_with_fixed_growth<growth_size, uint8_t>>(chars, 0);
   }
 
   uint64_t size() const {
