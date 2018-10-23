@@ -1,4 +1,4 @@
-# Poplar-trie
+# Poplar-trie: A C++ implementation of memory-efficient dynamic tries
 
 Poplar-trie is a C++17 library of associative arrays with string keys based on a dynamic path-decomposed trie (DynPDT) described in the paper [*Practical implementation of space-efficient dynamic keyword dictionaries*](https://link.springer.com/chapter/10.1007%2F978-3-319-67428-5_19), published in SPIRE 2017 [[paper](https://sites.google.com/site/shnskknd/SPIRE2017.pdf)] [[slide](https://www.slideshare.net/ShunsukeKanda1/practical-implementation-of-spaceefficient-dynamic-keyword-dictionaries)].
 However, the implementation of this library is enhanced from the conference version.
@@ -145,22 +145,22 @@ The maximum resident set size during construction was measured using the `/usr/b
 The insertion time was also measured using `std::chrono::duration_cast`.
 And, search time for the same strings was measured.
 
-| Implementation | Space (MiB) | Insertion (micros / key) | Search (micros / key) |
+| Implementation | Space<br>(MiB) | Insert<br>(micros/key) | Search<br>(micros/key) |
 |------------------------|------------:|-------------------------:|----------------------:|
-| `std::map` | 139.6 | 1.49 | 1.75 |
-| `std::unordered_map` | 162.3 | 0.69 | 0.28 |
-| [`google::dense_hash_map`](https://github.com/sparsehash/sparsehash) | 290.9 | 0.43 | 0.08 |
-| [`google::sparse_hash_map`](https://github.com/sparsehash/sparsehash) | 182.5 | 4.47 | 0.22 |
+| std::map | 139.6 | 1.49 | 1.75 |
+| std::unordered_map | 162.3 | 0.69 | 0.28 |
+| [google::dense\_hash\_map](https://github.com/sparsehash/sparsehash) | 290.9 | 0.43 | 0.08 |
+| [google::sparse\_hash\_map](https://github.com/sparsehash/sparsehash) | 182.5 | 4.47 | 0.22 |
 | [JudySL](http://judy.sourceforge.net) | 80.7 | 0.72 | 0.61 |
 | [hat-trie](https://github.com/dcjones/hat-trie) | 73.1 | 0.85 | 0.21 |
 | [libart](https://github.com/armon/libart) | 149.1 | 0.80 | 0.83 |
 | [cedar](http://www.tkl.iis.u-tokyo.ac.jp/~ynaga/cedar/) | 266.7 | 1.08 | 0.53 |
 | [cedarpp](http://www.tkl.iis.u-tokyo.ac.jp/~ynaga/cedar/) | 154.3 | 0.89 | 0.52 |
-| `plain_bonsai_map` | 134.8 | 0.86 | 0.65 |
-| `compact_bonsai_map` | 53.8 | 2.15 | 0.77 |
-| `plain_hash_map` | 89.5 | 0.69 | 0.80 |
-| `compact_hash_map` | 63.8 | 1.01 | 0.97 |
-| `rrr_hash_map` | 61.4 | 1.24 | 1.20 |
+| poplar::plain\_bonsai\_map | 134.8 | 0.86 | 0.65 |
+| poplar::compact\_bonsai\_map | **53.8** | 2.15 | 0.77 |
+| poplar::plain\_hash_map | 89.5 | 0.69 | 0.80 |
+| poplar::compact\_hash\_map | 63.8 | 1.01 | 0.97 |
+| poplar::rrr\_hash\_map | 61.4 | 1.24 | 1.20 |
 
 
 ## Todo
