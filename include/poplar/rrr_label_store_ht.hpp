@@ -96,7 +96,7 @@ class rrr_label_store_ht {
     show_stat(os, indent, "size", size());
     show_stat(os, indent, "max_length", max_length());
     show_stat(os, indent, "ave_length", ave_length());
-    show_stat(os, indent, "ptrs_");
+    show_member(os, indent, "ptrs_");
     ptrs_.show_stats(os, n + 1);
   }
 

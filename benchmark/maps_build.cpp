@@ -44,7 +44,7 @@ int build(const char* key_name, uint32_t capa_bits) {
   show_stat(out, indent, "num_keys", num_keys);
   show_stat(out, indent, "elapsed_sec", elapsed_sec);
 
-  show_stat(out, indent, "map");
+  show_member(out, indent, "map");
   map.show_stats(out, 1);
 
   return 0;

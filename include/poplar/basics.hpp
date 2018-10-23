@@ -98,7 +98,7 @@ inline std::string get_indent(int n) {
   return std::string(n, '\t');
 }
 
-inline void show_stat(std::ostream& os, const std::string& indent, const char* k) {
+inline void show_member(std::ostream& os, const std::string& indent, const char* k) {
   os << indent << k << " ->\n";
 }
 template <class V>

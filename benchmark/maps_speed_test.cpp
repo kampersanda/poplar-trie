@@ -105,7 +105,7 @@ int speed_test(const char* key_name, const char* query_name, uint32_t capa_bits)
   show_stat(out, indent, "ok", ok);
   show_stat(out, indent, "ng", ng);
 
-  show_stat(out, indent, "map");
+  show_member(out, indent, "map");
   map.show_stats(out, 1);
 
   return 0;
