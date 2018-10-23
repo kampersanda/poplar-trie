@@ -16,13 +16,14 @@ class rrr_label_store_ht {
   using value_type = Value;
 
   static constexpr auto trie_type = trie_types::HASH_TRIE;
+  static constexpr uint64_t page_size = 1U << 16;
+  static constexpr uint64_t growth_size = 1U << 16;
 
  public:
   rrr_label_store_ht() = default;
 
   explicit rrr_label_store_ht(uint32_t capa_bits) {
     uint64_t capa = (1ULL << capa_bits) * sizeof(value_type);
-    chars_.reserve(capa);
     ptrs_.reserve(capa);
     ptrs_.append(0);
   }
@@ -31,10 +32,18 @@ class rrr_label_store_ht {
 
   std::pair<const value_type*, uint64_t> compare(uint64_t pos, char_range key) const {
     assert(pos + 1 < ptrs_.size());
+    assert(pos / page_size < char_pages_.size());
+    assert(pos / page_size < offsets_.size());
+
+    uint64_t page_id = pos / page_size;
 
     auto [beg, end] = ptrs_.access_pair(pos);
+    assert(offsets_[page_id] <= beg && offsets_[page_id] <= end);
 
-    const uint8_t* char_ptr = chars_.data() + beg;
+    beg -= offsets_[page_id];
+    end -= offsets_[page_id];
+
+    const uint8_t* char_ptr = char_pages_[page_id].data() + beg;
     uint64_t alloc = end - beg;
 
     if (key.empty()) {
@@ -59,25 +68,41 @@ class rrr_label_store_ht {
   };
 
   value_type* append(char_range key) {
+    const uint64_t page_id = (ptrs_.size() - 1) / page_size;
+    if (char_pages_.size() <= page_id) {
+      char_pages_.emplace_back();
+      offsets_.push_back(ptrs_.univ() - 1);
+    }
+    std::vector<uint8_t>& chars = char_pages_[page_id];
+
     uint64_t length = key.empty() ? 0 : key.length() - 1;
-    std::copy(key.begin, key.begin + length, std::back_inserter(chars_));
+    for (uint64_t i = 0; i < length; ++i) {
+      append_with_fixed_growth<growth_size>(chars, key.begin[i]);
+    }
 
     max_length_ = std::max(max_length_, length);
     sum_length_ += length;
 
-    const size_t vpos = chars_.size();
+    const size_t vpos = chars.size();
     for (size_t i = 0; i < sizeof(value_type); ++i) {
-      chars_.emplace_back(0);
+      append_with_fixed_growth<growth_size>(chars, uint8_t(0));
     }
-    ptrs_.append(chars_.size());
+    ptrs_.append(chars.size() + offsets_[page_id]);
 
-    return reinterpret_cast<value_type*>(chars_.data() + vpos);
+    return reinterpret_cast<value_type*>(chars.data() + vpos);
   }
 
   // Associate a dummy label
   void append_dummy() {
-    chars_.emplace_back(0);
-    ptrs_.append(chars_.size());
+    const uint64_t page_id = (ptrs_.size() - 1) / page_size;
+    if (char_pages_.size() <= page_id) {
+      char_pages_.emplace_back();
+      offsets_.push_back(ptrs_.univ() - 1);
+    }
+    std::vector<uint8_t>& chars = char_pages_[page_id];
+
+    chars.emplace_back(0);
+    ptrs_.append(chars.size() + offsets_[page_id]);
   }
 
   uint64_t size() const {
@@ -107,7 +132,8 @@ class rrr_label_store_ht {
   rrr_label_store_ht& operator=(rrr_label_store_ht&&) noexcept = default;
 
  private:
-  std::vector<uint8_t> chars_;
+  std::vector<std::vector<uint8_t>> char_pages_;
+  std::vector<uint64_t> offsets_;
   rrr_sparse_set ptrs_;
   uint64_t max_length_ = 0;
   uint64_t sum_length_ = 0;
