@@ -133,7 +133,7 @@ Hotaru: -1
 #keys = 9
 ```
 
-## Benchmarks (previous version)
+## Benchmarks
 
 The main advantage of Poplar-trie is high space efficiency as can be seen in the following results.
 
@@ -146,19 +146,22 @@ The insertion time was also measured using `std::chrono::duration_cast`.
 And, search time for the same strings was measured.
 
 | Implementation | Space (MiB) | Insertion (micros / key) | Search (micros / key) |
-|-----------|-------:|------:|------:|
-| `map_pp` | 121.2 | 0.79 | 0.90 |
-| `map_pc` | 80.0 | 0.83 | 1.03 |
-| `map_cp` | 89.5 | 1.01 | 0.98 |
-| `map_cc` | 62.4 | 0.98 | 0.88 |
-| `map_pp_ex` | 134.8 | 0.75 | 0.54 |
-| `map_pc_ex` | 69.4 | 1.88 | 0.80 |
-| `map_cp_ex` | 103.2 | 1.07 | 0.67 |
-| `map_cc_ex` | 53.9 | 1.95 | 0.82 |
-| [JudySL](http://judy.sourceforge.net) | 81.7 | 0.72 | 0.55 |
-| [hat-trie](https://github.com/dcjones/hat-trie) | 76.3 | 0.83 | 0.17 |
-| [libart](https://github.com/armon/libart) | 149.4 | 0.73 | 0.71 |
-| [cedarpp](http://www.tkl.iis.u-tokyo.ac.jp/~ynaga/cedar/) | 154.4 | 0.92 | 0.57 |
+|------------------------|------------:|-------------------------:|----------------------:|
+| std::map | 139.6 | 1.49 | 1.75 |
+| std::unordered\_map | 162.3 | 0.69 | 0.28 |
+| google::dense\_hash\_map | 290.9 | 0.43 | 0.08 |
+| google::sparse\_hash\_map | 182.5 | 4.47 | 0.22 |
+| [JudySL](http://judy.sourceforge.net) | 80.7 | 0.72 | 0.61 |
+| [hat-trie](https://github.com/dcjones/hat-trie) | 73.1 | 0.85 | 0.21 |
+| [libart](https://github.com/armon/libart) | 149.1 | 0.80 | 0.83 |
+| [cedar](http://www.tkl.iis.u-tokyo.ac.jp/~ynaga/cedar/) | 266.7 | 1.08 | 0.53 |
+| [cedarpp](http://www.tkl.iis.u-tokyo.ac.jp/~ynaga/cedar/) | 154.3 | 0.89 | 0.52 |
+| `plain_bonsai_map` | 134.8 | 0.86 | 0.65 |
+| `compact_bonsai_map` | 53.8 | 2.15 | 0.77 |
+| `plain_hash_map` | 89.5 | 0.69 | 0.80 |
+| `compact_hash_map` | 63.8 | 1.01 | 0.97 |
+| `rrr_hash_map` | 61.4 | 1.24 | 1.20 |
+
 
 ## Todo
 
