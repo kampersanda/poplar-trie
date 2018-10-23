@@ -7,46 +7,41 @@ The technical details are now being written.
 
 ## Implementation overview
 
-Poplar-trie implements an associative array giving a mapping from key strings to values of any type and supporting dynamic update like `std::map<std::string,V>`.
-The underlying data structure is the DynPDT.
+Poplar-trie implements a dynamically-updatable associative array mapping key strings to values of any type like `std::map<std::string,V>`.
+The underlying data structure is DynPDT.
+It is a customized trie structure that has additional string labels for each node.
+The string labels are stored separately from the trie representation, so we need to store their pointers associated with each node.
 
-### Hash trie classes
+Poplar-trie implements the associative array based on DynPDT by combining efficient trie representations with proper data structures for the string labels.
+Some classes are included in this libary as follows.
 
-A property of the DynPDT is that the edge labels are drawn from an integer set larger than that of normal tries represented in one byte, so it is important that searching a child can be performed in constant time.
-Poplar-trie solves the task using hash-based trie implementations of the following classes:
+### Bonsai-trie based implementations
 
-- `poplar::plain_hash_trie` and `poplar::plain_hash_trie_ex` are trie representations using plain hash tables.
-- `poplar::compact_hash_trie` and `poplar::compact_hash_trie_ex` are trie representations using compact hash tables.
+Classes `plain_bonsai_trie` and `compact_bonsai_trie` implements trie representations based on [m-Bonsai](https://github.com/Poyias/mBonsai) techniques proposed by Poyias et al.
+Selfexplanatorily, the former is a fast version and the latter is a compact version.
 
-The difference between `hash_trie` and `hash_trie_ex` is that the former can support faster update, but the latter is smaller.
+For the representations, two data structures for string labels are implemented as classes `plain_label_store_bt` and `compact_label_store_bt`.
 
-### Label store classes
+### Hash-trie based implementations
 
-Another property is that the trie has string labels for each node, so their pointers have to be stored.
-This library includes the following methods:
+Classes `plain_hash_trie` and `compact_hash_trie` implements trie representations based on [HashTrie](https://github.com/tudocomp/tudocomp) techniques proposed by Fischer and Köppl.
 
-- `poplar::plain_label_store` and `poplar::plain_label_store_ex` simply store all pointers to string labels.
-- `poplar::compact_label_store` and `poplar::compact_label_store_ex` relax the pointer overhead by grouping pointers.
+For the representations, three data structures for string labels are implemented as classes `plain_label_store_ht`, `compact_label_store_ht` and `rrr_label_store_ht`.
 
-Of course, `label_store` (resp. `label_store_ex`) corresponds to `hash_trie` (resp. `hash_trie_ex`).
 
 ### Aliases
 
-Class `poplar::map` implements the associative array and takes the above classes as the template arguments.
+Class `map` implements the associative array while taking the above classes as the template arguments.
 That is, there are some implementation patterns.
 But, you can easily get the implementations since `poplar.hpp` provides the following aliases:
 
-| alias | hash trie | label store |
+| Alias | Trie | String Label |
 |:--|:--|:--|
-|`map_pp`|`plain_hash_trie`|`plain_label_store`|
-|`map_pc`|`plain_hash_trie`|`compact_label_store`|
-|`map_cp`|`compact_hash_trie`|`plain_label_store`|
-|`map_cc`|`compact_hash_trie`|`compact_label_store`|
-|`map_pp_ex`|`plain_hash_trie_ex`|`plain_label_store_ex`|
-|`map_pc_ex`|`plain_hash_trie_ex`|`compact_label_store_ex`|
-|`map_cp_ex`|`compact_hash_trie_ex`|`plain_label_store_ex`|
-|`map_cc_ex`|`compact_hash_trie_ex`|`compact_label_store_ex`|
-
+|`plain_bonsai_map`|`plain_bonsai_trie`|`plain_label_store_bt`|
+|`compact_bonsai_map`|`compact_bonsai_trie`|`compact_label_store_bt`|
+|`plain_hash_map`|`plain_hash_trie`|`plain_label_store_ht`|
+|`compact_hash_map`|`compact_hash_trie`|`compact_label_store_ht`|
+|`rrr_hash_map`|`compact_hash_trie`|`rrr_label_store_ht`|
 
 These have template argument `Lambda` in common.
 This is a parameter depending on lengths of given strings.
@@ -73,7 +68,7 @@ $ make install
 ```
 
 The library uses C++17, so please install g++ 7.0 (or greater) or clang 4.0 (or greater).
-In addition, CMake 3.8 (or greater) has to be installed to compile the library.
+In addition, CMake 2.8 (or greater) has to be installed to compile the library.
 
 On the default setting, the library tries to use `SSE4.2` for popcount operations.
 If you do not want to use it, please set `DISABLE_SSE4_2` at build time, e.g., `cmake .. -DDISABLE_SSE4_2=1`.
@@ -90,7 +85,7 @@ int main() {
   std::vector<std::string> keys = {"Aoba", "Yun",    "Hajime", "Hihumi", "Kou",
                                    "Rin",  "Hazuki", "Umiko",  "Nene"};
 
-  poplar::map_pp<int> map;
+  poplar::plain_hash_map<int> map;
 
   try {
     for (int i = 0; i < keys.size(); ++i) {
@@ -138,7 +133,7 @@ Hotaru: -1
 #keys = 9
 ```
 
-## Benchmarks
+## Benchmarks (previous version)
 
 The main advantage of Poplar-trie is high space efficiency as can be seen in the following results.
 
