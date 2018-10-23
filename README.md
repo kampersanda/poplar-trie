@@ -147,10 +147,10 @@ And, search time for the same strings was measured.
 
 | Implementation | Space (MiB) | Insertion (micros / key) | Search (micros / key) |
 |------------------------|------------:|-------------------------:|----------------------:|
-| std::map | 139.6 | 1.49 | 1.75 |
-| std::unordered\_map | 162.3 | 0.69 | 0.28 |
-| google::dense\_hash\_map | 290.9 | 0.43 | 0.08 |
-| google::sparse\_hash\_map | 182.5 | 4.47 | 0.22 |
+| `std::map` | 139.6 | 1.49 | 1.75 |
+| `std::unordered_map` | 162.3 | 0.69 | 0.28 |
+| [`google::dense_hash_map`](https://github.com/sparsehash/sparsehash) | 290.9 | 0.43 | 0.08 |
+| [`google::sparse_hash_map`](https://github.com/sparsehash/sparsehash) | 182.5 | 4.47 | 0.22 |
 | [JudySL](http://judy.sourceforge.net) | 80.7 | 0.72 | 0.61 |
 | [hat-trie](https://github.com/dcjones/hat-trie) | 73.1 | 0.85 | 0.21 |
 | [libart](https://github.com/armon/libart) | 149.1 | 0.80 | 0.83 |
