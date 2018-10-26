@@ -120,7 +120,7 @@ int main(int argc, char* argv[]) {
   p.add<std::string>("key_fn", 'k', "input file name of keywords", true);
   p.add<std::string>("query_fn", 'q', "input file name of queries", false, "-");
   p.add<std::string>("map_type", 't', "plain_bonsai/compact_bonsai/plain_hash/compact_hash/rrr_hash", true);
-  p.add<uint32_t>("chunk_size", 'c', "chunk size for compact_bonsai_map", false, 16);
+  p.add<uint32_t>("chunk_size", 'c', "8/16/32/64 (for compact_bonsai and compact_hash)", false, 16);
   p.add<uint32_t>("capa_bits", 'b', "#bits of initial capacity", false, 16);
   p.parse_check(argc, argv);
 
