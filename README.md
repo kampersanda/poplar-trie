@@ -70,7 +70,7 @@ $ make install
 The library uses C++17, so please install g++ 7.0 (or greater) or clang 4.0 (or greater).
 In addition, CMake 2.8 (or greater) has to be installed to compile the library.
 
-On the default setting, the library tries to use `SSE4.2` for popcount operations.
+On the default setting, the library attempts to use `SSE4.2` for popcount primitives.
 If you do not want to use it, please set `DISABLE_SSE4_2` at build time, e.g., `cmake .. -DDISABLE_SSE4_2=1`.
 
 ## Easy example
