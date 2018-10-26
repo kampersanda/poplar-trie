@@ -1,4 +1,2 @@
 add_executable(maps_build maps_build.cpp)
 add_executable(maps_speed_test maps_speed_test.cpp)
-# add_executable(hash_tries_build hash_tries_build.cpp)
-# add_executable(hash_tries_speed_test hash_tries_speed_test.cpp)
