@@ -41,3 +41,5 @@ cmake-build-debug/
 include/poplar/poplar_config.hpp
 extra/
 pyscripts/
+# とりあえず
+.travis.yml
