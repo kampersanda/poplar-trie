@@ -156,7 +156,9 @@ class plain_bonsai_trie {
     plain_bonsai_trie new_ht{capa_bits() + 1, symb_size_.bits()};
     new_ht.add_root();
 
+#ifdef POPLAR_EXTRA_STATS
     new_ht.num_resize_ = num_resize_ + 1;
+#endif
 
     bit_vector done_flags(capa_size());
     done_flags.set(get_root());
@@ -227,7 +229,9 @@ class plain_bonsai_trie {
     show_stat(os, indent, "size", size());
     show_stat(os, indent, "capa_bits", capa_bits());
     show_stat(os, indent, "symb_bits", symb_bits());
+#ifdef POPLAR_EXTRA_STATS
     show_stat(os, indent, "num_resize", num_resize_);
+#endif
   }
 
   plain_bonsai_trie(const plain_bonsai_trie&) = delete;
@@ -242,7 +246,9 @@ class plain_bonsai_trie {
   uint64_t max_size_ = 0;  // MaxFactor% of the capacity
   size_p2 capa_size_;
   size_p2 symb_size_;
+#ifdef POPLAR_EXTRA_STATS
   uint64_t num_resize_ = 0;
+#endif
 
   uint64_t make_key_(uint64_t node_id, uint64_t symb) const {
     return (node_id << symb_size_.bits()) | symb;

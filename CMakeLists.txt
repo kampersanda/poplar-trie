@@ -46,6 +46,15 @@ message(STATUS "CXX_FLAGS are ${CMAKE_CXX_FLAGS}")
 message(STATUS "CXX_FLAGS_DEBUG are ${CMAKE_CXX_FLAGS_DEBUG}")
 message(STATUS "CXX_FLAGS_RELEASE are ${CMAKE_CXX_FLAGS_RELEASE}")
 
+option(POPLAR_EXTRA_STATS
+  "Enable to compute extra statistics."
+  OFF)
+
+configure_file(
+  ${CMAKE_CURRENT_SOURCE_DIR}/poplar_config.hpp.in
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/poplar/poplar_config.hpp
+)
+
 enable_testing()
 include_directories(include)
 

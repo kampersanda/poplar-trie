@@ -10,6 +10,8 @@
 #include <string_view>
 #include <vector>
 
+#include "poplar_config.hpp"
+
 namespace poplar {
 
 using std::uint16_t;

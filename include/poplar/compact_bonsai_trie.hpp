@@ -177,7 +177,9 @@ class compact_bonsai_trie {
     this_type new_ht{capa_bits() + 1, symb_size_.bits()};
     new_ht.add_root();
 
+#ifdef POPLAR_EXTRA_STATS
     new_ht.num_resize_ = num_resize_ + 1;
+#endif
 
     bit_vector done_flags(capa_size());
     done_flags.set(get_root());
@@ -269,12 +271,14 @@ class compact_bonsai_trie {
     show_stat(os, indent, "size", size());
     show_stat(os, indent, "capa_bits", capa_bits());
     show_stat(os, indent, "symb_bits", symb_bits());
-    show_stat(os, indent, "num_resize", num_resize_);
     show_stat(os, indent, "dsp1st_bits", dsp1_bits);
     show_stat(os, indent, "dsp2nd_bits", dsp2_bits);
+#ifdef POPLAR_EXTRA_STATS
     show_stat(os, indent, "rate_dsp1st", double(num_dsps_[0]) / size());
     show_stat(os, indent, "rate_dsp2nd", double(num_dsps_[1]) / size());
     show_stat(os, indent, "rate_dsp3rd", double(num_dsps_[2]) / size());
+    show_stat(os, indent, "num_resize", num_resize_);
+#endif
     show_member(os, indent, "hasher_");
     hasher_.show_stats(os, n + 1);
     show_member(os, indent, "aux_cht_");
@@ -298,8 +302,10 @@ class compact_bonsai_trie {
   uint64_t max_size_ = 0;  // MaxFactor% of the capacity
   size_p2 capa_size_;
   size_p2 symb_size_;
+#ifdef POPLAR_EXTRA_STATS
   uint64_t num_resize_ = 0;
   uint64_t num_dsps_[3] = {};
+#endif
 
   uint64_t make_key_(uint64_t node_id, uint64_t symb) const {
     return (node_id << symb_size_.bits()) | symb;
@@ -368,6 +374,7 @@ class compact_bonsai_trie {
       }
     }
 
+#ifdef POPLAR_EXTRA_STATS
     if (dsp < dsp1_mask) {
       ++num_dsps_[0];
     } else if (dsp < dsp1_mask + dsp2_mask) {
@@ -375,6 +382,7 @@ class compact_bonsai_trie {
     } else {
       ++num_dsps_[2];
     }
+#endif
 
     table_.set(slot_id, v);
   }

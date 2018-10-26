@@ -85,8 +85,10 @@ class compact_label_store_ht {
       append_with_fixed_growth<growth_size>(chars, key.begin[i]);
     }
 
+#ifdef POPLAR_EXTRA_STATS
     max_length_ = std::max<uint64_t>(max_length_, key.length());
     sum_length_ += key.length();
+#endif
 
     const size_t vpos = chars.size();
     for (size_t i = 0; i < sizeof(value_type); ++i) {
@@ -118,20 +120,16 @@ class compact_label_store_ht {
   uint64_t num_ptrs() const {
     return ptrs_.size();
   }
-  uint64_t max_length() const {
-    return max_length_;
-  }
-  double ave_length() const {
-    return double(sum_length_) / size();
-  }
 
   void show_stats(std::ostream& os, int n = 0) const {
     auto indent = get_indent(n);
     show_stat(os, indent, "name", "compact_label_store_ht");
     show_stat(os, indent, "size", size());
     show_stat(os, indent, "num_ptrs", num_ptrs());
-    show_stat(os, indent, "max_length", max_length());
-    show_stat(os, indent, "ave_length", ave_length());
+#ifdef POPLAR_EXTRA_STATS
+    show_stat(os, indent, "max_length", max_length_);
+    show_stat(os, indent, "ave_length", double(sum_length_) / size());
+#endif
     show_stat(os, indent, "chunk_size", ChunkSize);
   }
 
@@ -145,8 +143,10 @@ class compact_label_store_ht {
   std::vector<std::vector<uint8_t>> char_pages_;
   std::vector<uint32_t> ptrs_;
   uint64_t size_ = 0;
+#ifdef POPLAR_EXTRA_STATS
   uint64_t max_length_ = 0;
   uint64_t sum_length_ = 0;
+#endif
 };
 
 }  // namespace poplar

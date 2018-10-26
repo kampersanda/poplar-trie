@@ -147,7 +147,9 @@ class compact_hash_table {
     show_stat(os, indent, "max_factor", MaxFactor);
     show_stat(os, indent, "size", size());
     show_stat(os, indent, "capa_size", capa_size());
+#ifdef POPLAR_EXTRA_STATS
     show_stat(os, indent, "num_resize", num_resize_);
+#endif
     show_member(os, indent, "hasher_");
     hasher_.show_stats(os, n + 1);
   }
@@ -168,7 +170,9 @@ class compact_hash_table {
   size_p2 quo_size_;
   uint64_t quo_shift_ = 0;
   uint64_t quo_invmask_ = 0;  // For setter
+#ifdef POPLAR_EXTRA_STATS
   uint64_t num_resize_ = 0;
+#endif
 
   uint64_t find_ass_cbit_(uint64_t slot_id) const {
     uint64_t dummy = 0;
@@ -213,7 +217,9 @@ class compact_hash_table {
 
   void expand_() {
     this_type new_cht{univ_size_.bits(), capa_size_.bits() + 1};
+#ifdef POPLAR_EXTRA_STATS
     new_cht.num_resize_ = num_resize_ + 1;
+#endif
 
     // Find the first vacant slot
     uint64_t i = 0;

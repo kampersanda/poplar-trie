@@ -72,8 +72,10 @@ class plain_label_store_ht {
       append_with_fixed_growth<growth_size>(chars, key.begin[i]);
     }
 
+#ifdef POPLAR_EXTRA_STATS
     max_length_ = std::max(max_length_, length);
     sum_length_ += length;
+#endif
 
     const size_t vpos = chars.size();
     for (size_t i = 0; i < sizeof(value_type); ++i) {
@@ -99,19 +101,15 @@ class plain_label_store_ht {
   uint64_t size() const {
     return ptrs_.size() - 1;
   }
-  uint64_t max_length() const {
-    return max_length_;
-  }
-  double ave_length() const {
-    return double(sum_length_) / size();
-  }
 
   void show_stats(std::ostream& os, int n = 0) const {
     auto indent = get_indent(n);
     show_stat(os, indent, "name", "plain_label_store_ht");
     show_stat(os, indent, "size", size());
-    show_stat(os, indent, "max_length", max_length());
-    show_stat(os, indent, "ave_length", ave_length());
+#ifdef POPLAR_EXTRA_STATS
+    show_stat(os, indent, "max_length", max_length_);
+    show_stat(os, indent, "ave_length", double(sum_length_) / size());
+#endif
   }
 
   plain_label_store_ht(const plain_label_store_ht&) = delete;
@@ -123,8 +121,10 @@ class plain_label_store_ht {
  private:
   std::vector<std::vector<uint8_t>> char_pages_;
   std::vector<uint32_t> ptrs_;
+#ifdef POPLAR_EXTRA_STATS
   uint64_t max_length_ = 0;
   uint64_t sum_length_ = 0;
+#endif
 };
 
 }  // namespace poplar
