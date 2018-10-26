@@ -12,7 +12,7 @@ constexpr int UPDATE_RUNS = 3;
 constexpr int FIND_RUNS = 10;
 
 template <class Map>
-int speed_test(const char* key_name, const char* query_name, uint32_t capa_bits) {
+int speed_test(const std::string& key_name, const std::string& query_name, uint32_t capa_bits) {
   std::vector<std::string> keys;
   {
     std::ifstream ifs{key_name};
@@ -48,7 +48,7 @@ int speed_test(const char* key_name, const char* query_name, uint32_t capa_bits)
     update_time = get_average(times);
   }
 
-  if (std::strcmp(query_name, "-") != 0) {
+  if (query_name != "-") {
     std::ifstream ifs{query_name};
     if (!ifs) {
       std::cerr << "Error: failed to open " << query_name << std::endl;
@@ -134,45 +134,37 @@ int main(int argc, char* argv[]) {
   constexpr uint64_t lambda = 16;
 
   if (map_type == "plain_bonsai") {
-    return speed_test<plain_bonsai_map<value_type, lambda>>(key_fn.c_str(), query_fn.c_str(), capa_bits);
+    return speed_test<plain_bonsai_map<value_type, lambda>>(key_fn, query_fn, capa_bits);
   } else if (map_type == "compact_bonsai") {
     switch (chunk_size) {
       case 8:
-        return speed_test<compact_bonsai_map<value_type, 8, lambda>>(key_fn.c_str(), query_fn.c_str(),
-                                                                     capa_bits);
+        return speed_test<compact_bonsai_map<value_type, 8, lambda>>(key_fn, query_fn, capa_bits);
       case 16:
-        return speed_test<compact_bonsai_map<value_type, 16, lambda>>(key_fn.c_str(), query_fn.c_str(),
-                                                                      capa_bits);
+        return speed_test<compact_bonsai_map<value_type, 16, lambda>>(key_fn, query_fn, capa_bits);
       case 32:
-        return speed_test<compact_bonsai_map<value_type, 32, lambda>>(key_fn.c_str(), query_fn.c_str(),
-                                                                      capa_bits);
+        return speed_test<compact_bonsai_map<value_type, 32, lambda>>(key_fn, query_fn, capa_bits);
       case 64:
-        return speed_test<compact_bonsai_map<value_type, 64, lambda>>(key_fn.c_str(), query_fn.c_str(),
-                                                                      capa_bits);
+        return speed_test<compact_bonsai_map<value_type, 64, lambda>>(key_fn, query_fn, capa_bits);
       default:
         break;
     }
   } else if (map_type == "plain_hash") {
-    return speed_test<plain_hash_map<value_type, lambda>>(key_fn.c_str(), query_fn.c_str(), capa_bits);
+    return speed_test<plain_hash_map<value_type, lambda>>(key_fn, query_fn, capa_bits);
   } else if (map_type == "compact_hash") {
     switch (chunk_size) {
       case 8:
-        return speed_test<compact_hash_map<value_type, 8, lambda>>(key_fn.c_str(), query_fn.c_str(),
-                                                                   capa_bits);
+        return speed_test<compact_hash_map<value_type, 8, lambda>>(key_fn, query_fn, capa_bits);
       case 16:
-        return speed_test<compact_hash_map<value_type, 16, lambda>>(key_fn.c_str(), query_fn.c_str(),
-                                                                    capa_bits);
+        return speed_test<compact_hash_map<value_type, 16, lambda>>(key_fn, query_fn, capa_bits);
       case 32:
-        return speed_test<compact_hash_map<value_type, 32, lambda>>(key_fn.c_str(), query_fn.c_str(),
-                                                                    capa_bits);
+        return speed_test<compact_hash_map<value_type, 32, lambda>>(key_fn, query_fn, capa_bits);
       case 64:
-        return speed_test<compact_hash_map<value_type, 64, lambda>>(key_fn.c_str(), query_fn.c_str(),
-                                                                    capa_bits);
+        return speed_test<compact_hash_map<value_type, 64, lambda>>(key_fn, query_fn, capa_bits);
       default:
         break;
     }
   } else if (map_type == "rrr_hash") {
-    return speed_test<rrr_hash_map<value_type, lambda>>(key_fn.c_str(), query_fn.c_str(), capa_bits);
+    return speed_test<rrr_hash_map<value_type, lambda>>(key_fn, query_fn, capa_bits);
   }
 
   std::cerr << p.usage() << std::endl;

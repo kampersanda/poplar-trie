@@ -9,7 +9,7 @@ using namespace poplar;
 using namespace poplar::benchmark;
 
 template <class Map>
-int build(const char* key_name, uint32_t capa_bits) {
+int build(const std::string& key_name, uint32_t capa_bits) {
   std::ifstream ifs{key_name};
   if (!ifs) {
     std::cerr << "error: failed to open " << key_name << std::endl;
@@ -71,37 +71,37 @@ int main(int argc, char* argv[]) {
   constexpr uint64_t lambda = 16;
 
   if (map_type == "plain_bonsai") {
-    return build<plain_bonsai_map<value_type, lambda>>(key_fn.c_str(), capa_bits);
+    return build<plain_bonsai_map<value_type, lambda>>(key_fn, capa_bits);
   } else if (map_type == "compact_bonsai") {
     switch (chunk_size) {
       case 8:
-        return build<compact_bonsai_map<value_type, 8, lambda>>(key_fn.c_str(), capa_bits);
+        return build<compact_bonsai_map<value_type, 8, lambda>>(key_fn, capa_bits);
       case 16:
-        return build<compact_bonsai_map<value_type, 16, lambda>>(key_fn.c_str(), capa_bits);
+        return build<compact_bonsai_map<value_type, 16, lambda>>(key_fn, capa_bits);
       case 32:
-        return build<compact_bonsai_map<value_type, 32, lambda>>(key_fn.c_str(), capa_bits);
+        return build<compact_bonsai_map<value_type, 32, lambda>>(key_fn, capa_bits);
       case 64:
-        return build<compact_bonsai_map<value_type, 64, lambda>>(key_fn.c_str(), capa_bits);
+        return build<compact_bonsai_map<value_type, 64, lambda>>(key_fn, capa_bits);
       default:
         break;
     }
   } else if (map_type == "plain_hash") {
-    return build<plain_hash_map<value_type, lambda>>(key_fn.c_str(), capa_bits);
+    return build<plain_hash_map<value_type, lambda>>(key_fn, capa_bits);
   } else if (map_type == "compact_hash") {
     switch (chunk_size) {
       case 8:
-        return build<compact_hash_map<value_type, 8, lambda>>(key_fn.c_str(), capa_bits);
+        return build<compact_hash_map<value_type, 8, lambda>>(key_fn, capa_bits);
       case 16:
-        return build<compact_hash_map<value_type, 16, lambda>>(key_fn.c_str(), capa_bits);
+        return build<compact_hash_map<value_type, 16, lambda>>(key_fn, capa_bits);
       case 32:
-        return build<compact_hash_map<value_type, 32, lambda>>(key_fn.c_str(), capa_bits);
+        return build<compact_hash_map<value_type, 32, lambda>>(key_fn, capa_bits);
       case 64:
-        return build<compact_hash_map<value_type, 64, lambda>>(key_fn.c_str(), capa_bits);
+        return build<compact_hash_map<value_type, 64, lambda>>(key_fn, capa_bits);
       default:
         break;
     }
   } else if (map_type == "rrr_hash") {
-    return build<rrr_hash_map<value_type, lambda>>(key_fn.c_str(), capa_bits);
+    return build<rrr_hash_map<value_type, lambda>>(key_fn, capa_bits);
   }
 
   std::cerr << p.usage() << std::endl;
