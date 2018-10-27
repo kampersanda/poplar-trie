@@ -21,6 +21,7 @@ class map {
   using value_type = typename LabelStore::value_type;
 
   static constexpr auto trie_type = Trie::trie_type;
+  static constexpr auto lambda = Lambda;
 
  public:
   // Generic constructor.
@@ -168,6 +169,11 @@ class map {
   uint64_t capa_size() const {
     return hash_trie_.capa_size();
   }
+#ifdef POPLAR_EXTRA_STATS
+  double rate_steps() const {
+    return double(num_steps_) / size_;
+  }
+#endif
 
   void show_stats(std::ostream& os, int n = 0) const {
     auto indent = get_indent(n);
@@ -175,7 +181,7 @@ class map {
     show_stat(os, indent, "lambda", Lambda);
     show_stat(os, indent, "size", size());
 #ifdef POPLAR_EXTRA_STATS
-    show_stat(os, indent, "rate_steps", double(num_steps_) / hash_trie_.size());
+    show_stat(os, indent, "rate_steps", rate_steps());
 #endif
     show_member(os, indent, "hash_trie_");
     hash_trie_.show_stats(os, n + 1);
