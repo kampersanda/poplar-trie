@@ -21,8 +21,6 @@ void insert_keys(Trie& ht, const std::vector<std::string>& keys, std::vector<uin
     ASSERT_EQ(ht.get_root(), 0);
   }
 
-  uint64_t capa_size = ht.capa_size();
-
   for (uint64_t i = 0; i < keys.size(); ++i) {
     auto node_id = ht.get_root();
 
