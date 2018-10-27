@@ -16,7 +16,7 @@ class compact_label_store_ht {
   using value_type = Value;
   using chunk_type = typename chunk_type_traits<ChunkSize>::type;
 
-  static constexpr auto trie_type = trie_types::HASH_TRIE;
+  static constexpr auto trie_type_id = trie_type_ids::HASH_TRIE;
   static constexpr uint64_t page_size = 1U << 16;
   static constexpr uint64_t growth_size = 1U << 16;
 

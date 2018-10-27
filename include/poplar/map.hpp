@@ -14,13 +14,13 @@ namespace poplar {
 template <typename Trie, typename LabelStore, uint64_t Lambda = 16>
 class map {
   static_assert(is_power2(Lambda));
-  static_assert(Trie::trie_type == LabelStore::trie_type);
+  static_assert(Trie::trie_type_id == LabelStore::trie_type_id);
 
  public:
   using this_type = map<Trie, LabelStore, Lambda>;
   using value_type = typename LabelStore::value_type;
 
-  static constexpr auto trie_type = Trie::trie_type;
+  static constexpr auto trie_type_id = Trie::trie_type_id;
   static constexpr auto lambda = Lambda;
 
  public:
@@ -97,11 +97,11 @@ class map {
       ++size_;
       hash_trie_.add_root();
 
-      if constexpr (trie_type == trie_types::HASH_TRIE) {
+      if constexpr (trie_type_id == trie_type_ids::HASH_TRIE) {
         // assert(hash_trie_.get_root() == label_store_.size());
         return label_store_.append(key);
       }
-      if constexpr (trie_type == trie_types::BONSAI_TRIE) {
+      if constexpr (trie_type_id == trie_type_ids::BONSAI_TRIE) {
         return label_store_.insert(hash_trie_.get_root(), key);
       }
       // should not come
@@ -124,7 +124,7 @@ class map {
 #ifdef POPLAR_EXTRA_STATS
           ++num_steps_;
 #endif
-          if constexpr (trie_type == trie_types::HASH_TRIE) {
+          if constexpr (trie_type_id == trie_type_ids::HASH_TRIE) {
             assert(node_id == label_store_.size());
             label_store_.append_dummy();
           }
@@ -143,11 +143,11 @@ class map {
         ++key.begin;
         ++size_;
 
-        if constexpr (trie_type == trie_types::HASH_TRIE) {
+        if constexpr (trie_type_id == trie_type_ids::HASH_TRIE) {
           assert(node_id == label_store_.size());
           return label_store_.append(key);
         }
-        if constexpr (trie_type == trie_types::BONSAI_TRIE) {
+        if constexpr (trie_type_id == trie_type_ids::BONSAI_TRIE) {
           return label_store_.insert(node_id, key);
         }
         // should not come
@@ -215,7 +215,7 @@ class map {
   }
 
   void expand_if_needed_(uint64_t& node_id) {
-    if constexpr (trie_type == trie_types::BONSAI_TRIE) {
+    if constexpr (trie_type_id == trie_type_ids::BONSAI_TRIE) {
       if (!hash_trie_.needs_to_expand()) {
         return;
       }

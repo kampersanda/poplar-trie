@@ -28,7 +28,7 @@ class compact_bonsai_trie {
   static constexpr uint32_t dsp2_bits = aux_cht_type::val_bits;
   static constexpr uint32_t dsp2_mask = aux_cht_type::val_mask;
 
-  static constexpr auto trie_type = trie_types::BONSAI_TRIE;
+  static constexpr auto trie_type_id = trie_type_ids::BONSAI_TRIE;
 
  public:
   compact_bonsai_trie() = default;
@@ -327,7 +327,7 @@ class compact_bonsai_trie {
     }
 
     dsp = aux_cht_.get(slot_id);
-    if (dsp != UINT64_MAX) {
+    if (dsp != aux_cht_type::nil) {
       return dsp + dsp1_mask;
     }
 
@@ -344,7 +344,7 @@ class compact_bonsai_trie {
     }
 
     lhs = aux_cht_.get(slot_id);
-    if (lhs != UINT64_MAX) {
+    if (lhs != aux_cht_type::nil) {
       return lhs + dsp1_mask == rhs;
     }
     if (rhs < dsp1_mask + dsp2_mask) {
@@ -352,7 +352,7 @@ class compact_bonsai_trie {
     }
 
     auto val = aux_map_.get(slot_id);
-    assert(val != UINT64_MAX);
+    assert(val != aux_map_type::nil);
     return val == rhs;
   }
 

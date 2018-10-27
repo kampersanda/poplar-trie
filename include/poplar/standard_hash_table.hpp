@@ -14,6 +14,7 @@ class standard_hash_table {
   using this_type = standard_hash_table<MaxFactor, Hasher>;
 
   static constexpr uint32_t min_capa_bits = 6;
+  static constexpr uint64_t nil = UINT64_MAX;
 
  public:
   standard_hash_table() = default;
@@ -28,12 +29,12 @@ class standard_hash_table {
 
   uint64_t get(uint64_t key) const {
     if (table_.empty()) {
-      return UINT64_MAX;
+      return nil;
     }
 
     for (uint64_t i = init_id_(key);; i = right_(i)) {
       if (table_[i].key == UINT64_MAX) {
-        return UINT64_MAX;
+        return nil;
       }
       if (table_[i].key == key) {
         return table_[i].val;

@@ -14,7 +14,7 @@ class plain_label_store_bt {
  public:
   using value_type = Value;
 
-  static constexpr auto trie_type = trie_types::BONSAI_TRIE;
+  static constexpr auto trie_type_id = trie_type_ids::BONSAI_TRIE;
 
  public:
   plain_label_store_bt() = default;

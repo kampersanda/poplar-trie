@@ -18,6 +18,7 @@ class compact_hash_table {
   static constexpr uint32_t min_capa_bits = 12;
   static constexpr uint32_t val_bits = ValBits;
   static constexpr uint64_t val_mask = (1ULL << ValBits) - 1;
+  static constexpr uint64_t nil = UINT64_MAX;
 
  public:
   compact_hash_table() = default;
@@ -46,16 +47,16 @@ class compact_hash_table {
     auto [quo, mod] = decompose_(hasher_.hash(key));
 
     if (!get_vbit_(mod)) {
-      return UINT64_MAX;
+      return nil;
     }
 
     uint64_t slot_id = find_ass_cbit_(mod);
     if (slot_id == UINT64_MAX) {
-      return UINT64_MAX;
+      return nil;
     }
 
     if (!find_item_(slot_id, quo)) {
-      return UINT64_MAX;
+      return nil;
     }
     return get_val_(slot_id);
   }

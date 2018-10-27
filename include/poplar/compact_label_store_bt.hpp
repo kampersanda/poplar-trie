@@ -16,7 +16,7 @@ class compact_label_store_bt {
   using value_type = Value;
   using chunk_type = typename chunk_type_traits<ChunkSize>::type;
 
-  static constexpr auto trie_type = trie_types::BONSAI_TRIE;
+  static constexpr auto trie_type_id = trie_type_ids::BONSAI_TRIE;
 
  public:
   compact_label_store_bt() = default;

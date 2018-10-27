@@ -15,7 +15,7 @@ class rrr_label_store_ht {
   using this_type = rrr_label_store_ht<Value>;
   using value_type = Value;
 
-  static constexpr auto trie_type = trie_types::HASH_TRIE;
+  static constexpr auto trie_type_id = trie_type_ids::HASH_TRIE;
   static constexpr uint64_t page_size = 1U << 16;
   static constexpr uint64_t growth_size = 1U << 16;
 

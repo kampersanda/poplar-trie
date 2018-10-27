@@ -17,7 +17,7 @@ class plain_bonsai_trie {
   static constexpr uint64_t nil_id = UINT64_MAX;
   static constexpr uint32_t min_capa_bits = 16;
 
-  static constexpr auto trie_type = trie_types::BONSAI_TRIE;
+  static constexpr auto trie_type_id = trie_type_ids::BONSAI_TRIE;
 
  public:
   plain_bonsai_trie() = default;
