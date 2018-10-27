@@ -12,7 +12,7 @@ constexpr int UPDATE_RUNS = 3;
 constexpr int FIND_RUNS = 10;
 
 template <class Map>
-int speed_test(const std::string& key_name, const std::string& query_name, uint32_t capa_bits) {
+int measure(const std::string& key_name, const std::string& query_name, uint32_t capa_bits) {
   std::vector<std::string> keys;
   {
     std::ifstream ifs{key_name};
@@ -134,37 +134,37 @@ int main(int argc, char* argv[]) {
   constexpr uint64_t lambda = 16;
 
   if (map_type == "plain_bonsai") {
-    return speed_test<plain_bonsai_map<value_type, lambda>>(key_fn, query_fn, capa_bits);
+    return measure<plain_bonsai_map<value_type, lambda>>(key_fn, query_fn, capa_bits);
   } else if (map_type == "compact_bonsai") {
     switch (chunk_size) {
       case 8:
-        return speed_test<compact_bonsai_map<value_type, 8, lambda>>(key_fn, query_fn, capa_bits);
+        return measure<compact_bonsai_map<value_type, 8, lambda>>(key_fn, query_fn, capa_bits);
       case 16:
-        return speed_test<compact_bonsai_map<value_type, 16, lambda>>(key_fn, query_fn, capa_bits);
+        return measure<compact_bonsai_map<value_type, 16, lambda>>(key_fn, query_fn, capa_bits);
       case 32:
-        return speed_test<compact_bonsai_map<value_type, 32, lambda>>(key_fn, query_fn, capa_bits);
+        return measure<compact_bonsai_map<value_type, 32, lambda>>(key_fn, query_fn, capa_bits);
       case 64:
-        return speed_test<compact_bonsai_map<value_type, 64, lambda>>(key_fn, query_fn, capa_bits);
+        return measure<compact_bonsai_map<value_type, 64, lambda>>(key_fn, query_fn, capa_bits);
       default:
         break;
     }
   } else if (map_type == "plain_hash") {
-    return speed_test<plain_hash_map<value_type, lambda>>(key_fn, query_fn, capa_bits);
+    return measure<plain_hash_map<value_type, lambda>>(key_fn, query_fn, capa_bits);
   } else if (map_type == "compact_hash") {
     switch (chunk_size) {
       case 8:
-        return speed_test<compact_hash_map<value_type, 8, lambda>>(key_fn, query_fn, capa_bits);
+        return measure<compact_hash_map<value_type, 8, lambda>>(key_fn, query_fn, capa_bits);
       case 16:
-        return speed_test<compact_hash_map<value_type, 16, lambda>>(key_fn, query_fn, capa_bits);
+        return measure<compact_hash_map<value_type, 16, lambda>>(key_fn, query_fn, capa_bits);
       case 32:
-        return speed_test<compact_hash_map<value_type, 32, lambda>>(key_fn, query_fn, capa_bits);
+        return measure<compact_hash_map<value_type, 32, lambda>>(key_fn, query_fn, capa_bits);
       case 64:
-        return speed_test<compact_hash_map<value_type, 64, lambda>>(key_fn, query_fn, capa_bits);
+        return measure<compact_hash_map<value_type, 64, lambda>>(key_fn, query_fn, capa_bits);
       default:
         break;
     }
   } else if (map_type == "rrr_hash") {
-    return speed_test<rrr_hash_map<value_type, lambda>>(key_fn, query_fn, capa_bits);
+    return measure<rrr_hash_map<value_type, lambda>>(key_fn, query_fn, capa_bits);
   }
 
   std::cerr << p.usage() << std::endl;
