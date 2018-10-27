@@ -18,6 +18,7 @@ class map {
 
  public:
   using this_type = map<Trie, LabelStore, Lambda>;
+  using trie_type = Trie;
   using value_type = typename LabelStore::value_type;
 
   static constexpr auto trie_type_id = Trie::trie_type_id;
