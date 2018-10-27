@@ -17,7 +17,7 @@ void insert_keys(Trie& ht, const std::vector<std::string>& keys, std::vector<uin
   ht.add_root();
   auto num_nodes = ht.size();
 
-  if constexpr (Trie::trie_type == trie_types::HASH_TRIE) {
+  if constexpr (Trie::trie_type_id == trie_type_ids::HASH_TRIE) {
     ASSERT_EQ(ht.get_root(), 0);
   }
 
@@ -28,13 +28,13 @@ void insert_keys(Trie& ht, const std::vector<std::string>& keys, std::vector<uin
 
     for (auto c : keys[i]) {
       if (ht.add_child(node_id, static_cast<uint8_t>(c))) {
-        if constexpr (Trie::trie_type == trie_types::HASH_TRIE) {
+        if constexpr (Trie::trie_type_id == trie_type_ids::HASH_TRIE) {
           ASSERT_EQ(node_id, num_nodes);
         }
 
         ++num_nodes;
 
-        if constexpr (Trie::trie_type == trie_types::BONSAI_TRIE) {
+        if constexpr (Trie::trie_type_id == trie_type_ids::BONSAI_TRIE) {
           if (!ht.needs_to_expand()) {
             continue;
           }
@@ -80,7 +80,7 @@ template <typename Trie>
 void restore_keys(const Trie& ht, const std::vector<std::string>& keys, const std::vector<uint64_t>& ids) {
   ASSERT_FALSE(keys.empty());
 
-  if constexpr (Trie::trie_type == trie_types::BONSAI_TRIE) {
+  if constexpr (Trie::trie_type_id == trie_type_ids::BONSAI_TRIE) {
     std::string restore;
 
     for (uint64_t i = 0; i < ids.size(); ++i) {
