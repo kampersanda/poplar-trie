@@ -1,12 +1,11 @@
 #include <iostream>
 
-#include "benchmark_common.hpp"
 #include "cmdline.h"
+#include "common.hpp"
 
 namespace {
 
 using namespace poplar;
-using namespace poplar::benchmark;
 
 constexpr int UPDATE_RUNS = 3;
 constexpr int FIND_RUNS = 10;

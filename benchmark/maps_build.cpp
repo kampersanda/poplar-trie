@@ -1,12 +1,11 @@
 #include <iostream>
 
-#include "benchmark_common.hpp"
 #include "cmdline.h"
+#include "common.hpp"
 
 namespace {
 
 using namespace poplar;
-using namespace poplar::benchmark;
 
 template <class Map>
 int build(const std::string& key_name, uint32_t capa_bits) {

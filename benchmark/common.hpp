@@ -1,5 +1,5 @@
-#ifndef POPLAR_TRIE_BENCHMARK_COMMON_HPP
-#define POPLAR_TRIE_BENCHMARK_COMMON_HPP
+#ifndef POPLAR_TRIE_COMMON_HPP
+#define POPLAR_TRIE_COMMON_HPP
 
 #include <cxxabi.h>
 
@@ -11,7 +11,7 @@
 
 #include <poplar.hpp>
 
-namespace poplar::benchmark {
+namespace poplar {
 
 class timer {
  public:
@@ -65,6 +65,6 @@ inline std::vector<std::string> load_keys(const char* key_name) {
   return keys;
 }
 
-}  // namespace poplar::benchmark
+}  // namespace poplar
 
-#endif  // POPLAR_TRIE_BENCHMARK_COMMON_HPP
+#endif  // POPLAR_TRIE_COMMON_HPP
