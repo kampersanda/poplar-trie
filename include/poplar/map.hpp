@@ -120,8 +120,9 @@ class map {
       while (Lambda <= match) {
         if (hash_trie_.add_child(node_id, step_symb)) {
           expand_if_needed_(node_id);
+#ifdef POPLAR_EXTRA_STATS
           ++num_steps_;
-
+#endif
           if constexpr (trie_type == trie_types::HASH_TRIE) {
             assert(node_id == label_store_.size());
             label_store_.append_dummy();
@@ -173,7 +174,9 @@ class map {
     show_stat(os, indent, "name", "map");
     show_stat(os, indent, "lambda", Lambda);
     show_stat(os, indent, "size", size());
+#ifdef POPLAR_EXTRA_STATS
     show_stat(os, indent, "rate_steps", double(num_steps_) / hash_trie_.size());
+#endif
     show_member(os, indent, "hash_trie_");
     hash_trie_.show_stats(os, n + 1);
     show_member(os, indent, "label_store_");
@@ -196,7 +199,9 @@ class map {
   std::array<uint8_t, 256> codes_ = {};
   uint32_t num_codes_ = 0;
   uint64_t size_ = 0;
+#ifdef POPLAR_EXTRA_STATS
   uint64_t num_steps_ = 0;
+#endif
 
   uint64_t make_symb_(uint8_t c, uint64_t match) const {
     assert(codes_[c] != UINT8_MAX);
