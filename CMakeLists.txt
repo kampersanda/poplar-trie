@@ -18,8 +18,6 @@ else ()
   message(STATUS "Compiler is recent enough to support C++17.")
 endif ()
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++1z -pthread")
-
 set(BUILTIN_POPCNT 0)
 
 if (DISABLE_SSE4_2)
@@ -38,8 +36,13 @@ elseif(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
 endif()
 
 if(BUILTIN_POPCNT)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -msse4.2 -march=native")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -msse4.2")
 endif()
+
+set(GCC_WARNINGS "-Wall -Werror=return-type")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++1z -pthread ${GCC_WARNINGS}")
+set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -DNDEBUG -march=native")
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0 -ggdb -DDEBUG")
 
 message(STATUS "BUILD_TYPE is ${CMAKE_BUILD_TYPE}")
 message(STATUS "CXX_FLAGS are ${CMAKE_CXX_FLAGS}")
