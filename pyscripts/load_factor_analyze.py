@@ -77,7 +77,7 @@ if __name__ == "__main__":
     results.sort(key=lambda x: x[0])
     time_str = datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
 
-    with open('log.{}.{}.stdout.txt'.format(args.output_fn, time_str), 'w') as f:
+    with open('load_factor_analyze.{}.{}.stdout.txt'.format(args.output_fn, time_str), 'w') as f:
         for res in results:
             f.write(res[1]+'\n')  # cmd
             f.write(res[2]+'\n')  # stdout
@@ -87,7 +87,7 @@ if __name__ == "__main__":
         stdout_dict = parse_stdout(res[2])
         basic_stats.append(stdout_dict)
 
-    with open('log.{}.{}.basic.txt'.format(args.output_fn, time_str), 'w') as f:
+    with open('load_factor_analyze.{}.{}.basic.txt'.format(args.output_fn, time_str), 'w') as f:
         f.write('max_factor\tdsp1st_bits\telapsed_sec\tmax_rss_kb\tnum_resize\n')
         for bs in basic_stats:
             f.write(
