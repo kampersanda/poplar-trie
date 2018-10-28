@@ -24,7 +24,7 @@ def parse_stdout(txt):
             ret['max_rss_kb'] = int(line.split()[0]) / 1024
             continue
         elif platform.system() == 'Linux' and 'Maximum resident set size (kbytes)' in line:
-            ret['max_rss_kb'] = int(line.split()[5])
+            ret['max_rss_kb'] = int(line.split()[-1])
             continue
         elif line.startswith('elapsed_sec:'):
             ret['elapsed_sec'] = line.split(':')[1]
