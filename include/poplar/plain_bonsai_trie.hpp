@@ -8,7 +8,7 @@
 
 namespace poplar {
 
-template <uint32_t MaxFactor = 80, typename Hasher = hash::vigna_hasher>
+template <uint32_t MaxFactor = 90, typename Hasher = hash::vigna_hasher>
 class plain_bonsai_trie {
  private:
   static_assert(0 < MaxFactor and MaxFactor < 100);

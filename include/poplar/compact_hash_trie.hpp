@@ -9,7 +9,7 @@
 
 namespace poplar {
 
-template <uint32_t MaxFactor = 80, uint32_t Dsp1Bits = 3, class AuxCht = compact_hash_table<7>,
+template <uint32_t MaxFactor = 90, uint32_t Dsp1Bits = 4, class AuxCht = compact_hash_table<7>,
           class AuxMap = standard_hash_table<>, class Hasher = bijective_hash::split_mix_hasher>
 class compact_hash_trie {
   static_assert(0 < MaxFactor and MaxFactor < 100);

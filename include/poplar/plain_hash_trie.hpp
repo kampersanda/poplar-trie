@@ -11,7 +11,7 @@
 namespace poplar {
 
 // The node IDs are arranged incrementally
-template <uint32_t MaxFactor = 80, typename Hasher = hash::vigna_hasher>
+template <uint32_t MaxFactor = 90, typename Hasher = hash::vigna_hasher>
 class plain_hash_trie {
   static_assert(0 < MaxFactor and MaxFactor < 100);
 
