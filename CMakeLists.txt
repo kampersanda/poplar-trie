@@ -62,7 +62,7 @@ enable_testing()
 include_directories(include)
 
 add_subdirectory(include)
-add_subdirectory(benchmark)
+add_subdirectory(bench)
 add_subdirectory(sample)
 add_subdirectory(test)
 
