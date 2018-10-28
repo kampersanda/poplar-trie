@@ -231,8 +231,7 @@ class compact_bonsai_trie {
       uint64_t new_node_id = get_mapping(node_id);
 
       for (auto rit = std::rbegin(path); rit != std::rend(path); ++rit) {
-        auto ret = new_ht.add_child(new_node_id, rit->second);
-        assert(ret);
+        new_ht.add_child(new_node_id, rit->second);
         set_mapping(rit->first, new_node_id);
         done_flags.set(rit->first);
       }
