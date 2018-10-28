@@ -147,22 +147,21 @@ The insertion time was also measured using `std::chrono::duration_cast`.
 And, search time for the same strings was measured.
 
 | Implementation | Space<br>(MiB) | Insert<br>(micros/key) | Search<br>(micros/key) |
-|------------------------|------------:|-------------------------:|----------------------:|
-| std::map | 139.6 | 1.49 | 1.75 |
-| std::unordered_map | 162.3 | 0.69 | 0.28 |
-| [google::dense\_hash\_map](https://github.com/sparsehash/sparsehash) | 290.9 | 0.43 | 0.08 |
-| [google::sparse\_hash\_map](https://github.com/sparsehash/sparsehash) | 182.5 | 4.47 | 0.22 |
-| [JudySL](http://judy.sourceforge.net) | 80.7 | 0.72 | 0.61 |
-| [hat-trie](https://github.com/dcjones/hat-trie) | 73.1 | 0.85 | 0.21 |
-| [libart](https://github.com/armon/libart) | 149.1 | 0.80 | 0.83 |
-| [cedar](http://www.tkl.iis.u-tokyo.ac.jp/~ynaga/cedar/) | 266.7 | 1.08 | 0.53 |
-| [cedarpp](http://www.tkl.iis.u-tokyo.ac.jp/~ynaga/cedar/) | 154.3 | 0.89 | 0.52 |
-| poplar::plain\_bonsai\_map | 134.8 | 0.86 | 0.65 |
-| poplar::compact\_bonsai\_map | **53.8** | 2.15 | 0.77 |
-| poplar::plain\_hash_map | 89.5 | 0.69 | 0.80 |
-| poplar::compact\_hash\_map | 63.8 | 1.01 | 0.97 |
-| poplar::rrr\_hash\_map | 61.4 | 1.24 | 1.20 |
-
+|--------------------------|------------|-------------------|---------------------|
+| std::map | 139.6 | 1.45 | 1.65 |
+| std::unordered\_map | 162.3 | 0.66 | 0.28 |
+| [google::dense\_hash\_map](https://github.com/sparsehash/sparsehash) | 291.4 | 0.42 | 0.09 |
+| [google::sparse\_hash\_map](https://github.com/sparsehash/sparsehash) | 185.3 | 4.41 | 0.19 |
+| [JudySL](http://judy.sourceforge.net) | 83.4 | 0.72 | 0.60 |
+| [hat-trie](https://github.com/dcjones/hat-trie) | 77.1 | 0.84 | 0.21 |
+| [libart](https://github.com/armon/libart) | 149.4 | 0.77 | 0.79 |
+| [cedar (reduced)](http://www.tkl.iis.u-tokyo.ac.jp/~ynaga/cedar/) | 266.7 | 1.03 | 0.55 |
+| [cedar (prefix)](http://www.tkl.iis.u-tokyo.ac.jp/~ynaga/cedar/) | 154.2 | 0.86 | 0.59 |
+| poplar::plain\_bonsai\_map | 86.3 | 0.72 | 0.61 |
+| poplar::compact\_bonsai\_map | **44.4** | 1.67 | 0.85 |
+| poplar::plain\_hash\_map | 63.3 | 0.65 | 0.73 |
+| poplar::compact\_hash\_map | **45.3** | 0.93 | 0.96 |
+| poplar::rrr\_hash\_map | **44.3** | 1.29 | 1.48 |
 
 ## Todo
 
