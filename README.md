@@ -147,7 +147,7 @@ The insertion time was also measured using `std::chrono::duration_cast`.
 And, search time for the same strings was measured.
 
 | Implementation | Space<br>(MiB) | Insert<br>(micros/key) | Search<br>(micros/key) |
-|--------------------------|------------|-------------------|---------------------|
+|--------------------------|------------:|-------------------:|---------------------:|
 | std::map | 139.6 | 1.45 | 1.65 |
 | std::unordered\_map | 162.3 | 0.66 | 0.28 |
 | [google::dense\_hash\_map](https://github.com/sparsehash/sparsehash) | 291.4 | 0.42 | 0.09 |
