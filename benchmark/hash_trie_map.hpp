@@ -65,27 +65,14 @@ class hash_trie_map {
           }
           auto node_map = trie_.expand();
           node_id = node_map[node_id];
-          cht_type new_cht(trie_.capa_bits());
-          for (uint64_t i = 0; i < node_map.size(); ++i) {  // TODO: speed-up
-            if (node_map[i] != UINT64_MAX) {
-              uint64_t v = cht_.get(i);
-              if (v != cht_type::nil) {
-                new_cht.set(node_map[i], v);
-              }
-            }
-          }
+          bonsai_set_mapper set_mapper(node_map);
+          cht_type new_cht(trie_.capa_bits(), cht_.capa_bits());
+          cht_.clone(new_cht, set_mapper);
           cht_ = std::move(new_cht);
         } else {  // trie_type_id == trie_type_ids::HASH_TRIE
           if (cht_.univ_bits() < trie_.capa_bits()) {
-            cht_type new_cht(trie_.capa_bits());
-            for (uint64_t i = 0; i < cht_.univ_size(); ++i) {  // TODO: speed-up
-              uint64_t v = cht_.get(i);
-              if (v != cht_type::nil) {
-                if (!new_cht.set(i, v)) {
-                  assert(false);
-                }
-              }
-            }
+            cht_type new_cht(trie_.capa_bits(), cht_.capa_bits());
+            cht_.clone(new_cht);
             cht_ = std::move(new_cht);
           }
         }
@@ -123,6 +110,18 @@ class hash_trie_map {
   bool is_ready_ = false;
   trie_type trie_;
   cht_type cht_;
+
+  struct bonsai_set_mapper {
+    using node_map_type = typename trie_type::node_map;
+    bonsai_set_mapper(const node_map_type& map) : map_(map) {}
+
+    void operator()(cht_type& new_cht, uint64_t key, uint64_t val) const {
+      new_cht.set(map_[key], val);
+    }
+
+   private:
+    const node_map_type& map_;
+  };
 };
 
 }  // namespace poplar

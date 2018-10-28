@@ -66,7 +66,13 @@ class compact_hash_table {
     assert(val < val_mask);
 
     if (max_size_ <= size_) {
-      expand_();
+      // expand
+      this_type new_cht{univ_size_.bits(), capa_size_.bits() + 1};
+#ifdef POPLAR_EXTRA_STATS
+      new_cht.num_resize_ = num_resize_ + 1;
+#endif
+      clone(new_cht);
+      *this = std::move(new_cht);
     }
 
     auto [quo, mod] = decompose_(hasher_.hash(key));
@@ -122,6 +128,63 @@ class compact_hash_table {
     return true;
   }
 
+  void clone(this_type& new_cht) const {
+    set_mapper mapper;
+    clone(new_cht, mapper);
+  }
+  template <class SetMapper>
+  void clone(this_type& new_cht, const SetMapper& mapper) const {
+    POPLAR_THROW_IF(new_cht.size() != 0, "new_cht must be empty.");
+    POPLAR_THROW_IF(new_cht.max_size() < size(), "this->size() <= new_cht.max_size() must hold.");
+
+    // Find the first vacant slot
+    uint64_t i = 0;
+    while (!is_vacant_(i)) {
+      i = right_(i);
+    }
+
+    const uint64_t beg = i;
+    i = right_(i);  // skip the vacant
+
+    for (bool completed = false; !completed;) {
+      // Find the leftmost of some collision groups
+      while (is_vacant_(i)) {
+        i = right_(i);
+        if (i == beg) {
+          completed = true;
+        }
+      }
+
+      assert(get_cbit_(i));
+      uint64_t init_id = i;
+
+      do {
+        // Find the rightmost of the collision group
+        while (!get_vbit_(init_id)) {
+          init_id = right_(init_id);
+        }
+
+        do {
+          assert(!is_vacant_(i));
+
+          uint64_t key = hasher_.hash_inv((get_quo_(i) << capa_size_.bits()) | init_id);
+          uint64_t val = get_val_(i);
+          // new_cht.set(key, val);
+          mapper(new_cht, key, val);
+
+          i = right_(i);
+          if (i == beg) {
+            completed = true;
+          }
+        } while (!get_cbit_(i));
+
+        init_id = right_(init_id);
+      } while (i != init_id);
+    }
+
+    assert(size() == new_cht.size());
+  }
+
   uint64_t size() const {
     return size_;
   }
@@ -175,6 +238,12 @@ class compact_hash_table {
   uint64_t num_resize_ = 0;
 #endif
 
+  struct set_mapper {
+    void operator()(this_type& new_cht, uint64_t key, uint64_t val) const {
+      new_cht.set(key, val);
+    }
+  };
+
   uint64_t find_ass_cbit_(uint64_t slot_id) const {
     uint64_t dummy = 0;
     return find_ass_cbit_(slot_id, dummy);
@@ -214,60 +283,6 @@ class compact_hash_table {
       slot_id = right_(slot_id);
     } while (!get_cbit_(slot_id));
     return false;
-  }
-
-  void expand_() {
-    this_type new_cht{univ_size_.bits(), capa_size_.bits() + 1};
-#ifdef POPLAR_EXTRA_STATS
-    new_cht.num_resize_ = num_resize_ + 1;
-#endif
-
-    // Find the first vacant slot
-    uint64_t i = 0;
-    while (!is_vacant_(i)) {
-      i = right_(i);
-    }
-
-    const uint64_t beg = i;
-    i = right_(i);  // skip the vacant
-
-    for (bool completed = false; !completed;) {
-      // Find the leftmost of some collision groups
-      while (is_vacant_(i)) {
-        i = right_(i);
-        if (i == beg) {
-          completed = true;
-        }
-      }
-
-      assert(get_cbit_(i));
-      uint64_t init_id = i;
-
-      do {
-        // Find the rightmost of the collision group
-        while (!get_vbit_(init_id)) {
-          init_id = right_(init_id);
-        }
-
-        do {
-          assert(!is_vacant_(i));
-
-          uint64_t key = hasher_.hash_inv((get_quo_(i) << capa_size_.bits()) | init_id);
-          uint64_t val = get_val_(i);
-          new_cht.set(key, val);
-
-          i = right_(i);
-          if (i == beg) {
-            completed = true;
-          }
-        } while (!get_cbit_(i));
-
-        init_id = right_(init_id);
-      } while (i != init_id);
-    }
-
-    assert(size() == new_cht.size());
-    *this = std::move(new_cht);
   }
 
   std::pair<uint64_t, uint64_t> decompose_(uint64_t x) const {
