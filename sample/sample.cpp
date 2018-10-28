@@ -4,15 +4,16 @@
 int main() {
   std::vector<std::string> keys = {"Aoba", "Yun",    "Hajime", "Hihumi", "Kou",
                                    "Rin",  "Hazuki", "Umiko",  "Nene"};
+  const auto num_keys = static_cast<int>(keys.size());
 
   poplar::plain_hash_map<int> map;
 
   try {
-    for (int i = 0; i < keys.size(); ++i) {
+    for (int i = 0; i < num_keys; ++i) {
       int* ptr = map.update(poplar::make_char_range(keys[i]));
       *ptr = i + 1;
     }
-    for (int i = 0; i < keys.size(); ++i) {
+    for (int i = 0; i < num_keys; ++i) {
       const int* ptr = map.find(poplar::make_char_range(keys[i]));
       if (ptr == nullptr or *ptr != i + 1) {
         return 1;
