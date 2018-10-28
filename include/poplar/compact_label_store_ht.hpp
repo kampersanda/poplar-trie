@@ -73,7 +73,7 @@ class compact_label_store_ht {
     }
     std::vector<uint8_t>& chars = char_pages_[page_id];
 
-    auto [group_id, offset] = decompose_value<ChunkSize>(size_++);
+    auto offset = decompose_value<ChunkSize>(size_++).second;
     if (offset == 0) {
       POPLAR_THROW_IF(UINT32_MAX < chars.size(), "ptr value overflows.");
       ptrs_.push_back(chars.size());
@@ -106,7 +106,7 @@ class compact_label_store_ht {
     }
     std::vector<uint8_t>& chars = char_pages_[page_id];
 
-    auto [group_id, offset] = decompose_value<ChunkSize>(size_++);
+    auto offset = decompose_value<ChunkSize>(size_++).second;
     if (offset == 0) {
       POPLAR_THROW_IF(UINT32_MAX < chars.size(), "ptr value overflows.");
       ptrs_.push_back(chars.size());

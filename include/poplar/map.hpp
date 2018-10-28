@@ -158,7 +158,7 @@ class map {
       ++key.begin;
     }
 
-    auto [vptr, match] = label_store_.compare(node_id, key);
+    auto vptr = label_store_.compare(node_id, key).first;
     return vptr ? const_cast<value_type*>(vptr) : nullptr;
   }
 
