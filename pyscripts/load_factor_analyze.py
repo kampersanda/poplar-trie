@@ -34,6 +34,8 @@ def parse_stdout(txt):
             ret['dsp1st_bits'] = line.split(':')[1]
         elif line.startswith('\t\tnum_resize:'):
             ret['num_resize'] = line.split(':')[1]
+    if not 'num_resize' in ret:
+        ret['num_resize'] = -1  # when POPLAR_EXTRA_STATS=0
     return ret
 
 
