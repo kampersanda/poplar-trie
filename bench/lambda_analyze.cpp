@@ -60,7 +60,6 @@ int main(int argc, char* argv[]) {
   std::cout << "lambda\telapsed_sec\n";
 #endif
 
-  build<plain_hash_map<int, 2>>(key_fn, capa_bits);
   build<plain_hash_map<int, 4>>(key_fn, capa_bits);
   build<plain_hash_map<int, 8>>(key_fn, capa_bits);
   build<plain_hash_map<int, 16>>(key_fn, capa_bits);
