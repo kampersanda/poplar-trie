@@ -143,7 +143,7 @@ int measure(const std::string& key_name, const std::string& query_name, uint32_t
   std::ostream& out = std::cout;
   auto indent = get_indent(0);
 
-  show_stat(out, indent, "map_name", realname<Map>());
+  show_stat(out, indent, "map_name", short_realname<Map>());
   show_stat(out, indent, "key_name", key_name);
   show_stat(out, indent, "query_name", query_name);
   show_stat(out, indent, "init_capa_bits", capa_bits);

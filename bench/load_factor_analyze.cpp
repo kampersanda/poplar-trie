@@ -37,7 +37,7 @@ int build(const std::string& key_name, uint32_t capa_bits, uint64_t lambda) {
   std::ostream& out = std::cout;
   auto indent = get_indent(0);
 
-  show_stat(out, indent, "map_name", realname<Map>());
+  show_stat(out, indent, "map_name", short_realname<Map>());
   show_stat(out, indent, "key_name", key_name);
   show_stat(out, indent, "init_capa_bits", capa_bits);
   show_stat(out, indent, "num_keys", num_keys);
