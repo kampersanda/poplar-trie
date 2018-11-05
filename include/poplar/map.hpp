@@ -11,18 +11,16 @@ namespace poplar {
 
 // Associative array implementation with string keys based on a dynamic
 // path-decomposed trie.
-template <typename Trie, typename LabelStore, uint64_t Lambda = 16>
+template <typename Trie, typename LabelStore>
 class map {
-  static_assert(is_power2(Lambda));
   static_assert(Trie::trie_type_id == LabelStore::trie_type_id);
 
  public:
-  using this_type = map<Trie, LabelStore, Lambda>;
+  using this_type = map<Trie, LabelStore>;
   using trie_type = Trie;
   using value_type = typename LabelStore::value_type;
 
   static constexpr auto trie_type_id = Trie::trie_type_id;
-  static constexpr auto lambda = Lambda;
 
  public:
   // Generic constructor.
@@ -30,9 +28,12 @@ class map {
 
   // Class constructor. Initially allocates the hash table of length
   // 2**capa_bits.
-  explicit map(uint32_t capa_bits) {
+  explicit map(uint32_t capa_bits, uint64_t lambda = 32) {
+    POPLAR_THROW_IF(!is_power2(lambda), "lambda must be a power of 2.");
+
     is_ready_ = true;
-    hash_trie_ = Trie{capa_bits, 8 + bit_tools::ceil_log2(Lambda)};
+    lambda_ = lambda;
+    hash_trie_ = Trie{capa_bits, 8 + bit_tools::ceil_log2(lambda_)};
     label_store_ = LabelStore{hash_trie_.capa_bits()};
     codes_.fill(UINT8_MAX);
     codes_[0] = static_cast<uint8_t>(num_codes_++);  // terminator
@@ -61,12 +62,12 @@ class map {
 
       key.begin += match;
 
-      while (Lambda <= match) {
+      while (lambda_ <= match) {
         node_id = hash_trie_.find_child(node_id, step_symb);
         if (node_id == nil_id) {
           return nullptr;
         }
-        match -= Lambda;
+        match -= lambda_;
       }
 
       if (codes_[*key.begin] == UINT8_MAX) {
@@ -119,7 +120,7 @@ class map {
 
       key.begin += match;
 
-      while (Lambda <= match) {
+      while (lambda_ <= match) {
         if (hash_trie_.add_child(node_id, step_symb)) {
           expand_if_needed_(node_id);
 #ifdef POPLAR_EXTRA_STATS
@@ -130,7 +131,7 @@ class map {
             label_store_.append_dummy();
           }
         }
-        match -= Lambda;
+        match -= lambda_;
       }
 
       if (codes_[*key.begin] == UINT8_MAX) {
@@ -179,7 +180,7 @@ class map {
   void show_stats(std::ostream& os, int n = 0) const {
     auto indent = get_indent(n);
     show_stat(os, indent, "name", "map");
-    show_stat(os, indent, "lambda", Lambda);
+    show_stat(os, indent, "lambda", lambda_);
     show_stat(os, indent, "size", size());
 #ifdef POPLAR_EXTRA_STATS
     show_stat(os, indent, "rate_steps", rate_steps());
@@ -201,6 +202,8 @@ class map {
   static constexpr uint64_t step_symb = UINT8_MAX;  // (UINT8_MAX, 0)
 
   bool is_ready_ = false;
+  uint64_t lambda_ = 32;
+
   Trie hash_trie_;
   LabelStore label_store_;
   std::array<uint8_t, 256> codes_ = {};

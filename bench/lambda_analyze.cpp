@@ -8,7 +8,7 @@ namespace {
 using namespace poplar;
 
 template <class Map>
-void build(const std::string& key_name, uint32_t capa_bits) {
+void build(const std::string& key_name, uint32_t capa_bits, uint64_t lambda) {
   std::ifstream ifs{key_name};
   if (!ifs) {
     std::cerr << "error: failed to open " << key_name << std::endl;
@@ -18,7 +18,7 @@ void build(const std::string& key_name, uint32_t capa_bits) {
   size_t num_keys = 0;
   double elapsed_sec = 0.0;
 
-  Map map{capa_bits};
+  Map map{capa_bits, lambda};
 
   try {
     std::string key;
@@ -35,9 +35,9 @@ void build(const std::string& key_name, uint32_t capa_bits) {
   }
 
 #ifdef POPLAR_EXTRA_STATS
-  std::cout << Map::lambda << '\t' << elapsed_sec << '\t' << map.rate_steps() << '\n';
+  std::cout << lambda << '\t' << elapsed_sec << '\t' << map.rate_steps() << '\n';
 #else
-  std::cout << Map::lambda << '\t' << elapsed_sec << '\n';
+  std::cout << lambda << '\t' << elapsed_sec << '\n';
 #endif
 }
 
@@ -60,12 +60,9 @@ int main(int argc, char* argv[]) {
   std::cout << "lambda\telapsed_sec\n";
 #endif
 
-  build<plain_hash_map<int, 4>>(key_fn, capa_bits);
-  build<plain_hash_map<int, 8>>(key_fn, capa_bits);
-  build<plain_hash_map<int, 16>>(key_fn, capa_bits);
-  build<plain_hash_map<int, 32>>(key_fn, capa_bits);
-  build<plain_hash_map<int, 64>>(key_fn, capa_bits);
-  build<plain_hash_map<int, 128>>(key_fn, capa_bits);
+  for (uint64_t lambda = 4; lambda <= 128; lambda *= 2) {
+    build<plain_hash_map<int>>(key_fn, capa_bits, lambda);
+  }
 
   return 1;
 }

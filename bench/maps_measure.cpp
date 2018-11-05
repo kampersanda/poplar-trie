@@ -16,7 +16,7 @@ using value1_type = int32_t;
 using value2_type = uint32_t;
 
 template <class Map>
-int measure(const std::string& key_name, const std::string& query_name, uint32_t capa_bits) {
+int measure(const std::string& key_name, const std::string& query_name, uint32_t capa_bits, uint64_t lambda) {
   std::vector<std::string> keys;
   {
     std::ifstream ifs{key_name};
@@ -40,7 +40,14 @@ int measure(const std::string& key_name, const std::string& query_name, uint32_t
     std::array<double, UPDATE_RUNS> times{};
 
     for (int i = 0; i < UPDATE_RUNS; ++i) {
-      map = Map{capa_bits};
+      if constexpr (std::is_same_v<typename Map::value_type, value1_type>) {
+        // poplar::map
+        map = Map{capa_bits, lambda};
+      }
+      if constexpr (std::is_same_v<typename Map::value_type, value2_type>) {
+        // poplar::hash_trie_map
+        map = Map{capa_bits};
+      }
       timer t;
       for (const auto& key : keys) {
         if constexpr (std::is_same_v<typename Map::value_type, value1_type>) {
@@ -169,6 +176,7 @@ int main(int argc, char* argv[]) {
   p.add<std::string>("map_type", 't', "plain_bonsai/compact_bonsai/plain_hash/compact_hash/rrr_hash", true);
   p.add<uint32_t>("chunk_size", 'c', "8/16/32/64 (for compact_bonsai and compact_hash)", false, 16);
   p.add<uint32_t>("capa_bits", 'b', "#bits of initial capacity", false, 16);
+  p.add<uint64_t>("lambda", 'l', "lambda", false, 32);
   p.add<bool>("ht_map", 'h', "use hash_trie_map", false, false);
   p.parse_check(argc, argv);
 
@@ -177,63 +185,62 @@ int main(int argc, char* argv[]) {
   auto map_type = p.get<std::string>("map_type");
   auto chunk_size = p.get<uint32_t>("chunk_size");
   auto capa_bits = p.get<uint32_t>("capa_bits");
+  auto lambda = p.get<uint64_t>("lambda");
   auto ht_map = p.get<bool>("ht_map");
-
-  constexpr uint64_t lambda = 16;
 
   if (map_type == "plain_bonsai") {
     if (!ht_map) {
-      return measure<plain_bonsai_map<value1_type, lambda>>(key_fn, query_fn, capa_bits);
+      return measure<plain_bonsai_map<value1_type>>(key_fn, query_fn, capa_bits, lambda);
     } else {
       using ht_type = hash_trie_map<plain_bonsai_trie<>, value2_type>;
-      return measure<ht_type>(key_fn, query_fn, capa_bits);
+      return measure<ht_type>(key_fn, query_fn, capa_bits, lambda);
     }
   } else if (map_type == "compact_bonsai") {
     if (!ht_map) {
       switch (chunk_size) {
         case 8:
-          return measure<compact_bonsai_map<value1_type, 8, lambda>>(key_fn, query_fn, capa_bits);
+          return measure<compact_bonsai_map<value1_type, 8>>(key_fn, query_fn, capa_bits, lambda);
         case 16:
-          return measure<compact_bonsai_map<value1_type, 16, lambda>>(key_fn, query_fn, capa_bits);
+          return measure<compact_bonsai_map<value1_type, 16>>(key_fn, query_fn, capa_bits, lambda);
         case 32:
-          return measure<compact_bonsai_map<value1_type, 32, lambda>>(key_fn, query_fn, capa_bits);
+          return measure<compact_bonsai_map<value1_type, 32>>(key_fn, query_fn, capa_bits, lambda);
         case 64:
-          return measure<compact_bonsai_map<value1_type, 64, lambda>>(key_fn, query_fn, capa_bits);
+          return measure<compact_bonsai_map<value1_type, 64>>(key_fn, query_fn, capa_bits, lambda);
         default:
           break;
       }
     } else {
       using ht_type = hash_trie_map<compact_bonsai_trie<>, value2_type>;
-      return measure<ht_type>(key_fn, query_fn, capa_bits);
+      return measure<ht_type>(key_fn, query_fn, capa_bits, lambda);
     }
   } else if (map_type == "plain_hash") {
     if (!ht_map) {
-      return measure<plain_hash_map<value1_type, lambda>>(key_fn, query_fn, capa_bits);
+      return measure<plain_hash_map<value1_type>>(key_fn, query_fn, capa_bits, lambda);
     } else {
       using ht_type = hash_trie_map<plain_hash_trie<>, value2_type>;
-      return measure<ht_type>(key_fn, query_fn, capa_bits);
+      return measure<ht_type>(key_fn, query_fn, capa_bits, lambda);
     }
   } else if (map_type == "compact_hash") {
     if (!ht_map) {
       switch (chunk_size) {
         case 8:
-          return measure<compact_hash_map<value1_type, 8, lambda>>(key_fn, query_fn, capa_bits);
+          return measure<compact_hash_map<value1_type, 8>>(key_fn, query_fn, capa_bits, lambda);
         case 16:
-          return measure<compact_hash_map<value1_type, 16, lambda>>(key_fn, query_fn, capa_bits);
+          return measure<compact_hash_map<value1_type, 16>>(key_fn, query_fn, capa_bits, lambda);
         case 32:
-          return measure<compact_hash_map<value1_type, 32, lambda>>(key_fn, query_fn, capa_bits);
+          return measure<compact_hash_map<value1_type, 32>>(key_fn, query_fn, capa_bits, lambda);
         case 64:
-          return measure<compact_hash_map<value1_type, 64, lambda>>(key_fn, query_fn, capa_bits);
+          return measure<compact_hash_map<value1_type, 64>>(key_fn, query_fn, capa_bits, lambda);
         default:
           break;
       }
     } else {
       using ht_type = hash_trie_map<compact_hash_trie<>, value2_type>;
-      return measure<ht_type>(key_fn, query_fn, capa_bits);
+      return measure<ht_type>(key_fn, query_fn, capa_bits, lambda);
     }
   } else if (map_type == "rrr_hash") {
     if (!ht_map) {
-      return measure<rrr_hash_map<value1_type, lambda>>(key_fn, query_fn, capa_bits);
+      return measure<rrr_hash_map<value1_type>>(key_fn, query_fn, capa_bits, lambda);
     }
   }
 

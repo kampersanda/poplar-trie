@@ -16,20 +16,20 @@
 
 namespace poplar {
 
-template <typename Value, uint64_t Lambda = 32>
-using plain_bonsai_map = map<plain_bonsai_trie<>, plain_label_store_bt<Value>, Lambda>;
+template <typename Value>
+using plain_bonsai_map = map<plain_bonsai_trie<>, plain_label_store_bt<Value>>;
 
-template <typename Value, uint64_t ChunkSize = 16, uint64_t Lambda = 32>
-using compact_bonsai_map = map<compact_bonsai_trie<>, compact_label_store_bt<Value, ChunkSize>, Lambda>;
+template <typename Value, uint64_t ChunkSize = 16>
+using compact_bonsai_map = map<compact_bonsai_trie<>, compact_label_store_bt<Value, ChunkSize>>;
 
-template <typename Value, uint64_t Lambda = 32>
-using plain_hash_map = map<plain_hash_trie<>, plain_label_store_ht<Value>, Lambda>;
+template <typename Value>
+using plain_hash_map = map<plain_hash_trie<>, plain_label_store_ht<Value>>;
 
-template <typename Value, uint64_t ChunkSize = 16, uint64_t Lambda = 32>
-using compact_hash_map = map<compact_hash_trie<>, compact_label_store_ht<Value, ChunkSize>, Lambda>;
+template <typename Value, uint64_t ChunkSize = 16>
+using compact_hash_map = map<compact_hash_trie<>, compact_label_store_ht<Value, ChunkSize>>;
 
-template <typename Value, uint64_t Lambda = 32>
-using rrr_hash_map = map<compact_hash_trie<>, rrr_label_store_ht<Value>, Lambda>;
+template <typename Value>
+using rrr_hash_map = map<compact_hash_trie<>, rrr_label_store_ht<Value>>;
 
 }  // namespace poplar
 
