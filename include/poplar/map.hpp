@@ -21,6 +21,7 @@ class map {
   using value_type = typename LabelStore::value_type;
 
   static constexpr auto trie_type_id = Trie::trie_type_id;
+  static constexpr uint32_t min_capa_bits = Trie::min_capa_bits;
 
  public:
   // Generic constructor.
