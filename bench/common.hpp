@@ -1,8 +1,11 @@
 #ifndef POPLAR_TRIE_COMMON_HPP
 #define POPLAR_TRIE_COMMON_HPP
 
+#ifdef __APPLE__
+#include <mach/mach.h>
+#endif
 #include <cxxabi.h>
-
+#include <unistd.h>
 #include <chrono>
 #include <fstream>
 #include <iomanip>
@@ -27,6 +30,22 @@ class timer {
  private:
   hrc::time_point tp_{hrc::now()};
 };
+
+// From Cedar
+size_t get_process_size() {
+#ifdef __APPLE__
+  struct task_basic_info t_info;
+  mach_msg_type_number_t t_info_count = TASK_BASIC_INFO_COUNT;
+  task_info(current_task(), TASK_BASIC_INFO, reinterpret_cast<task_info_t>(&t_info), &t_info_count);
+  return t_info.resident_size;
+#else
+  FILE* fp = std::fopen("/proc/self/statm", "r");
+  size_t dummy(0), vm(0);
+  std::fscanf(fp, "%ld %ld ", &dummy, &vm);  // get resident (see procfs)
+  std::fclose(fp);
+  return vm * ::getpagesize();
+#endif
+}
 
 template <typename T>
 inline std::string realname() {

@@ -98,11 +98,10 @@ constexpr void append_with_fixed_growth(std::vector<T>& vec, T x) {
 }
 
 inline std::string get_indent(int n) {
-  return std::string(n, '\t');
+  return std::string(n * 4, ' ');
 }
-
 inline void show_member(std::ostream& os, const std::string& indent, const char* k) {
-  os << indent << k << " ->\n";
+  os << indent << k << ":\n";
 }
 template <class V>
 inline void show_stat(std::ostream& os, const std::string& indent, const char* k, const V& v) {
