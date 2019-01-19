@@ -13,13 +13,13 @@ constexpr int FIND_RUNS = 10;
 using value_type = int32_t;
 
 template <class Map>
-int measure(const std::string& key_name, const std::string& query_name, uint32_t capa_bits, uint64_t lambda) {
-  Map map;
+int bench(const std::string& key_name, const std::string& query_name, uint32_t capa_bits, uint64_t lambda) {
   uint64_t process_size = get_process_size();
   uint64_t num_keys = 0, num_queries = 0;
   uint64_t ok = 0, ng = 0;
   double update_time = 0.0, find_time = 0.0;
 
+  Map map;
   {
     std::ifstream ifs{key_name};
     if (!ifs) {
@@ -167,37 +167,37 @@ int main(int argc, char* argv[]) {
 
   try {
     if (map_type == "plain_bt") {
-      return measure<plain_bonsai_map<value_type>>(key_fn, query_fn, capa_bits, lambda);
+      return bench<plain_bonsai_map<value_type>>(key_fn, query_fn, capa_bits, lambda);
     } else if (map_type == "compact_bt") {
       switch (chunk_size) {
         case 8:
-          return measure<compact_bonsai_map<value_type, 8>>(key_fn, query_fn, capa_bits, lambda);
+          return bench<compact_bonsai_map<value_type, 8>>(key_fn, query_fn, capa_bits, lambda);
         case 16:
-          return measure<compact_bonsai_map<value_type, 16>>(key_fn, query_fn, capa_bits, lambda);
+          return bench<compact_bonsai_map<value_type, 16>>(key_fn, query_fn, capa_bits, lambda);
         case 32:
-          return measure<compact_bonsai_map<value_type, 32>>(key_fn, query_fn, capa_bits, lambda);
+          return bench<compact_bonsai_map<value_type, 32>>(key_fn, query_fn, capa_bits, lambda);
         case 64:
-          return measure<compact_bonsai_map<value_type, 64>>(key_fn, query_fn, capa_bits, lambda);
+          return bench<compact_bonsai_map<value_type, 64>>(key_fn, query_fn, capa_bits, lambda);
         default:
           break;
       }
     } else if (map_type == "plain_ht") {
-      return measure<plain_hash_map<value_type>>(key_fn, query_fn, capa_bits, lambda);
+      return bench<plain_hash_map<value_type>>(key_fn, query_fn, capa_bits, lambda);
     } else if (map_type == "compact_ht") {
       switch (chunk_size) {
         case 8:
-          return measure<compact_hash_map<value_type, 8>>(key_fn, query_fn, capa_bits, lambda);
+          return bench<compact_hash_map<value_type, 8>>(key_fn, query_fn, capa_bits, lambda);
         case 16:
-          return measure<compact_hash_map<value_type, 16>>(key_fn, query_fn, capa_bits, lambda);
+          return bench<compact_hash_map<value_type, 16>>(key_fn, query_fn, capa_bits, lambda);
         case 32:
-          return measure<compact_hash_map<value_type, 32>>(key_fn, query_fn, capa_bits, lambda);
+          return bench<compact_hash_map<value_type, 32>>(key_fn, query_fn, capa_bits, lambda);
         case 64:
-          return measure<compact_hash_map<value_type, 64>>(key_fn, query_fn, capa_bits, lambda);
+          return bench<compact_hash_map<value_type, 64>>(key_fn, query_fn, capa_bits, lambda);
         default:
           break;
       }
     } else if (map_type == "rrr_ht") {
-      return measure<rrr_hash_map<value_type>>(key_fn, query_fn, capa_bits, lambda);
+      return bench<rrr_hash_map<value_type>>(key_fn, query_fn, capa_bits, lambda);
     }
   } catch (const exception& ex) {
     std::cerr << ex.what() << std::endl;
