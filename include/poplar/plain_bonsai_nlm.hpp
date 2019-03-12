@@ -23,7 +23,7 @@ class plain_bonsai_nlm {
 
   ~plain_bonsai_nlm() = default;
 
-  std::pair<const value_type*, uint64_t> compare(uint64_t pos, char_range key) const {
+  std::pair<const value_type*, uint64_t> compare(uint64_t pos, const char_range& key) const {
     assert(ptrs_[pos]);
 
     const uint8_t* ptr = ptrs_[pos].get();
@@ -41,7 +41,7 @@ class plain_bonsai_nlm {
     return {reinterpret_cast<const value_type*>(ptr + key.length()), key.length()};
   }
 
-  value_type* insert(uint64_t pos, char_range key) {
+  value_type* insert(uint64_t pos, const char_range& key) {
     assert(!ptrs_[pos]);
 
     ++size_;

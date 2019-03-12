@@ -26,7 +26,7 @@ class compact_bonsai_nlm {
 
   ~compact_bonsai_nlm() = default;
 
-  std::pair<const value_type*, uint64_t> compare(uint64_t pos, char_range key) const {
+  std::pair<const value_type*, uint64_t> compare(uint64_t pos, const char_range& key) const {
     auto [chunk_id, pos_in_chunk] = decompose_value<ChunkSize>(pos);
 
     assert(ptrs_[chunk_id]);
@@ -61,7 +61,7 @@ class compact_bonsai_nlm {
     return {reinterpret_cast<const value_type*>(ptr + length), length + 1};
   };
 
-  value_type* insert(uint64_t pos, char_range key) {
+  value_type* insert(uint64_t pos, const char_range& key) {
     auto [chunk_id, pos_in_chunk] = decompose_value<ChunkSize>(pos);
 
     assert(!bit_tools::get_bit(chunks_[chunk_id], pos_in_chunk));

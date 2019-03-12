@@ -19,12 +19,13 @@ class plain_fkhash_nlm {
   plain_fkhash_nlm() = default;
 
   explicit plain_fkhash_nlm(uint32_t capa_bits) {
+    chars_.reserve(1ULL << capa_bits);
     ptrs_.reserve(1ULL << capa_bits);
   }
 
   ~plain_fkhash_nlm() = default;
 
-  std::pair<const value_type*, uint64_t> compare(uint64_t pos, char_range key) const {
+  std::pair<const value_type*, uint64_t> compare(uint64_t pos, const char_range& key) const {
     assert(pos < ptrs_.size());
     assert(ptrs_[pos] < chars_.size());
 
@@ -43,7 +44,7 @@ class plain_fkhash_nlm {
     return {reinterpret_cast<const value_type*>(char_ptr + key.length()), key.length()};
   }
 
-  value_type* append(char_range key) {
+  value_type* append(const char_range& key) {
     ptrs_.push_back(chars_.size());
     std::copy(key.begin, key.end, std::back_inserter(chars_));
     for (size_t i = 0; i < sizeof(value_type); ++i) {

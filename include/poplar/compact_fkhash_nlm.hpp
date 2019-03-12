@@ -28,7 +28,7 @@ class compact_fkhash_nlm {
 
   ~compact_fkhash_nlm() = default;
 
-  std::pair<const value_type*, uint64_t> compare(uint64_t pos, char_range key) const {
+  std::pair<const value_type*, uint64_t> compare(uint64_t pos, const char_range& key) const {
     assert(pos < size_);
 
     const uint8_t* char_ptr = nullptr;
@@ -71,7 +71,7 @@ class compact_fkhash_nlm {
     return {reinterpret_cast<const value_type*>(char_ptr + length), length + 1};
   };
 
-  value_type* append(char_range key) {
+  value_type* append(const char_range& key) {
     auto [chunk_id, pos_in_chunk] = decompose_value<ChunkSize>(size_++);
     if (chunk_id != 0 && pos_in_chunk == 0) {
       release_buf_();

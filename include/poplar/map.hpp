@@ -45,6 +45,9 @@ class map {
 
   // Searches the given key and returns the value pointer if registered;
   // otherwise returns nullptr.
+  const value_type* find(const std::string& key) const {
+    return find(make_char_range(key));
+  }
   const value_type* find(char_range key) const {
     POPLAR_THROW_IF(key.empty(), "key must be a non-empty string.");
     POPLAR_THROW_IF(*(key.end - 1) != '\0', "The last character of key must be the null terminator.");
@@ -88,6 +91,9 @@ class map {
   }
 
   // Inserts the given key and returns the value pointer.
+  value_type* update(const std::string& key) {
+    return update(make_char_range(key));
+  }
   value_type* update(char_range key) {
     POPLAR_THROW_IF(key.empty(), "key must be a non-empty string.");
     POPLAR_THROW_IF(*(key.end - 1) != '\0', "The last character of key must be the null terminator.");
