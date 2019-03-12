@@ -61,7 +61,7 @@ int main(int argc, char* argv[]) {
 #endif
 
   for (uint64_t lambda = 4; lambda <= 128; lambda *= 2) {
-    build<plain_hash_map<int>>(key_fn, capa_bits, lambda);
+    build<plain_fkhash_map<int>>(key_fn, capa_bits, lambda);
   }
 
   return 1;

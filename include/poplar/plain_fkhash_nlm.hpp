@@ -1,5 +1,5 @@
-#ifndef POPLAR_TRIE_PLAIN_LABEL_STORE_HT_HPP
-#define POPLAR_TRIE_PLAIN_LABEL_STORE_HT_HPP
+#ifndef POPLAR_TRIE_PLAIN_FKHASH_NLM_HPP
+#define POPLAR_TRIE_PLAIN_FKHASH_NLM_HPP
 
 #include <vector>
 
@@ -9,20 +9,20 @@
 namespace poplar {
 
 template <typename Value>
-class plain_label_store_ht {
+class plain_fkhash_nlm {
  public:
   using value_type = Value;
 
-  static constexpr auto trie_type_id = trie_type_ids::HASH_TRIE;
+  static constexpr auto trie_type_id = trie_type_ids::FKHASH_TRIE;
 
  public:
-  plain_label_store_ht() = default;
+  plain_fkhash_nlm() = default;
 
-  explicit plain_label_store_ht(uint32_t capa_bits) {
+  explicit plain_fkhash_nlm(uint32_t capa_bits) {
     ptrs_.reserve(1ULL << capa_bits);
   }
 
-  ~plain_label_store_ht() = default;
+  ~plain_fkhash_nlm() = default;
 
   std::pair<const value_type*, uint64_t> compare(uint64_t pos, char_range key) const {
     assert(pos < ptrs_.size());
@@ -68,7 +68,7 @@ class plain_label_store_ht {
 
   void show_stats(std::ostream& os, int n = 0) const {
     auto indent = get_indent(n);
-    show_stat(os, indent, "name", "plain_label_store_ht");
+    show_stat(os, indent, "name", "plain_fkhash_nlm");
     show_stat(os, indent, "size", size());
 #ifdef POPLAR_EXTRA_STATS
     show_stat(os, indent, "max_length", max_length_);
@@ -76,11 +76,11 @@ class plain_label_store_ht {
 #endif
   }
 
-  plain_label_store_ht(const plain_label_store_ht&) = delete;
-  plain_label_store_ht& operator=(const plain_label_store_ht&) = delete;
+  plain_fkhash_nlm(const plain_fkhash_nlm&) = delete;
+  plain_fkhash_nlm& operator=(const plain_fkhash_nlm&) = delete;
 
-  plain_label_store_ht(plain_label_store_ht&&) noexcept = default;
-  plain_label_store_ht& operator=(plain_label_store_ht&&) noexcept = default;
+  plain_fkhash_nlm(plain_fkhash_nlm&&) noexcept = default;
+  plain_fkhash_nlm& operator=(plain_fkhash_nlm&&) noexcept = default;
 
  private:
   std::vector<uint8_t> chars_;
@@ -93,4 +93,4 @@ class plain_label_store_ht {
 
 }  // namespace poplar
 
-#endif  // POPLAR_TRIE_PLAIN_LABEL_STORE_HT_HPP
+#endif  // POPLAR_TRIE_PLAIN_FKHASH_NLM_HPP

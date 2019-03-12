@@ -1,5 +1,5 @@
-#ifndef POPLAR_TRIE_COMPACT_LABEL_STORE_BT_HPP
-#define POPLAR_TRIE_COMPACT_LABEL_STORE_BT_HPP
+#ifndef POPLAR_TRIE_COMPACT_BONSAI_NLM_HPP
+#define POPLAR_TRIE_COMPACT_BONSAI_NLM_HPP
 
 #include <iostream>
 #include <memory>
@@ -10,21 +10,21 @@
 namespace poplar {
 
 template <typename Value, uint64_t ChunkSize = 16>
-class compact_label_store_bt {
+class compact_bonsai_nlm {
  public:
-  using this_type = compact_label_store_bt<Value, ChunkSize>;
+  using this_type = compact_bonsai_nlm<Value, ChunkSize>;
   using value_type = Value;
   using chunk_type = typename chunk_type_traits<ChunkSize>::type;
 
   static constexpr auto trie_type_id = trie_type_ids::BONSAI_TRIE;
 
  public:
-  compact_label_store_bt() = default;
+  compact_bonsai_nlm() = default;
 
-  explicit compact_label_store_bt(uint32_t capa_bits)
+  explicit compact_bonsai_nlm(uint32_t capa_bits)
       : ptrs_((1ULL << capa_bits) / ChunkSize), chunks_(ptrs_.size()) {}
 
-  ~compact_label_store_bt() = default;
+  ~compact_bonsai_nlm() = default;
 
   std::pair<const value_type*, uint64_t> compare(uint64_t pos, char_range key) const {
     auto [chunk_id, pos_in_chunk] = decompose_value<ChunkSize>(pos);
@@ -159,7 +159,7 @@ class compact_label_store_bt {
 
   void show_stats(std::ostream& os, int n = 0) const {
     auto indent = get_indent(n);
-    show_stat(os, indent, "name", "compact_label_store_bt");
+    show_stat(os, indent, "name", "compact_bonsai_nlm");
     show_stat(os, indent, "size", size());
     show_stat(os, indent, "num_ptrs", num_ptrs());
 #ifdef POPLAR_EXTRA_STATS
@@ -169,11 +169,11 @@ class compact_label_store_bt {
     show_stat(os, indent, "chunk_size", ChunkSize);
   }
 
-  compact_label_store_bt(const compact_label_store_bt&) = delete;
-  compact_label_store_bt& operator=(const compact_label_store_bt&) = delete;
+  compact_bonsai_nlm(const compact_bonsai_nlm&) = delete;
+  compact_bonsai_nlm& operator=(const compact_bonsai_nlm&) = delete;
 
-  compact_label_store_bt(compact_label_store_bt&&) noexcept = default;
-  compact_label_store_bt& operator=(compact_label_store_bt&&) noexcept = default;
+  compact_bonsai_nlm(compact_bonsai_nlm&&) noexcept = default;
+  compact_bonsai_nlm& operator=(compact_bonsai_nlm&&) noexcept = default;
 
  private:
   std::vector<std::unique_ptr<uint8_t[]>> ptrs_;
@@ -269,4 +269,4 @@ class compact_label_store_bt {
 
 }  // namespace poplar
 
-#endif  // POPLAR_TRIE_COMPACT_LABEL_STORE_BT_HPP
+#endif  // POPLAR_TRIE_COMPACT_BONSAI_NLM_HPP

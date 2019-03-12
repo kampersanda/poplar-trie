@@ -19,7 +19,7 @@ using std::uint32_t;
 using std::uint64_t;
 using std::uint8_t;
 
-enum class trie_type_ids : uint8_t { HASH_TRIE, BONSAI_TRIE };
+enum class trie_type_ids : uint8_t { BONSAI_TRIE, FKHASH_TRIE };
 
 struct char_range {
   const uint8_t* begin = nullptr;

@@ -11,14 +11,14 @@ namespace poplar {
 
 // Associative array implementation with string keys based on a dynamic
 // path-decomposed trie.
-template <typename Trie, typename LabelStore>
+template <typename Trie, typename NLM>
 class map {
-  static_assert(Trie::trie_type_id == LabelStore::trie_type_id);
+  static_assert(Trie::trie_type_id == NLM::trie_type_id);
 
  public:
-  using this_type = map<Trie, LabelStore>;
+  using this_type = map<Trie, NLM>;
   using trie_type = Trie;
-  using value_type = typename LabelStore::value_type;
+  using value_type = typename NLM::value_type;
 
   static constexpr auto trie_type_id = Trie::trie_type_id;
   static constexpr uint32_t min_capa_bits = Trie::min_capa_bits;
@@ -35,7 +35,7 @@ class map {
     is_ready_ = true;
     lambda_ = lambda;
     hash_trie_ = Trie{capa_bits, 8 + bit_tools::ceil_log2(lambda_)};
-    label_store_ = LabelStore{hash_trie_.capa_bits()};
+    label_store_ = NLM{hash_trie_.capa_bits()};
     codes_.fill(UINT8_MAX);
     codes_[0] = static_cast<uint8_t>(num_codes_++);  // terminator
   }
@@ -100,7 +100,7 @@ class map {
       ++size_;
       hash_trie_.add_root();
 
-      if constexpr (trie_type_id == trie_type_ids::HASH_TRIE) {
+      if constexpr (trie_type_id == trie_type_ids::FKHASH_TRIE) {
         // assert(hash_trie_.get_root() == label_store_.size());
         return label_store_.append(key);
       }
@@ -127,7 +127,7 @@ class map {
 #ifdef POPLAR_EXTRA_STATS
           ++num_steps_;
 #endif
-          if constexpr (trie_type_id == trie_type_ids::HASH_TRIE) {
+          if constexpr (trie_type_id == trie_type_ids::FKHASH_TRIE) {
             assert(node_id == label_store_.size());
             label_store_.append_dummy();
           }
@@ -146,7 +146,7 @@ class map {
         ++key.begin;
         ++size_;
 
-        if constexpr (trie_type_id == trie_type_ids::HASH_TRIE) {
+        if constexpr (trie_type_id == trie_type_ids::FKHASH_TRIE) {
           assert(node_id == label_store_.size());
           return label_store_.append(key);
         }
@@ -206,7 +206,7 @@ class map {
   uint64_t lambda_ = 32;
 
   Trie hash_trie_;
-  LabelStore label_store_;
+  NLM label_store_;
   std::array<uint8_t, 256> codes_ = {};
   uint32_t num_codes_ = 0;
   uint64_t size_ = 0;

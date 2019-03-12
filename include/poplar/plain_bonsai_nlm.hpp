@@ -1,5 +1,5 @@
-#ifndef POPLAR_TRIE_PLAIN_LABEL_STORE_BT_HPP
-#define POPLAR_TRIE_PLAIN_LABEL_STORE_BT_HPP
+#ifndef POPLAR_TRIE_PLAIN_BONSAI_NLM_HPP
+#define POPLAR_TRIE_PLAIN_BONSAI_NLM_HPP
 
 #include <memory>
 #include <vector>
@@ -10,18 +10,18 @@
 namespace poplar {
 
 template <typename Value>
-class plain_label_store_bt {
+class plain_bonsai_nlm {
  public:
   using value_type = Value;
 
   static constexpr auto trie_type_id = trie_type_ids::BONSAI_TRIE;
 
  public:
-  plain_label_store_bt() = default;
+  plain_bonsai_nlm() = default;
 
-  explicit plain_label_store_bt(uint32_t capa_bits) : ptrs_(1ULL << capa_bits) {}
+  explicit plain_bonsai_nlm(uint32_t capa_bits) : ptrs_(1ULL << capa_bits) {}
 
-  ~plain_label_store_bt() = default;
+  ~plain_bonsai_nlm() = default;
 
   std::pair<const value_type*, uint64_t> compare(uint64_t pos, char_range key) const {
     assert(ptrs_[pos]);
@@ -82,7 +82,7 @@ class plain_label_store_bt {
 
   void show_stats(std::ostream& os, int n = 0) const {
     auto indent = get_indent(n);
-    show_stat(os, indent, "name", "plain_label_store_bt");
+    show_stat(os, indent, "name", "plain_bonsai_nlm");
     show_stat(os, indent, "size", size());
     show_stat(os, indent, "num_ptrs", num_ptrs());
 #ifdef POPLAR_EXTRA_STATS
@@ -91,11 +91,11 @@ class plain_label_store_bt {
 #endif
   }
 
-  plain_label_store_bt(const plain_label_store_bt&) = delete;
-  plain_label_store_bt& operator=(const plain_label_store_bt&) = delete;
+  plain_bonsai_nlm(const plain_bonsai_nlm&) = delete;
+  plain_bonsai_nlm& operator=(const plain_bonsai_nlm&) = delete;
 
-  plain_label_store_bt(plain_label_store_bt&&) noexcept = default;
-  plain_label_store_bt& operator=(plain_label_store_bt&&) noexcept = default;
+  plain_bonsai_nlm(plain_bonsai_nlm&&) noexcept = default;
+  plain_bonsai_nlm& operator=(plain_bonsai_nlm&&) noexcept = default;
 
  private:
   std::vector<std::unique_ptr<uint8_t[]>> ptrs_;
@@ -108,4 +108,4 @@ class plain_label_store_bt {
 
 }  // namespace poplar
 
-#endif  // POPLAR_TRIE_PLAIN_LABEL_STORE_BT_HPP
+#endif  // POPLAR_TRIE_PLAIN_BONSAI_NLM_HPP

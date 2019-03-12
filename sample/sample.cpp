@@ -6,7 +6,7 @@ int main() {
                                    "Rin",  "Hazuki", "Umiko",  "Nene"};
   const auto num_keys = static_cast<int>(keys.size());
 
-  poplar::plain_hash_map<int> map;
+  poplar::plain_bonsai_map<int> map;
 
   try {
     for (int i = 0; i < num_keys; ++i) {

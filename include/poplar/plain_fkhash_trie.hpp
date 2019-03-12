@@ -1,5 +1,5 @@
-#ifndef POPLAR_TRIE_PLAIN_HASH_TRIE_HPP
-#define POPLAR_TRIE_PLAIN_HASH_TRIE_HPP
+#ifndef POPLAR_TRIE_PLAIN_FKHASH_TRIE_HPP
+#define POPLAR_TRIE_PLAIN_FKHASH_TRIE_HPP
 
 #include <iostream>
 
@@ -12,21 +12,21 @@ namespace poplar {
 
 // The node IDs are arranged incrementally
 template <uint32_t MaxFactor = 90, typename Hasher = hash::vigna_hasher>
-class plain_hash_trie {
+class plain_fkhash_trie {
   static_assert(0 < MaxFactor and MaxFactor < 100);
 
  public:
-  using this_type = plain_hash_trie<MaxFactor, Hasher>;
+  using this_type = plain_fkhash_trie<MaxFactor, Hasher>;
 
   static constexpr uint64_t nil_id = UINT64_MAX;
   static constexpr uint32_t min_capa_bits = 16;
 
-  static constexpr auto trie_type_id = trie_type_ids::HASH_TRIE;
+  static constexpr auto trie_type_id = trie_type_ids::FKHASH_TRIE;
 
  public:
-  plain_hash_trie() = default;
+  plain_fkhash_trie() = default;
 
-  plain_hash_trie(uint32_t capa_bits, uint32_t symb_bits) {
+  plain_fkhash_trie(uint32_t capa_bits, uint32_t symb_bits) {
     capa_size_ = size_p2{std::max(min_capa_bits, capa_bits)};
     symb_size_ = size_p2{symb_bits};
     max_size_ = static_cast<uint64_t>(capa_size_.size() * MaxFactor / 100.0);
@@ -34,7 +34,7 @@ class plain_hash_trie {
     ids_ = compact_vector{capa_size_.size(), capa_size_.bits()};
   }
 
-  ~plain_hash_trie() = default;
+  ~plain_fkhash_trie() = default;
 
   // The root ID is assigned but its slot does not exist in the table
   uint64_t get_root() const {
@@ -122,7 +122,7 @@ class plain_hash_trie {
 
   void show_stats(std::ostream& os, int n = 0) const {
     auto indent = get_indent(n);
-    show_stat(os, indent, "name", "plain_hash_trie");
+    show_stat(os, indent, "name", "plain_fkhash_trie");
     show_stat(os, indent, "factor", double(size()) / capa_size() * 100);
     show_stat(os, indent, "max_factor", MaxFactor);
     show_stat(os, indent, "size", size());
@@ -133,11 +133,11 @@ class plain_hash_trie {
 #endif
   }
 
-  plain_hash_trie(const plain_hash_trie&) = delete;
-  plain_hash_trie& operator=(const plain_hash_trie&) = delete;
+  plain_fkhash_trie(const plain_fkhash_trie&) = delete;
+  plain_fkhash_trie& operator=(const plain_fkhash_trie&) = delete;
 
-  plain_hash_trie(plain_hash_trie&&) noexcept = default;
-  plain_hash_trie& operator=(plain_hash_trie&&) noexcept = default;
+  plain_fkhash_trie(plain_fkhash_trie&&) noexcept = default;
+  plain_fkhash_trie& operator=(plain_fkhash_trie&&) noexcept = default;
 
  private:
   compact_vector table_;
@@ -191,4 +191,4 @@ class plain_hash_trie {
 
 }  // namespace poplar
 
-#endif  // POPLAR_TRIE_PLAIN_HASH_TRIE_HPP
+#endif  // POPLAR_TRIE_PLAIN_FKHASH_TRIE_HPP

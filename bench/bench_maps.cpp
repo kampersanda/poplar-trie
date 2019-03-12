@@ -152,8 +152,8 @@ int main(int argc, char* argv[]) {
   cmdline::parser p;
   p.add<std::string>("key_fn", 'k', "input file name of keywords", true);
   p.add<std::string>("query_fn", 'q', "input file name of queries", false, "-");
-  p.add<std::string>("map_type", 't', "plain_bt | compact_bt | plain_ht | compact_ht", true);
-  p.add<uint32_t>("chunk_size", 'c', "8 | 16 | 32 | 64 (for compact_bt and compact_ht)", false, 16);
+  p.add<std::string>("map_type", 't', "pbm | cbm | pfkm | cfkm", true);
+  p.add<uint32_t>("chunk_size", 'c', "8 | 16 | 32 | 64 (for cbm and cfkm)", false, 16);
   p.add<uint32_t>("capa_bits", 'b', "#bits of initial capacity", false, 16);
   p.add<uint64_t>("lambda", 'l', "lambda", false, 32);
   p.parse_check(argc, argv);
@@ -166,9 +166,9 @@ int main(int argc, char* argv[]) {
   auto lambda = p.get<uint64_t>("lambda");
 
   try {
-    if (map_type == "plain_bt") {
+    if (map_type == "pbm") {
       return bench<plain_bonsai_map<value_type>>(key_fn, query_fn, capa_bits, lambda);
-    } else if (map_type == "compact_bt") {
+    } else if (map_type == "cbm") {
       switch (chunk_size) {
         case 8:
           return bench<compact_bonsai_map<value_type, 8>>(key_fn, query_fn, capa_bits, lambda);
@@ -181,18 +181,18 @@ int main(int argc, char* argv[]) {
         default:
           break;
       }
-    } else if (map_type == "plain_ht") {
-      return bench<plain_hash_map<value_type>>(key_fn, query_fn, capa_bits, lambda);
-    } else if (map_type == "compact_ht") {
+    } else if (map_type == "pfkm") {
+      return bench<plain_fkhash_map<value_type>>(key_fn, query_fn, capa_bits, lambda);
+    } else if (map_type == "cfkm") {
       switch (chunk_size) {
         case 8:
-          return bench<compact_hash_map<value_type, 8>>(key_fn, query_fn, capa_bits, lambda);
+          return bench<compact_fkhash_map<value_type, 8>>(key_fn, query_fn, capa_bits, lambda);
         case 16:
-          return bench<compact_hash_map<value_type, 16>>(key_fn, query_fn, capa_bits, lambda);
+          return bench<compact_fkhash_map<value_type, 16>>(key_fn, query_fn, capa_bits, lambda);
         case 32:
-          return bench<compact_hash_map<value_type, 32>>(key_fn, query_fn, capa_bits, lambda);
+          return bench<compact_fkhash_map<value_type, 32>>(key_fn, query_fn, capa_bits, lambda);
         case 64:
-          return bench<compact_hash_map<value_type, 64>>(key_fn, query_fn, capa_bits, lambda);
+          return bench<compact_fkhash_map<value_type, 64>>(key_fn, query_fn, capa_bits, lambda);
         default:
           break;
       }

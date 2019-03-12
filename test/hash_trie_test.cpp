@@ -17,7 +17,7 @@ void insert_keys(Trie& ht, const std::vector<std::string>& keys, std::vector<uin
   ht.add_root();
   auto num_nodes = ht.size();
 
-  if constexpr (Trie::trie_type_id == trie_type_ids::HASH_TRIE) {
+  if constexpr (Trie::trie_type_id == trie_type_ids::FKHASH_TRIE) {
     ASSERT_EQ(ht.get_root(), 0);
   }
 
@@ -26,7 +26,7 @@ void insert_keys(Trie& ht, const std::vector<std::string>& keys, std::vector<uin
 
     for (auto c : keys[i]) {
       if (ht.add_child(node_id, static_cast<uint8_t>(c))) {
-        if constexpr (Trie::trie_type_id == trie_type_ids::HASH_TRIE) {
+        if constexpr (Trie::trie_type_id == trie_type_ids::FKHASH_TRIE) {
           ASSERT_EQ(node_id, num_nodes);
         }
 
@@ -106,7 +106,7 @@ template <typename>
 class hash_trie_test : public ::testing::Test {};
 
 using hash_trie_types =
-    ::testing::Types<plain_hash_trie<>, plain_bonsai_trie<>, compact_hash_trie<>, compact_bonsai_trie<>>;
+    ::testing::Types<plain_fkhash_trie<>, plain_bonsai_trie<>, compact_fkhash_trie<>, compact_bonsai_trie<>>;
 
 TYPED_TEST_CASE(hash_trie_test, hash_trie_types);
 

@@ -1,5 +1,5 @@
-#ifndef POPLAR_TRIE_COMPACT_LABEL_STORE_HT_HPP
-#define POPLAR_TRIE_COMPACT_LABEL_STORE_HT_HPP
+#ifndef POPLAR_TRIE_COMPACT_FKHASH_NLM_HPP
+#define POPLAR_TRIE_COMPACT_FKHASH_NLM_HPP
 
 #include <iostream>
 #include <memory>
@@ -10,23 +10,23 @@
 namespace poplar {
 
 template <typename Value, uint64_t ChunkSize = 16>
-class compact_label_store_ht {
+class compact_fkhash_nlm {
  public:
-  using this_type = compact_label_store_ht<Value, ChunkSize>;
+  using this_type = compact_fkhash_nlm<Value, ChunkSize>;
   using value_type = Value;
   using chunk_type = typename chunk_type_traits<ChunkSize>::type;
 
-  static constexpr auto trie_type_id = trie_type_ids::HASH_TRIE;
+  static constexpr auto trie_type_id = trie_type_ids::FKHASH_TRIE;
 
  public:
-  compact_label_store_ht() = default;
+  compact_fkhash_nlm() = default;
 
-  explicit compact_label_store_ht(uint32_t capa_bits) {
+  explicit compact_fkhash_nlm(uint32_t capa_bits) {
     chunk_ptrs_.reserve((1ULL << capa_bits) / ChunkSize);
     chunk_buf_.reserve(1ULL << 10);
   }
 
-  ~compact_label_store_ht() = default;
+  ~compact_fkhash_nlm() = default;
 
   std::pair<const value_type*, uint64_t> compare(uint64_t pos, char_range key) const {
     assert(pos < size_);
@@ -111,7 +111,7 @@ class compact_label_store_ht {
 
   void show_stats(std::ostream& os, int n = 0) const {
     auto indent = get_indent(n);
-    show_stat(os, indent, "name", "compact_label_store_ht");
+    show_stat(os, indent, "name", "compact_fkhash_nlm");
     show_stat(os, indent, "size", size());
     show_stat(os, indent, "num_ptrs", num_ptrs());
 #ifdef POPLAR_EXTRA_STATS
@@ -121,11 +121,11 @@ class compact_label_store_ht {
     show_stat(os, indent, "chunk_size", ChunkSize);
   }
 
-  compact_label_store_ht(const compact_label_store_ht&) = delete;
-  compact_label_store_ht& operator=(const compact_label_store_ht&) = delete;
+  compact_fkhash_nlm(const compact_fkhash_nlm&) = delete;
+  compact_fkhash_nlm& operator=(const compact_fkhash_nlm&) = delete;
 
-  compact_label_store_ht(compact_label_store_ht&&) noexcept = default;
-  compact_label_store_ht& operator=(compact_label_store_ht&&) noexcept = default;
+  compact_fkhash_nlm(compact_fkhash_nlm&&) noexcept = default;
+  compact_fkhash_nlm& operator=(compact_fkhash_nlm&&) noexcept = default;
 
  private:
   std::vector<std::unique_ptr<uint8_t[]>> chunk_ptrs_;
@@ -146,4 +146,4 @@ class compact_label_store_ht {
 
 }  // namespace poplar
 
-#endif  // POPLAR_TRIE_COMPACT_LABEL_STORE_HT_HPP
+#endif  // POPLAR_TRIE_COMPACT_FKHASH_NLM_HPP

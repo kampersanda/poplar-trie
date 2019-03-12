@@ -69,22 +69,22 @@ int main(int argc, char* argv[]) {
   auto capa_bits = p.get<uint32_t>("capa_bits");
   auto lambda = p.get<uint64_t>("lambda");
 
-  using ls_type = compact_label_store_bt<int, 16>;
+  using nlm_type = compact_bonsai_nlm<int, 16>;
 
-  using map_80_3_type = map<compact_bonsai_trie<80, 3>, ls_type>;
-  using map_85_3_type = map<compact_bonsai_trie<85, 3>, ls_type>;
-  using map_90_3_type = map<compact_bonsai_trie<90, 3>, ls_type>;
-  using map_95_3_type = map<compact_bonsai_trie<95, 3>, ls_type>;
+  using map_80_3_type = map<compact_bonsai_trie<80, 3>, nlm_type>;
+  using map_85_3_type = map<compact_bonsai_trie<85, 3>, nlm_type>;
+  using map_90_3_type = map<compact_bonsai_trie<90, 3>, nlm_type>;
+  using map_95_3_type = map<compact_bonsai_trie<95, 3>, nlm_type>;
 
-  using map_80_4_type = map<compact_bonsai_trie<80, 4>, ls_type>;
-  using map_85_4_type = map<compact_bonsai_trie<85, 4>, ls_type>;
-  using map_90_4_type = map<compact_bonsai_trie<90, 4>, ls_type>;
-  using map_95_4_type = map<compact_bonsai_trie<95, 4>, ls_type>;
+  using map_80_4_type = map<compact_bonsai_trie<80, 4>, nlm_type>;
+  using map_85_4_type = map<compact_bonsai_trie<85, 4>, nlm_type>;
+  using map_90_4_type = map<compact_bonsai_trie<90, 4>, nlm_type>;
+  using map_95_4_type = map<compact_bonsai_trie<95, 4>, nlm_type>;
 
-  using map_80_5_type = map<compact_bonsai_trie<80, 5>, ls_type>;
-  using map_85_5_type = map<compact_bonsai_trie<85, 5>, ls_type>;
-  using map_90_5_type = map<compact_bonsai_trie<90, 5>, ls_type>;
-  using map_95_5_type = map<compact_bonsai_trie<95, 5>, ls_type>;
+  using map_80_5_type = map<compact_bonsai_trie<80, 5>, nlm_type>;
+  using map_85_5_type = map<compact_bonsai_trie<85, 5>, nlm_type>;
+  using map_90_5_type = map<compact_bonsai_trie<90, 5>, nlm_type>;
+  using map_95_5_type = map<compact_bonsai_trie<95, 5>, nlm_type>;
 
   build<map_80_3_type>(key_fn, capa_bits, lambda);
   build<map_85_3_type>(key_fn, capa_bits, lambda);

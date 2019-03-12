@@ -1,5 +1,5 @@
-#ifndef POPLAR_TRIE_COMPACT_HASH_TRIE_HPP
-#define POPLAR_TRIE_COMPACT_HASH_TRIE_HPP
+#ifndef POPLAR_TRIE_COMPACT_FKHASH_TRIE_HPP
+#define POPLAR_TRIE_COMPACT_FKHASH_TRIE_HPP
 
 #include "bijective_hash.hpp"
 #include "bit_vector.hpp"
@@ -11,12 +11,12 @@ namespace poplar {
 
 template <uint32_t MaxFactor = 90, uint32_t Dsp1Bits = 4, class AuxCht = compact_hash_table<7>,
           class AuxMap = standard_hash_table<>, class Hasher = bijective_hash::split_mix_hasher>
-class compact_hash_trie {
+class compact_fkhash_trie {
   static_assert(0 < MaxFactor and MaxFactor < 100);
   static_assert(0 < Dsp1Bits and Dsp1Bits < 64);
 
  public:
-  using this_type = compact_hash_trie<MaxFactor, Dsp1Bits, AuxCht, AuxMap, Hasher>;
+  using this_type = compact_fkhash_trie<MaxFactor, Dsp1Bits, AuxCht, AuxMap, Hasher>;
   using aux_cht_type = AuxCht;
   using aux_map_type = AuxMap;
 
@@ -28,12 +28,12 @@ class compact_hash_trie {
   static constexpr uint32_t dsp2_bits = aux_cht_type::val_bits;
   static constexpr uint32_t dsp2_mask = aux_cht_type::val_mask;
 
-  static constexpr auto trie_type_id = trie_type_ids::HASH_TRIE;
+  static constexpr auto trie_type_id = trie_type_ids::FKHASH_TRIE;
 
  public:
-  compact_hash_trie() = default;
+  compact_fkhash_trie() = default;
 
-  compact_hash_trie(uint32_t capa_bits, uint32_t symb_bits, uint32_t cht_capa_bits = 0) {
+  compact_fkhash_trie(uint32_t capa_bits, uint32_t symb_bits, uint32_t cht_capa_bits = 0) {
     capa_size_ = size_p2{std::max(min_capa_bits, capa_bits)};
     symb_size_ = size_p2{symb_bits};
     max_size_ = static_cast<uint64_t>(capa_size_.size() * MaxFactor / 100.0);
@@ -43,7 +43,7 @@ class compact_hash_trie {
     ids_ = compact_vector{capa_size_.size(), capa_size_.bits(), capa_size_.mask()};
   }
 
-  ~compact_hash_trie() = default;
+  ~compact_fkhash_trie() = default;
 
   // The root ID is assigned but its slot does not exist in the table
   uint64_t get_root() const {
@@ -129,7 +129,7 @@ class compact_hash_trie {
 
   void show_stats(std::ostream& os, int n = 0) const {
     auto indent = get_indent(n);
-    show_stat(os, indent, "name", "compact_hash_trie");
+    show_stat(os, indent, "name", "compact_fkhash_trie");
     show_stat(os, indent, "factor", double(size()) / capa_size() * 100);
     show_stat(os, indent, "max_factor", MaxFactor);
     show_stat(os, indent, "size", size());
@@ -151,11 +151,11 @@ class compact_hash_trie {
     aux_map_.show_stats(os, n + 1);
   }
 
-  compact_hash_trie(const compact_hash_trie&) = delete;
-  compact_hash_trie& operator=(const compact_hash_trie&) = delete;
+  compact_fkhash_trie(const compact_fkhash_trie&) = delete;
+  compact_fkhash_trie& operator=(const compact_fkhash_trie&) = delete;
 
-  compact_hash_trie(compact_hash_trie&&) noexcept = default;
-  compact_hash_trie& operator=(compact_hash_trie&&) noexcept = default;
+  compact_fkhash_trie(compact_fkhash_trie&&) noexcept = default;
+  compact_fkhash_trie& operator=(compact_fkhash_trie&&) noexcept = default;
 
  private:
   Hasher hasher_;
@@ -289,4 +289,4 @@ class compact_hash_trie {
 
 }  // namespace poplar
 
-#endif  // POPLAR_TRIE_COMPACT_HASH_TRIE_HPP
+#endif  // POPLAR_TRIE_COMPACT_FKHASH_TRIE_HPP
