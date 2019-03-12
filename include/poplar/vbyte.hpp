@@ -16,14 +16,13 @@ inline uint64_t size(uint64_t val) {
   return n;
 }
 
-template <void Puchbacker(std::vector<uint8_t>&, uint8_t)>
 inline uint64_t append(std::vector<uint8_t>& vec, uint64_t val) {
   uint64_t size = vec.size();
   while (127ULL < val) {
-    Puchbacker(vec, static_cast<uint8_t>((val & 127ULL) | 0x80ULL));
+    vec.emplace_back(static_cast<uint8_t>((val & 127ULL) | 0x80ULL));
     val >>= 7;
   }
-  Puchbacker(vec, static_cast<uint8_t>(val & 127ULL));
+  vec.emplace_back(static_cast<uint8_t>(val & 127ULL));
   return vec.size() - size;
 }
 

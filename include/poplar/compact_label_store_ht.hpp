@@ -17,26 +17,31 @@ class compact_label_store_ht {
   using chunk_type = typename chunk_type_traits<ChunkSize>::type;
 
   static constexpr auto trie_type_id = trie_type_ids::HASH_TRIE;
-  static constexpr uint64_t page_size = 1U << 16;
-  static constexpr uint64_t growth_size = 1U << 16;
 
  public:
   compact_label_store_ht() = default;
 
   explicit compact_label_store_ht(uint32_t capa_bits) {
-    ptrs_.reserve((1ULL << capa_bits) / ChunkSize);
+    chunk_ptrs_.reserve((1ULL << capa_bits) / ChunkSize);
+    chunk_buf_.reserve(1ULL << 10);
   }
 
   ~compact_label_store_ht() = default;
 
   std::pair<const value_type*, uint64_t> compare(uint64_t pos, char_range key) const {
     assert(pos < size_);
-    assert(pos / page_size < char_pages_.size());
+
+    const uint8_t* char_ptr = nullptr;
+    auto [chunk_id, pos_in_chunk] = decompose_value<ChunkSize>(pos);
+
+    if (chunk_id < chunk_ptrs_.size()) {
+      char_ptr = chunk_ptrs_[chunk_id].get();
+    } else {
+      assert(chunk_id == chunk_ptrs_.size());
+      char_ptr = chunk_buf_.data();
+    }
 
     auto [group_id, offset] = decompose_value<ChunkSize>(pos);
-
-    assert(ptrs_[group_id] < char_pages_[pos / page_size].size());
-    auto char_ptr = char_pages_[pos / page_size].data() + ptrs_[group_id];
 
     uint64_t alloc = 0;
     for (uint64_t i = 0; i < offset; ++i) {
@@ -67,22 +72,9 @@ class compact_label_store_ht {
   };
 
   value_type* append(char_range key) {
-    const uint64_t page_id = size_ / page_size;
-    if (char_pages_.size() <= page_id) {
-      char_pages_.emplace_back();
-    }
-    std::vector<uint8_t>& chars = char_pages_[page_id];
-
-    auto offset = decompose_value<ChunkSize>(size_++).second;
-    if (offset == 0) {
-      POPLAR_THROW_IF(UINT32_MAX < chars.size(), "ptr value overflows.");
-      ptrs_.push_back(chars.size());
-    }
-
-    uint64_t length = key.empty() ? 0 : key.length() - 1;
-    vbyte::append<append_with_fixed_growth<growth_size, uint8_t>>(chars, length + sizeof(value_type));
-    for (uint64_t i = 0; i < length; ++i) {
-      append_with_fixed_growth<growth_size>(chars, key.begin[i]);
+    auto [chunk_id, pos_in_chunk] = decompose_value<ChunkSize>(size_++);
+    if (chunk_id != 0 && pos_in_chunk == 0) {
+      release_buf_();
     }
 
 #ifdef POPLAR_EXTRA_STATS
@@ -90,35 +82,31 @@ class compact_label_store_ht {
     sum_length_ += key.length();
 #endif
 
-    const size_t vpos = chars.size();
+    uint64_t length = key.empty() ? 0 : key.length() - 1;
+    vbyte::append(chunk_buf_, length + sizeof(value_type));
+    std::copy(key.begin, key.begin + length, std::back_inserter(chunk_buf_));
     for (size_t i = 0; i < sizeof(value_type); ++i) {
-      append_with_fixed_growth<growth_size>(chars, uint8_t(0));
+      chunk_buf_.emplace_back('\0');
     }
 
-    return reinterpret_cast<value_type*>(chars.data() + vpos);
+    return reinterpret_cast<value_type*>(chunk_buf_.data() + chunk_buf_.size() - sizeof(value_type));
   }
 
   // Associate a dummy label
   void append_dummy() {
-    const uint64_t page_id = size_ / page_size;
-    if (char_pages_.size() <= page_id) {
-      char_pages_.emplace_back();
+    auto [chunk_id, pos_in_chunk] = decompose_value<ChunkSize>(size_++);
+    if (chunk_id != 0 && pos_in_chunk == 0) {
+      release_buf_();
     }
-    std::vector<uint8_t>& chars = char_pages_[page_id];
 
-    auto offset = decompose_value<ChunkSize>(size_++).second;
-    if (offset == 0) {
-      POPLAR_THROW_IF(UINT32_MAX < chars.size(), "ptr value overflows.");
-      ptrs_.push_back(chars.size());
-    }
-    vbyte::append<append_with_fixed_growth<growth_size, uint8_t>>(chars, 0);
+    vbyte::append(chunk_buf_, 0);
   }
 
   uint64_t size() const {
     return size_;
   }
   uint64_t num_ptrs() const {
-    return ptrs_.size();
+    return chunk_ptrs_.size();
   }
 
   void show_stats(std::ostream& os, int n = 0) const {
@@ -140,13 +128,20 @@ class compact_label_store_ht {
   compact_label_store_ht& operator=(compact_label_store_ht&&) noexcept = default;
 
  private:
-  std::vector<std::vector<uint8_t>> char_pages_;
-  std::vector<uint32_t> ptrs_;
+  std::vector<std::unique_ptr<uint8_t[]>> chunk_ptrs_;
+  std::vector<uint8_t> chunk_buf_;  // for the last chunk
   uint64_t size_ = 0;
 #ifdef POPLAR_EXTRA_STATS
   uint64_t max_length_ = 0;
   uint64_t sum_length_ = 0;
 #endif
+
+  void release_buf_() {
+    auto new_uptr = std::make_unique<uint8_t[]>(chunk_buf_.size());
+    std::copy(chunk_buf_.begin(), chunk_buf_.end(), new_uptr.get());
+    chunk_ptrs_.emplace_back(std::move(new_uptr));
+    chunk_buf_.clear();
+  }
 };
 
 }  // namespace poplar

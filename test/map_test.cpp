@@ -51,8 +51,8 @@ void search_keys(Map& map, const std::vector<std::string>& keys) {
 using map_types = ::testing::Types<plain_bonsai_map<value_type>,
                                    compact_bonsai_map<value_type>,
                                    plain_hash_map<value_type>,
-                                   compact_hash_map<value_type>,
-                                   rrr_hash_map<value_type>>;
+                                   compact_hash_map<value_type>
+                                   >;
 // clang-format on
 
 template <typename>

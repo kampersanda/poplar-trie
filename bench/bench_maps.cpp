@@ -152,7 +152,7 @@ int main(int argc, char* argv[]) {
   cmdline::parser p;
   p.add<std::string>("key_fn", 'k', "input file name of keywords", true);
   p.add<std::string>("query_fn", 'q', "input file name of queries", false, "-");
-  p.add<std::string>("map_type", 't', "plain_bt | compact_bt | plain_ht | compact_ht | rrr_ht", true);
+  p.add<std::string>("map_type", 't', "plain_bt | compact_bt | plain_ht | compact_ht", true);
   p.add<uint32_t>("chunk_size", 'c', "8 | 16 | 32 | 64 (for compact_bt and compact_ht)", false, 16);
   p.add<uint32_t>("capa_bits", 'b', "#bits of initial capacity", false, 16);
   p.add<uint64_t>("lambda", 'l', "lambda", false, 32);
@@ -196,8 +196,6 @@ int main(int argc, char* argv[]) {
         default:
           break;
       }
-    } else if (map_type == "rrr_ht") {
-      return bench<rrr_hash_map<value_type>>(key_fn, query_fn, capa_bits, lambda);
     }
   } catch (const exception& ex) {
     std::cerr << ex.what() << std::endl;
