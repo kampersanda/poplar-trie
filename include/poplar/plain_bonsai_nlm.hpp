@@ -24,6 +24,7 @@ class plain_bonsai_nlm {
   ~plain_bonsai_nlm() = default;
 
   std::pair<const value_type*, uint64_t> compare(uint64_t pos, const char_range& key) const {
+    assert(pos < ptrs_.size());
     assert(ptrs_[pos]);
 
     const uint8_t* ptr = ptrs_[pos].get();
