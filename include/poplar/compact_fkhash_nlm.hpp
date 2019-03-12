@@ -41,10 +41,8 @@ class compact_fkhash_nlm {
       char_ptr = chunk_buf_.data();
     }
 
-    auto [group_id, offset] = decompose_value<ChunkSize>(pos);
-
     uint64_t alloc = 0;
-    for (uint64_t i = 0; i < offset; ++i) {
+    for (uint64_t i = 0; i < pos_in_chunk; ++i) {
       char_ptr += vbyte::decode(char_ptr, alloc);
       char_ptr += alloc;
     }
