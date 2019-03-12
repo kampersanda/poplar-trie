@@ -33,6 +33,7 @@ int bench(const cmdline::parser& p) {
   auto capa_bits = p.get<uint32_t>("capa_bits");
   auto lambda = p.get<uint64_t>("lambda");
   auto runs = p.get<int>("runs");
+  auto detail = p.get<bool>("detail");
 
   uint64_t num_keys = 0, num_queries = 0;
   uint64_t ok = 0, ng = 0;
@@ -167,8 +168,10 @@ int bench(const cmdline::parser& p) {
   show_stat(out, indent, "ok", ok);
   show_stat(out, indent, "ng", ng);
 
-  show_member(out, indent, "map");
-  map->show_stats(out, 1);
+  if (detail) {
+    show_member(out, indent, "map");
+    map->show_stats(out, 1);
+  }
 
   return 0;
 }
@@ -186,6 +189,7 @@ int main(int argc, char* argv[]) {
   p.add<uint32_t>("capa_bits", 'b', "#bits of initial capacity", false, 16);
   p.add<uint64_t>("lambda", 'l', "lambda", false, 32);
   p.add<int>("runs", 'r', "# of runs", false, 10);
+  p.add<bool>("detail", 'd', "show detail stats?", false, false);
   p.parse_check(argc, argv);
 
   auto map_type = p.get<std::string>("map_type");

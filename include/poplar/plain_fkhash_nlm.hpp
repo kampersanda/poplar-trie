@@ -62,7 +62,7 @@ class plain_fkhash_nlm {
   }
 
   void append_dummy() {
-    ptrs_.emplace_back();
+    ptrs_.emplace_back(nullptr);
   }
 
   uint64_t size() const {
