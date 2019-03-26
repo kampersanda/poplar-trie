@@ -35,9 +35,9 @@ void build(const std::string& key_name, uint32_t capa_bits, uint64_t lambda) {
   process_size = get_process_size() - process_size;
 
 #ifdef POPLAR_EXTRA_STATS
-  std::cout << lambda << '\t' << process_size << '\t' << elapsed_sec << '\t' << map.rate_steps() << '\n';
+  std::cout << lambda << '\t' << process_size << '\t' << elapsed_sec << '\t' << map.rate_steps() << std::endl;
 #else
-  std::cout << lambda << '\t' << process_size << '\t' << elapsed_sec << '\n';
+  std::cout << lambda << '\t' << process_size << '\t' << elapsed_sec << std::endl;
 #endif
 }
 
@@ -57,9 +57,9 @@ int main(int argc, char* argv[]) {
   auto capa_bits = p.get<uint32_t>("capa_bits");
 
 #ifdef POPLAR_EXTRA_STATS
-  std::cout << "lambda\tprocess_size\telapsed_sec\trate_steps\n";
+  std::cout << "lambda\tprocess_size\telapsed_sec\trate_steps" << std::endl;
 #else
-  std::cout << "lambda\tprocess_size\telapsed_sec\n";
+  std::cout << "lambda\tprocess_size\telapsed_sec" << std::endl;
 #endif
 
   try {
