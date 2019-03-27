@@ -182,6 +182,9 @@ class map {
   double rate_steps() const {
     return double(num_steps_) / size_;
   }
+  uint64_t num_resize() const {
+    return hash_trie_.num_resize();
+  }
 #endif
 
   void show_stats(std::ostream& os, int n = 0) const {

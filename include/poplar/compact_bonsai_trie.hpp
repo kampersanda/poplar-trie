@@ -261,6 +261,11 @@ class compact_bonsai_trie {
   uint32_t symb_bits() const {
     return symb_size_.bits();
   }
+#ifdef POPLAR_EXTRA_STATS
+  uint64_t num_resize() const {
+    return num_resize_;
+  }
+#endif
 
   void show_stats(std::ostream& os, int n = 0) const {
     auto indent = get_indent(n);
