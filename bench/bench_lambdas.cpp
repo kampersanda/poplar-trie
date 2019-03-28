@@ -8,7 +8,7 @@ namespace {
 using namespace poplar;
 
 template <class Map>
-void build(const std::string& key_name, uint32_t capa_bits, uint64_t lambda) {
+void build(const std::string& key_name, uint32_t capa_bits, uint64_t lambda, bool detail) {
   uint64_t process_size = get_process_size();
 
   std::ifstream ifs{key_name};
@@ -40,6 +40,11 @@ void build(const std::string& key_name, uint32_t capa_bits, uint64_t lambda) {
 #else
   std::cout << lambda << '\t' << process_size << '\t' << elapsed_sec << std::endl;
 #endif
+
+  if (detail) {
+    show_member(std::cout, "", "map");
+    map.show_stats(std::cout, 1);
+  }
 }
 
 }  // namespace
@@ -51,11 +56,13 @@ int main(int argc, char* argv[]) {
   p.add<std::string>("key_fn", 'k', "input file name of keywords", true);
   p.add<std::string>("map_type", 't', "cbm | cfkm", true);
   p.add<uint32_t>("capa_bits", 'b', "#bits of initial capacity", false, 16);
+  p.add<bool>("detail", 'd', "show detail stats?", false, false);
   p.parse_check(argc, argv);
 
   auto key_fn = p.get<std::string>("key_fn");
   auto map_type = p.get<std::string>("map_type");
   auto capa_bits = p.get<uint32_t>("capa_bits");
+  auto detail = p.get<bool>("detail");
 
 #ifdef POPLAR_EXTRA_STATS
   std::cout << "lambda\tprocess_size\telapsed_sec\trate_steps\tnum_resize" << std::endl;
@@ -66,10 +73,10 @@ int main(int argc, char* argv[]) {
   try {
     for (uint64_t lambda = 4; lambda <= 1024; lambda *= 2) {
       if (map_type == "cbm") {
-        build<compact_bonsai_map<int, 16>>(key_fn, capa_bits, lambda);
+        build<compact_bonsai_map<int, 16>>(key_fn, capa_bits, lambda, detail);
       }
       if (map_type == "cfkm") {
-        build<compact_fkhash_map<int, 16>>(key_fn, capa_bits, lambda);
+        build<compact_fkhash_map<int, 16>>(key_fn, capa_bits, lambda, detail);
       }
     }
   } catch (const exception& ex) {
