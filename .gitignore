@@ -38,7 +38,7 @@ cmake-build-debug/
 .idea/
 .DS_Store
 .vscode/
-include/poplar/poplar_config.hpp
+# include/poplar/poplar_config.hpp
 extra/
 # pyscripts/
 # とりあえず

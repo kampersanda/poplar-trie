@@ -10,18 +10,18 @@ int main() {
 
   try {
     for (int i = 0; i < num_keys; ++i) {
-      int* ptr = map.update(poplar::make_char_range(keys[i]));
+      int* ptr = map.update(keys[i]);
       *ptr = i + 1;
     }
     for (int i = 0; i < num_keys; ++i) {
-      const int* ptr = map.find(poplar::make_char_range(keys[i]));
+      const int* ptr = map.find(keys[i]);
       if (ptr == nullptr or *ptr != i + 1) {
         return 1;
       }
       std::cout << keys[i] << ": " << *ptr << std::endl;
     }
     {
-      const int* ptr = map.find(poplar::make_char_range("Hotaru"));
+      const int* ptr = map.find("Hotaru");
       if (ptr != nullptr) {
         return 1;
       }

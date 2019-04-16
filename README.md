@@ -1,57 +1,48 @@
-# Poplar-trie: A C++ implementation of memory-efficient dynamic tries
+# Poplar-trie: A C++17 implementation of memory-efficient dynamic tries
 
-Poplar-trie is a C++17 library of associative arrays with string keys based on a dynamic path-decomposed trie (DynPDT) described in the paper [*Practical implementation of space-efficient dynamic keyword dictionaries*](https://link.springer.com/chapter/10.1007%2F978-3-319-67428-5_19), published in SPIRE 2017 [[paper](https://sites.google.com/site/shnskknd/SPIRE2017.pdf)] [[slide](https://www.slideshare.net/ShunsukeKanda1/practical-implementation-of-spaceefficient-dynamic-keyword-dictionaries)].
+Poplar-trie is a C++17 library of an associative array whose keys are strings.
+It is based on a dynamic path-decomposed trie (DynPDT) described in the paper [*Practical implementation of space-efficient dynamic keyword dictionaries*](https://link.springer.com/chapter/10.1007%2F978-3-319-67428-5_19), published in SPIRE 2017 [[paper](https://sites.google.com/site/shnskknd/SPIRE2017.pdf)] [[slide](https://www.slideshare.net/ShunsukeKanda1/practical-implementation-of-spaceefficient-dynamic-keyword-dictionaries)].
 However, the implementation of this library is enhanced from the conference version.
 
 The technical details are now being written.
 
 ## Implementation overview
 
-Poplar-trie implements a dynamically-updatable associative array mapping key strings to values of any type like `std::map<std::string,V>`.
-The underlying data structure is DynPDT.
-It is a customized trie structure that has additional string labels for each node.
-The string labels are stored separately from the trie representation, so we need to store their pointers associated with each node.
+Poplar-trie is a space-efficient updatable associative array implementation which maps key strings to values of any type like `std::map<std::string,anytype>`.
+DynPDT is composed of two structures: dynamic trie and node label map (NLM) structures.
+This library contains some implementations for the structures, as follows.
 
-Poplar-trie implements the associative array based on DynPDT by combining efficient trie representations with proper data structures for the string labels.
-Some classes are included in this libary as follows.
+### Implementations based on m-Bonsai
 
-### Bonsai-trie based implementations
+- Classes [`plain_bonsai_trie`](https://github.com/kampersanda/poplar-trie/blob/master/include/poplar/plain_bonsai_trie.hpp) and [`compact_bonsai_trie`](https://github.com/kampersanda/poplar-trie/blob/master/include/poplar/compact_bonsai_trie.hpp) are dynamic trie implementations based on [m-Bonsai](https://github.com/Poyias/mBonsai).
+- Classes [`plain_bonsai_nlm`](https://github.com/kampersanda/poplar-trie/blob/master/include/poplar/plain_bonsai_nlm.hpp) and [`compact_bonsai_nlm`](https://github.com/kampersanda/poplar-trie/blob/master/include/poplar/compact_bonsai_nlm.hpp) are NLM implementations designed for these implementations.
 
-Classes `plain_bonsai_trie` and `compact_bonsai_trie` implements trie representations based on [m-Bonsai](https://github.com/Poyias/mBonsai) techniques proposed by Poyias et al.
-Selfexplanatorily, the former is a fast version and the latter is a compact version.
+### Implementations based on FK-hash
 
-For the representations, two data structures for string labels are implemented as classes `plain_label_store_bt` and `compact_label_store_bt`.
-
-### Hash-trie based implementations
-
-Classes `plain_hash_trie` and `compact_hash_trie` implements trie representations based on [HashTrie](https://github.com/tudocomp/tudocomp) techniques proposed by Fischer and Köppl.
-
-For the representations, three data structures for string labels are implemented as classes `plain_label_store_ht`, `compact_label_store_ht` and `rrr_label_store_ht`.
-
+- Classes [`plain_fkhash_trie`](https://github.com/kampersanda/poplar-trie/blob/master/include/poplar/plain_fkhash_trie.hpp) and [`compact_fkhash_trie`](https://github.com/kampersanda/poplar-trie/blob/master/include/poplar/compact_fkhash_trie.hpp) are dynamic trie implementations based on [HashTrie](https://github.com/tudocomp/tudocomp) developed by Fischer and Köppl.
+- Classes [`plain_fkhash_nlm`](https://github.com/kampersanda/poplar-trie/blob/master/include/poplar/plain_fkhash_nlm.hpp) and [`compact_fkhash_nlm`](https://github.com/kampersanda/poplar-trie/blob/master/include/poplar/compact_fkhash_nlm.hpp) are NLM implementations designed for these implementations.
 
 ### Aliases
 
-Class `map` implements the associative array while taking the above classes as the template arguments.
-That is, there are some implementation patterns.
-But, you can easily get the implementations since `poplar.hpp` provides the following aliases:
+Class [`map`](https://github.com/kampersanda/poplar-trie/blob/master/include/poplar/map.hpp) takes these classes as the template arguments and implements the associative array.
+So, there are some implementation combinations.
+In [`poplar.hpp`](https://github.com/kampersanda/poplar-trie/blob/master/include/poplar.hpp), the following aliases are provided.
 
-| Alias | Trie | String Label |
+| Alias | Trie Impl. | NLM impl. |
 |:--|:--|:--|
-|`plain_bonsai_map`|`plain_bonsai_trie`|`plain_label_store_bt`|
-|`compact_bonsai_map`|`compact_bonsai_trie`|`compact_label_store_bt`|
-|`plain_hash_map`|`plain_hash_trie`|`plain_label_store_ht`|
-|`compact_hash_map`|`compact_hash_trie`|`compact_label_store_ht`|
-|`rrr_hash_map`|`compact_hash_trie`|`rrr_label_store_ht`|
+|`plain_bonsai_map`|`plain_bonsai_trie`|`plain_bonsai_nlm`|
+|`semi_compact_bonsai_map`|`plain_bonsai_trie`|`compact_bonsai_nlm`|
+|`compact_bonsai_map`|`compact_bonsai_trie`|`compact_bonsai_nlm`|
+|`plain_fkhash_map`|`plain_fkhash_trie`|`plain_fkhash_nlm`|
+|`semi_compact_fkhash_map`|`plain_fkhash_trie`|`compact_fkhash_nlm`|
+|`compact_fkhash_map`|`compact_fkhash_trie`|`compact_fkhash_nlm`|
 
-These have template argument `Lambda` in common.
-This is a parameter depending on lengths of given strings.
-From previous experimental results, the value 16 (default) would be good for natural language words.
-For long strings such as URLs, the value 32 or 64 would be good.
 
 ## Install
 
-Please through the path to the directory `poplar-trie/include`.
 This library consists of only header files.
+Please through the path to the directory [`poplar-trie/include`](https://github.com/kampersanda/poplar-trie/tree/master/include).
+
 
 ## Build instructions
 
@@ -86,22 +77,22 @@ int main() {
                                    "Rin",  "Hazuki", "Umiko",  "Nene"};
   const auto num_keys = static_cast<int>(keys.size());
 
-  poplar::plain_hash_map<int> map;
+  poplar::plain_bonsai_map<int> map;
 
   try {
     for (int i = 0; i < num_keys; ++i) {
-      int* ptr = map.update(poplar::make_char_range(keys[i]));
+      int* ptr = map.update(keys[i]);
       *ptr = i + 1;
     }
     for (int i = 0; i < num_keys; ++i) {
-      const int* ptr = map.find(poplar::make_char_range(keys[i]));
+      const int* ptr = map.find(keys[i]);
       if (ptr == nullptr or *ptr != i + 1) {
         return 1;
       }
       std::cout << keys[i] << ": " << *ptr << std::endl;
     }
     {
-      const int* ptr = map.find(poplar::make_char_range("Hotaru"));
+      const int* ptr = map.find("Hotaru");
       if (ptr != nullptr) {
         return 1;
       }
@@ -134,7 +125,7 @@ Hotaru: -1
 #keys = 9
 ```
 
-## Benchmarks
+<!--## Benchmarks
 
 The main advantage of Poplar-trie is high space efficiency as can be seen in the following results.
 
@@ -162,11 +153,11 @@ And, search time for the same strings was measured.
 | poplar::plain\_hash\_map | 63.3 | 0.65 | 0.73 |
 | poplar::compact\_hash\_map | **45.3** | 0.93 | 0.96 |
 | poplar::rrr\_hash\_map | **44.3** | 1.29 | 1.48 |
+-->
 
 ## Todo
 
 - Support the deletion operation
-- Improve the time performance
 - Add comments to the codes
 - Create the API document
 
