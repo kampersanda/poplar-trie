@@ -125,6 +125,68 @@ Hotaru: -1
 #keys = 9
 ```
 
+## Benchmarks
+
+Comparison experiments were conducted on one core of a quad-core Intel Xeon CPU E5-2680 v2 clocked at 2.80 Ghz in a machine with 256 GB of RAM, running the 64-bit version of CentOS 6.10 based on Linux 2.6.
+The source code was compiled with g++ (version 7.3.0) in optimization mode -O3.
+
+To measure the performance, we inserted strings in a dataset to a data structure in random order, and measured the maximum resident set size and insertion time.
+The lookup time was measured by retrieving a million strings randomly extracted from the dataset.
+
+### Page Titles of English Wikipedia
+
+- Dataset: All page titles from English Wikipedia in Sep. 2018
+- Number of keys: 14,130,439
+- File size: 0.28 GiB
+
+| Implementation | Space (GiB) | Insert (us/key) | Lookup (us/key) |
+|---------------------------------|------------:|----------------:|----------------:|
+| [`poplar::plain_bonsai_map`](https://github.com/kampersanda/poplar-trie) | 0.64 | 0.98 | 0.68 |
+| [`poplar::semi_compact_bonsai_map`](https://github.com/kampersanda/poplar-trie) | 0.28 | 1.60 | 0.96 |
+| [`poplar::compact_bonsai_map`](https://github.com/kampersanda/poplar-trie) | 0.24 | 1.71 | 1.02 |
+| [`poplar::plain_fkhash_map`](https://github.com/kampersanda/poplar-trie) | 0.67 | 0.79 | 0.86 |
+| [`poplar::semi_compact_fkhash_map`](https://github.com/kampersanda/poplar-trie) | 0.31 | 0.96 | 1.15 |
+| [`poplar::compact_fkhash_map`](https://github.com/kampersanda/poplar-trie) | 0.27 | 1.14 | 1.22 |
+| [`std::unordered_map`](http://en.cppreference.com/w/cpp/container/unordered_map) | 1.29 | 0.50 | 0.27 |
+| [`google::dense_hash_map`](https://github.com/sparsehash/sparsehash) | 1.64 | 0.54 | 0.14 |
+| [`spp::sparse_hash_map`](https://github.com/greg7mdp/sparsepp) | 0.97 | 0.69 | 0.18 |
+| [`tsl::hopscotch_map`](https://github.com/Tessil/hopscotch-map) | 1.08 | 0.42 | 0.13 |
+| [`tsl::robin_map`](https://github.com/Tessil/robin-map) | 1.83 | 0.41 | 0.12 |
+| [`tsl::array_map`](https://github.com/Tessil/array-hash) | 0.69 | 0.73 | 0.14 |
+| [`tsl::htrie_map`](https://github.com/Tessil/hat-trie) | 0.43 | 0.60 | 0.27 |
+| [`JudySL`](http://judy.sourceforge.net) | 0.66 | 0.92 | 0.74 |
+| [`libart`](https://github.com/armon/libart) | 1.23 | 1.00 | 0.73 |
+| [`cedar::da`](http://www.tkl.iis.u-tokyo.ac.jp/~ynaga/cedar/) (reduced trie) | 1.19 | 0.89 | 0.59 |
+| [`cedar::da`](http://www.tkl.iis.u-tokyo.ac.jp/~ynaga/cedar/) (prefix trie) | 0.63 | 0.89 | 0.61 |
+
+### URLs of UK domain
+
+- Dataset: URLs obtained from a 2005 crawl of the `.uk` domain performed by UbiCrawler
+- Number of keys: 39,459,925
+- File size: 2.7 GiB
+
+| Implementation | Space (GiB) | Insert (us/key) | Lookup (us/key) |
+|---------------------------------|------------:|----------------:|----------------:|
+| [`poplar::plain_bonsai_map`](https://github.com/kampersanda/poplar-trie) | 2.32 | 1.45 | 0.94 |
+| [`poplar::semi_compact_bonsai_map`](https://github.com/kampersanda/poplar-trie) | 1.26 | 2.76 | 1.44 |
+| [`poplar::compact_bonsai_map`](https://github.com/kampersanda/poplar-trie) | 1.09 | 2.87 | 1.44 |
+| [`poplar::plain_fkhash_map`](https://github.com/kampersanda/poplar-trie) | 2.32 | 1.27 | 1.24 |
+| [`poplar::semi_compact_fkhash_map`](https://github.com/kampersanda/poplar-trie) | 1.38 | 1.74 | 1.93 |
+| [`poplar::compact_fkhash_map`](https://github.com/kampersanda/poplar-trie) | 1.21 | 2.04 | 2.02 |
+| [`std::unordered_map`](http://en.cppreference.com/w/cpp/container/unordered_map) | 6.05 | 0.67 | 0.50 |
+| [`google::dense_hash_map`](https://github.com/sparsehash/sparsehash) | 10.50 | 1.09 | 0.27 |
+| [`spp::sparse_hash_map`](https://github.com/greg7mdp/sparsepp) | 5.06 | 0.96 | 0.37 |
+| [`tsl::hopscotch_map`](https://github.com/Tessil/hopscotch-map) | 6.23 | 0.75 | 0.25 |
+| [`tsl::robin_map`](https://github.com/Tessil/robin-map) | 9.23 | 0.63 | 0.25 |
+| [`tsl::array_map`](https://github.com/Tessil/array-hash) | 5.91 | 1.16 | 0.28 |
+| [`tsl::htrie_map`](https://github.com/Tessil/hat-trie) | 2.68 | 1.08 | 0.51 |
+| [`JudySL`](http://judy.sourceforge.net) | 2.21 | 1.88 | 1.59 |
+| [`libart`](https://github.com/armon/libart) | 5.17 | 1.64 | 1.19 |
+| [`cedar::da`](http://www.tkl.iis.u-tokyo.ac.jp/~ynaga/cedar/) (reduced trie) | 7.37 | 2.24 | 2.30 |
+| [`cedar::da`](http://www.tkl.iis.u-tokyo.ac.jp/~ynaga/cedar/) (prefix trie) | 2.02 | 2.20 | 2.28 |
+
+
+
 <!--## Benchmarks
 
 The main advantage of Poplar-trie is high space efficiency as can be seen in the following results.
