@@ -17,71 +17,71 @@
 namespace poplar {
 
 class timer {
- public:
-  using hrc = std::chrono::high_resolution_clock;
+  public:
+    using hrc = std::chrono::high_resolution_clock;
 
-  timer() = default;
+    timer() = default;
 
-  template <class Period = std::ratio<1>>
-  double get() const {
-    return std::chrono::duration<double, Period>(hrc::now() - tp_).count();
-  }
+    template <class Period = std::ratio<1>>
+    double get() const {
+        return std::chrono::duration<double, Period>(hrc::now() - tp_).count();
+    }
 
- private:
-  hrc::time_point tp_{hrc::now()};
+  private:
+    hrc::time_point tp_{hrc::now()};
 };
 
 // From Cedar
 size_t get_process_size() {
 #ifdef __APPLE__
-  struct task_basic_info t_info;
-  mach_msg_type_number_t t_info_count = TASK_BASIC_INFO_COUNT;
-  task_info(current_task(), TASK_BASIC_INFO, reinterpret_cast<task_info_t>(&t_info), &t_info_count);
-  return t_info.resident_size;
+    struct task_basic_info t_info;
+    mach_msg_type_number_t t_info_count = TASK_BASIC_INFO_COUNT;
+    task_info(current_task(), TASK_BASIC_INFO, reinterpret_cast<task_info_t>(&t_info), &t_info_count);
+    return t_info.resident_size;
 #else
-  FILE* fp = std::fopen("/proc/self/statm", "r");
-  size_t dummy(0), vm(0);
-  std::fscanf(fp, "%ld %ld ", &dummy, &vm);  // get resident (see procfs)
-  std::fclose(fp);
-  return vm * ::getpagesize();
+    FILE* fp = std::fopen("/proc/self/statm", "r");
+    size_t dummy(0), vm(0);
+    std::fscanf(fp, "%ld %ld ", &dummy, &vm);  // get resident (see procfs)
+    std::fclose(fp);
+    return vm * ::getpagesize();
 #endif
 }
 
 template <typename T>
 inline std::string realname() {
-  int status;
-  return abi::__cxa_demangle(typeid(T).name(), nullptr, nullptr, &status);
+    int status;
+    return abi::__cxa_demangle(typeid(T).name(), nullptr, nullptr, &status);
 }
 template <typename T>
 inline std::string short_realname() {
-  auto name = realname<T>();
-  name = std::regex_replace(name, std::regex{R"( |poplar::)"}, "");
-  name = std::regex_replace(name, std::regex{R"((\d+)ul{0,2})"}, "$1");
-  return name;
+    auto name = realname<T>();
+    name = std::regex_replace(name, std::regex{R"( |poplar::)"}, "");
+    name = std::regex_replace(name, std::regex{R"((\d+)ul{0,2})"}, "$1");
+    return name;
 }
 
 template <size_t N>
 inline double get_average(const std::array<double, N>& ary) {
-  double sum = 0.0;
-  for (auto v : ary) {
-    sum += v;
-  }
-  return sum / N;
+    double sum = 0.0;
+    for (auto v : ary) {
+        sum += v;
+    }
+    return sum / N;
 }
 
 inline std::vector<std::string> load_keys(const char* key_name) {
-  std::ifstream ifs{key_name};
-  if (!ifs) {
-    std::cerr << "Error: failed to open " << key_name << std::endl;
-    exit(1);
-  }
+    std::ifstream ifs{key_name};
+    if (!ifs) {
+        std::cerr << "Error: failed to open " << key_name << std::endl;
+        exit(1);
+    }
 
-  std::vector<std::string> keys;
-  for (std::string line; std::getline(ifs, line);) {
-    keys.push_back(line);
-  }
+    std::vector<std::string> keys;
+    for (std::string line; std::getline(ifs, line);) {
+        keys.push_back(line);
+    }
 
-  return keys;
+    return keys;
 }
 
 }  // namespace poplar

@@ -9,79 +9,79 @@ using namespace poplar;
 
 template <class Map>
 void build(const std::string& key_name, uint32_t capa_bits, uint64_t lambda, bool detail) {
-  uint64_t process_size = get_process_size();
+    uint64_t process_size = get_process_size();
 
-  std::ifstream ifs{key_name};
-  if (!ifs) {
-    std::cerr << "error: failed to open " << key_name << std::endl;
-    std::exit(1);
-  }
+    std::ifstream ifs{key_name};
+    if (!ifs) {
+        std::cerr << "error: failed to open " << key_name << std::endl;
+        std::exit(1);
+    }
 
-  uint64_t num_keys = 0;
-  double elapsed_sec = 0.0;
+    uint64_t num_keys = 0;
+    double elapsed_sec = 0.0;
 
-  Map map{capa_bits, lambda};
+    Map map{capa_bits, lambda};
 
-  std::string key;
-  key.reserve(1024);
+    std::string key;
+    key.reserve(1024);
 
-  timer t;
-  while (std::getline(ifs, key)) {
-    map.update(make_char_range(key));
-    ++num_keys;
-  }
+    timer t;
+    while (std::getline(ifs, key)) {
+        map.update(make_char_range(key));
+        ++num_keys;
+    }
 
-  elapsed_sec = t.get<>();
-  process_size = get_process_size() - process_size;
+    elapsed_sec = t.get<>();
+    process_size = get_process_size() - process_size;
 
 #ifdef POPLAR_EXTRA_STATS
-  std::cout << lambda << '\t' << process_size << '\t' << elapsed_sec << '\t' << map.rate_steps() << '\t'
-            << map.num_resize() << std::endl;
+    std::cout << lambda << '\t' << process_size << '\t' << elapsed_sec << '\t' << map.rate_steps() << '\t'
+              << map.num_resize() << std::endl;
 #else
-  std::cout << lambda << '\t' << process_size << '\t' << elapsed_sec << std::endl;
+    std::cout << lambda << '\t' << process_size << '\t' << elapsed_sec << std::endl;
 #endif
 
-  if (detail) {
-    show_member(std::cout, "", "map");
-    map.show_stats(std::cout, 1);
-  }
+    if (detail) {
+        show_member(std::cout, "", "map");
+        map.show_stats(std::cout, 1);
+    }
 }
 
 }  // namespace
 
 int main(int argc, char* argv[]) {
-  std::ios::sync_with_stdio(false);
+    std::ios::sync_with_stdio(false);
 
-  cmdline::parser p;
-  p.add<std::string>("key_fn", 'k', "input file name of keywords", true);
-  p.add<std::string>("map_type", 't', "cbm | cfkm", true);
-  p.add<uint32_t>("capa_bits", 'b', "#bits of initial capacity", false, 16);
-  p.add<bool>("detail", 'd', "show detail stats?", false, false);
-  p.parse_check(argc, argv);
+    cmdline::parser p;
+    p.add<std::string>("key_fn", 'k', "input file name of keywords", true);
+    p.add<std::string>("map_type", 't', "cbm | cfkm", true);
+    p.add<uint32_t>("capa_bits", 'b', "#bits of initial capacity", false, 16);
+    p.add<bool>("detail", 'd', "show detail stats?", false, false);
+    p.parse_check(argc, argv);
 
-  auto key_fn = p.get<std::string>("key_fn");
-  auto map_type = p.get<std::string>("map_type");
-  auto capa_bits = p.get<uint32_t>("capa_bits");
-  auto detail = p.get<bool>("detail");
+    auto key_fn = p.get<std::string>("key_fn");
+    auto map_type = p.get<std::string>("map_type");
+    auto capa_bits = p.get<uint32_t>("capa_bits");
+    auto detail = p.get<bool>("detail");
 
 #ifdef POPLAR_EXTRA_STATS
-  std::cout << "lambda\tprocess_size\telapsed_sec\trate_steps\tnum_resize" << std::endl;
+    std::cout << "lambda\tprocess_size\telapsed_sec\trate_steps\tnum_resize" << std::endl;
 #else
-  std::cout << "lambda\tprocess_size\telapsed_sec" << std::endl;
+    std::cout << "lambda\tprocess_size\telapsed_sec" << std::endl;
 #endif
 
-  try {
-    for (uint64_t lambda = 4; lambda <= 1024; lambda *= 2) {
-      if (map_type == "cbm") {
-        build<compact_bonsai_map<int, 16>>(key_fn, capa_bits, lambda, detail);
-      }
-      if (map_type == "cfkm") {
-        build<compact_fkhash_map<int, 16>>(key_fn, capa_bits, lambda, detail);
-      }
+    try {
+        for (uint64_t lambda = 4; lambda <= 1024; lambda *= 2) {
+            if (map_type == "cbm") {
+                build<compact_bonsai_map<int, 16>>(key_fn, capa_bits, lambda, detail);
+            }
+            if (map_type == "cfkm") {
+                build<compact_fkhash_map<int, 16>>(key_fn, capa_bits, lambda, detail);
+            }
+        }
+    } catch (const exception& ex) {
+        std::cerr << ex.what() << std::endl;
     }
-  } catch (const exception& ex) {
-    std::cerr << ex.what() << std::endl;
-  }
 
-  return 1;
+    return 1;
 }
