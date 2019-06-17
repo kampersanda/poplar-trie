@@ -9,17 +9,17 @@ Its data structure is based on a dynamic path-decomposed trie (DynPDT) described
 
 Poplar-trie is a memory-efficient updatable associative array implementation which maps key strings to values of any type like `std::map<std::string,anytype>`.
 DynPDT is composed of two structures: dynamic trie and node label map (NLM) structures.
-This library contains some implementations for the structures, as follows.
+This library contains some implementations of those structures, as follows.
 
 ### Implementations based on m-Bonsai
 
 - Classes [`plain_bonsai_trie`](https://github.com/kampersanda/poplar-trie/blob/master/include/poplar/plain_bonsai_trie.hpp) and [`compact_bonsai_trie`](https://github.com/kampersanda/poplar-trie/blob/master/include/poplar/compact_bonsai_trie.hpp) are dynamic trie implementations based on [m-Bonsai](https://github.com/Poyias/mBonsai).
-- Classes [`plain_bonsai_nlm`](https://github.com/kampersanda/poplar-trie/blob/master/include/poplar/plain_bonsai_nlm.hpp) and [`compact_bonsai_nlm`](https://github.com/kampersanda/poplar-trie/blob/master/include/poplar/compact_bonsai_nlm.hpp) are NLM implementations designed for these implementations.
+- Classes [`plain_bonsai_nlm`](https://github.com/kampersanda/poplar-trie/blob/master/include/poplar/plain_bonsai_nlm.hpp) and [`compact_bonsai_nlm`](https://github.com/kampersanda/poplar-trie/blob/master/include/poplar/compact_bonsai_nlm.hpp) are NLM implementations designed for these dynamic tries.
 
 ### Implementations based on FK-hash
 
 - Classes [`plain_fkhash_trie`](https://github.com/kampersanda/poplar-trie/blob/master/include/poplar/plain_fkhash_trie.hpp) and [`compact_fkhash_trie`](https://github.com/kampersanda/poplar-trie/blob/master/include/poplar/compact_fkhash_trie.hpp) are dynamic trie implementations based on [HashTrie](https://github.com/tudocomp/tudocomp) developed by Fischer and Köppl.
-- Classes [`plain_fkhash_nlm`](https://github.com/kampersanda/poplar-trie/blob/master/include/poplar/plain_fkhash_nlm.hpp) and [`compact_fkhash_nlm`](https://github.com/kampersanda/poplar-trie/blob/master/include/poplar/compact_fkhash_nlm.hpp) are NLM implementations designed for these implementations.
+- Classes [`plain_fkhash_nlm`](https://github.com/kampersanda/poplar-trie/blob/master/include/poplar/plain_fkhash_nlm.hpp) and [`compact_fkhash_nlm`](https://github.com/kampersanda/poplar-trie/blob/master/include/poplar/compact_fkhash_nlm.hpp) are NLM implementations designed for these dynamic tries.
 
 ### Aliases
 
