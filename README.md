@@ -132,6 +132,8 @@ The source code was compiled with g++ (version 7.3.0) in optimization mode -O3.
 To measure the performance, we inserted strings in a dataset to a data structure in random order, and measured the maximum resident set size and insertion time.
 The lookup time was measured by retrieving a million strings randomly extracted from the dataset.
 
+The source codes for the experiments are at [dictionary_bench](https://github.com/kampersanda/dictionary_bench).
+
 ### Page Titles of English Wikipedia
 
 - Dataset: All page titles from English Wikipedia in Sep. 2018
