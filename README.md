@@ -1,14 +1,13 @@
 # Poplar-trie: A C++17 implementation of memory-efficient dynamic tries
 
-Poplar-trie is a C++17 library of an associative array whose keys are strings.
-It is based on a dynamic path-decomposed trie (DynPDT) described in the paper [*Practical implementation of space-efficient dynamic keyword dictionaries*](https://link.springer.com/chapter/10.1007%2F978-3-319-67428-5_19), published in SPIRE 2017 [[paper](https://sites.google.com/site/shnskknd/SPIRE2017.pdf)] [[slide](https://www.slideshare.net/ShunsukeKanda1/practical-implementation-of-spaceefficient-dynamic-keyword-dictionaries)].
-However, the implementation of this library is enhanced from the conference version.
+Poplar-trie is a C++17 library of a memory-efficient associative array whose keys are strings.
+Its data structure is based on a dynamic path-decomposed trie (DynPDT) described in the paper:
 
-The technical details are now being written.
+> Shunsuke Kanda, Dominik Köppl, Yasuo Tabei, Kazuhiro Morita, and Masao Fuketa. "Dynamic Path-Decomposed Tries", In: *CoRR (2019)*. arXiv: [1906.06015](https://arxiv.org/abs/1906.06015).
 
 ## Implementation overview
 
-Poplar-trie is a space-efficient updatable associative array implementation which maps key strings to values of any type like `std::map<std::string,anytype>`.
+Poplar-trie is a memory-efficient updatable associative array implementation which maps key strings to values of any type like `std::map<std::string,anytype>`.
 DynPDT is composed of two structures: dynamic trie and node label map (NLM) structures.
 This library contains some implementations for the structures, as follows.
 
