@@ -32,7 +32,7 @@
 *.app
 
 # My Def
-build/
+build*/
 release-build/
 cmake-build-debug/
 .idea/
