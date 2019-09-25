@@ -92,9 +92,11 @@ class compact_vector {
     uint64_t size() const {
         return size_;
     }
-
     uint32_t width() const {
         return width_;
+    }
+    uint64_t alloc_bytes() const {
+        return chunks_.capacity() * sizeof(uint64_t);
     }
 
     compact_vector(const compact_vector&) = delete;

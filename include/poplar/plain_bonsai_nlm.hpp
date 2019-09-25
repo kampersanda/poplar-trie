@@ -75,6 +75,8 @@ class plain_bonsai_nlm {
         auto ptr = ptrs_[pos].get();
         copy_bytes(ptr, key.begin, length);
 
+        label_bytes_ += length + sizeof(value_type);
+
 #ifdef POPLAR_EXTRA_STATS
         max_length_ = std::max(max_length_, length);
         sum_length_ += length;
@@ -103,12 +105,19 @@ class plain_bonsai_nlm {
     uint64_t num_ptrs() const {
         return ptrs_.size();
     }
+    uint64_t alloc_bytes() const {
+        uint64_t bytes = 0;
+        bytes += ptrs_.capacity() * sizeof(std::unique_ptr<uint8_t[]>);
+        bytes += label_bytes_;
+        return bytes;
+    }
 
     void show_stats(std::ostream& os, int n = 0) const {
         auto indent = get_indent(n);
         show_stat(os, indent, "name", "plain_bonsai_nlm");
         show_stat(os, indent, "size", size());
         show_stat(os, indent, "num_ptrs", num_ptrs());
+        show_stat(os, indent, "alloc_bytes", alloc_bytes());
 #ifdef POPLAR_EXTRA_STATS
         show_stat(os, indent, "max_length", max_length_);
         show_stat(os, indent, "ave_length", double(sum_length_) / size());
@@ -124,6 +133,7 @@ class plain_bonsai_nlm {
   private:
     std::vector<std::unique_ptr<uint8_t[]>> ptrs_;
     uint64_t size_ = 0;
+    uint64_t label_bytes_ = 0;
 #ifdef POPLAR_EXTRA_STATS
     uint64_t max_length_ = 0;
     uint64_t sum_length_ = 0;

@@ -99,6 +99,9 @@ class standard_hash_table {
     uint32_t capa_bits() const {
         return capa_size_.bits();
     }
+    uint64_t alloc_bytes() const {
+        return table_.capacity() * sizeof(slot_type);
+    }
 
     void show_stats(std::ostream& os, int n = 0) const {
         auto indent = get_indent(n);
@@ -107,6 +110,7 @@ class standard_hash_table {
         show_stat(os, indent, "max_factor", MaxFactor);
         show_stat(os, indent, "size", size());
         show_stat(os, indent, "capa_size", capa_size());
+        show_stat(os, indent, "alloc_bytes", alloc_bytes());
 #ifdef POPLAR_EXTRA_STATS
         show_stat(os, indent, "num_resize", num_resize_);
 #endif

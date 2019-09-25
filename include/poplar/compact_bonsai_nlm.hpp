@@ -100,6 +100,7 @@ class compact_bonsai_nlm {
             // First association in the group
             uint64_t length = key.empty() ? 0 : key.length() - 1;
             uint64_t new_alloc = vbyte::size(length + sizeof(value_type)) + length + sizeof(value_type);
+            label_bytes_ += new_alloc;
 
             ptrs_[chunk_id] = std::make_unique<uint8_t[]>(new_alloc);
             uint8_t* ptr = ptrs_[chunk_id].get();
@@ -118,6 +119,7 @@ class compact_bonsai_nlm {
 
         const uint64_t len = key.empty() ? 0 : key.length() - 1;
         const uint64_t new_alloc = vbyte::size(len + sizeof(value_type)) + len + sizeof(value_type);
+        label_bytes_ += new_alloc;
 
         auto new_unique = std::make_unique<uint8_t[]>(fr_alloc.first + new_alloc + fr_alloc.second);
 
@@ -169,6 +171,7 @@ class compact_bonsai_nlm {
         new_ls.max_length_ = max_length_;
         new_ls.sum_length_ = sum_length_;
 #endif
+        new_ls.label_bytes_ = label_bytes_;
         *this = std::move(new_ls);
     }
 
@@ -178,12 +181,20 @@ class compact_bonsai_nlm {
     uint64_t num_ptrs() const {
         return ptrs_.size();
     }
+    uint64_t alloc_bytes() const {
+        uint64_t bytes = 0;
+        bytes += ptrs_.capacity() * sizeof(std::unique_ptr<uint8_t[]>);
+        bytes += chunks_.capacity() * sizeof(chunk_type);
+        bytes += label_bytes_;
+        return bytes;
+    }
 
     void show_stats(std::ostream& os, int n = 0) const {
         auto indent = get_indent(n);
         show_stat(os, indent, "name", "compact_bonsai_nlm");
         show_stat(os, indent, "size", size());
         show_stat(os, indent, "num_ptrs", num_ptrs());
+        show_stat(os, indent, "alloc_bytes", alloc_bytes());
 #ifdef POPLAR_EXTRA_STATS
         show_stat(os, indent, "max_length", max_length_);
         show_stat(os, indent, "ave_length", double(sum_length_) / size());
@@ -201,6 +212,7 @@ class compact_bonsai_nlm {
     std::vector<std::unique_ptr<uint8_t[]>> ptrs_;
     std::vector<chunk_type> chunks_;
     uint64_t size_ = 0;
+    uint64_t label_bytes_ = 0;
 
 #ifdef POPLAR_EXTRA_STATS
     uint64_t max_length_ = 0;

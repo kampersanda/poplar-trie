@@ -247,6 +247,9 @@ class plain_bonsai_trie {
         return num_resize_;
     }
 #endif
+    uint64_t alloc_bytes() const {
+        return table_.alloc_bytes();
+    }
 
     void show_stats(std::ostream& os, int n = 0) const {
         auto indent = get_indent(n);
@@ -254,6 +257,7 @@ class plain_bonsai_trie {
         show_stat(os, indent, "factor", double(size()) / capa_size() * 100);
         show_stat(os, indent, "max_factor", MaxFactor);
         show_stat(os, indent, "size", size());
+        show_stat(os, indent, "alloc_bytes", alloc_bytes());
         show_stat(os, indent, "capa_bits", capa_bits());
         show_stat(os, indent, "symb_bits", symb_bits());
 #ifdef POPLAR_EXTRA_STATS

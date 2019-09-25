@@ -210,12 +210,20 @@ class map {
         return hash_trie_.num_resize();
     }
 #endif
+    uint64_t alloc_bytes() const {
+        uint64_t bytes = 0;
+        bytes += hash_trie_.alloc_bytes();
+        bytes += label_store_.alloc_bytes();
+        bytes += codes_.size();
+        return bytes;
+    }
 
     void show_stats(std::ostream& os, int n = 0) const {
         auto indent = get_indent(n);
         show_stat(os, indent, "name", "map");
         show_stat(os, indent, "lambda", lambda_);
         show_stat(os, indent, "size", size());
+        show_stat(os, indent, "alloc_bytes", alloc_bytes());
 #ifdef POPLAR_EXTRA_STATS
         show_stat(os, indent, "rate_steps", rate_steps());
 #endif

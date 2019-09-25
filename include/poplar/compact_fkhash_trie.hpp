@@ -154,6 +154,14 @@ class compact_fkhash_trie {
         return num_resize_;
     }
 #endif
+    uint64_t alloc_bytes() const {
+        uint64_t bytes = 0;
+        bytes += table_.alloc_bytes();
+        bytes += aux_cht_.alloc_bytes();
+        bytes += aux_map_.alloc_bytes();
+        bytes += ids_.alloc_bytes();
+        return bytes;
+    }
 
     void show_stats(std::ostream& os, int n = 0) const {
         auto indent = get_indent(n);
@@ -161,6 +169,7 @@ class compact_fkhash_trie {
         show_stat(os, indent, "factor", double(size()) / capa_size() * 100);
         show_stat(os, indent, "max_factor", MaxFactor);
         show_stat(os, indent, "size", size());
+        show_stat(os, indent, "alloc_bytes", alloc_bytes());
         show_stat(os, indent, "capa_bits", capa_bits());
         show_stat(os, indent, "symb_bits", symb_bits());
         show_stat(os, indent, "dsp1st_bits", dsp1_bits);

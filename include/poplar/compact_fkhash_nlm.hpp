@@ -129,12 +129,20 @@ class compact_fkhash_nlm {
     uint64_t num_ptrs() const {
         return chunk_ptrs_.size();
     }
+    uint64_t alloc_bytes() const {
+        uint64_t bytes = 0;
+        bytes += chunk_ptrs_.capacity() * sizeof(std::unique_ptr<uint8_t[]>);
+        bytes += chunk_buf_.capacity();
+        bytes += label_bytes_;
+        return bytes;
+    }
 
     void show_stats(std::ostream& os, int n = 0) const {
         auto indent = get_indent(n);
         show_stat(os, indent, "name", "compact_fkhash_nlm");
         show_stat(os, indent, "size", size());
         show_stat(os, indent, "num_ptrs", num_ptrs());
+        show_stat(os, indent, "alloc_bytes", alloc_bytes());
 #ifdef POPLAR_EXTRA_STATS
         show_stat(os, indent, "max_length", max_length_);
         show_stat(os, indent, "ave_length", double(sum_length_) / size());
@@ -152,12 +160,15 @@ class compact_fkhash_nlm {
     std::vector<std::unique_ptr<uint8_t[]>> chunk_ptrs_;
     std::vector<uint8_t> chunk_buf_;  // for the last chunk
     uint64_t size_ = 0;
+    uint64_t label_bytes_ = 0;
+
 #ifdef POPLAR_EXTRA_STATS
     uint64_t max_length_ = 0;
     uint64_t sum_length_ = 0;
 #endif
 
     void release_buf_() {
+        label_bytes_ += chunk_buf_.size();
         auto new_uptr = std::make_unique<uint8_t[]>(chunk_buf_.size());
         std::copy(chunk_buf_.begin(), chunk_buf_.end(), new_uptr.get());
         chunk_ptrs_.emplace_back(std::move(new_uptr));

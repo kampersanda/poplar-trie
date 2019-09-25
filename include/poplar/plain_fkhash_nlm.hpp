@@ -69,6 +69,7 @@ class plain_fkhash_nlm {
     value_type* append(const char_range& key) {
         uint64_t length = key.length();
         ptrs_.emplace_back(std::make_unique<uint8_t[]>(length + sizeof(value_type)));
+        label_bytes_ += length + sizeof(value_type);
 
         auto ptr = ptrs_.back().get();
         copy_bytes(ptr, key.begin, length);
@@ -91,11 +92,18 @@ class plain_fkhash_nlm {
     uint64_t size() const {
         return ptrs_.size();
     }
+    uint64_t alloc_bytes() const {
+        uint64_t bytes = 0;
+        bytes += ptrs_.capacity() * sizeof(std::unique_ptr<uint8_t[]>);
+        bytes += label_bytes_;
+        return bytes;
+    }
 
     void show_stats(std::ostream& os, int n = 0) const {
         auto indent = get_indent(n);
         show_stat(os, indent, "name", "plain_fkhash_nlm");
         show_stat(os, indent, "size", size());
+        show_stat(os, indent, "alloc_bytes", alloc_bytes());
 #ifdef POPLAR_EXTRA_STATS
         show_stat(os, indent, "max_length", max_length_);
         show_stat(os, indent, "ave_length", double(sum_length_) / size());
@@ -110,6 +118,7 @@ class plain_fkhash_nlm {
 
   private:
     std::vector<std::unique_ptr<uint8_t[]>> ptrs_;
+    uint64_t label_bytes_ = 0;
 #ifdef POPLAR_EXTRA_STATS
     uint64_t max_length_ = 0;
     uint64_t sum_length_ = 0;
