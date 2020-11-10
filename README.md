@@ -1,9 +1,6 @@
 # Poplar-trie: A C++17 implementation of memory-efficient dynamic tries
 
-Poplar-trie is a C++17 library of a memory-efficient associative array whose keys are strings.
-Its data structure is based on a dynamic path-decomposed trie (DynPDT) described in the paper:
-
-> Shunsuke Kanda, Dominik Köppl, Yasuo Tabei, Kazuhiro Morita, and Masao Fuketa. "Dynamic Path-Decomposed Tries", In: *CoRR (2019)*. arXiv: [1906.06015](https://arxiv.org/abs/1906.06015).
+Poplar-trie is a C++17 library of a memory-efficient associative array whose keys are strings. The data structure is based on a dynamic path-decomposed trie (DynPDT) described in the paper, Shunsuke Kanda, Dominik Köppl, Yasuo Tabei, Kazuhiro Morita, and Masao Fuketa: [Dynamic Path-Decomposed Tries](https://arxiv.org/abs/1906.06015), *ACM Journal of Experimental Algorithmics (JEA)*, *25*(1): 1–28, 2020.
 
 ## Implementation overview
 
@@ -186,51 +183,37 @@ The source codes for the experiments are at [dictionary_bench](https://github.co
 | [`cedar::da`](http://www.tkl.iis.u-tokyo.ac.jp/~ynaga/cedar/) (reduced trie) | 7.37 | 2.24 | 2.30 |
 | [`cedar::da`](http://www.tkl.iis.u-tokyo.ac.jp/~ynaga/cedar/) (prefix trie) | 2.02 | 2.20 | 2.28 |
 
-
-
-<!--## Benchmarks
-
-The main advantage of Poplar-trie is high space efficiency as can be seen in the following results.
-
-The experiments were carried out on Intel Core i7 @3.5 GHz CPU, with 16 GB of RAM, running Mac OS X 10.13.
-The codes were compiled using Apple LLVM version 9.1.0 with optimization -O3.
-The dictionaries were constructed by inserting all page titles from Japanese Wikipedia (38.3 MiB) in random order.
-The value type is `int`.
-The maximum resident set size during construction was measured using the `/usr/bin/time` command.
-The insertion time was also measured using `std::chrono::duration_cast`.
-And, search time for the same strings was measured.
-
-| Implementation | Space<br>(MiB) | Insert<br>(micros/key) | Search<br>(micros/key) |
-|--------------------------|------------:|-------------------:|---------------------:|
-| std::map | 139.6 | 1.45 | 1.65 |
-| std::unordered\_map | 162.3 | 0.66 | 0.28 |
-| [google::dense\_hash\_map](https://github.com/sparsehash/sparsehash) | 291.4 | 0.42 | 0.09 |
-| [google::sparse\_hash\_map](https://github.com/sparsehash/sparsehash) | 185.3 | 4.41 | 0.19 |
-| [JudySL](http://judy.sourceforge.net) | 83.4 | 0.72 | 0.60 |
-| [hat-trie](https://github.com/dcjones/hat-trie) | 77.1 | 0.84 | 0.21 |
-| [libart](https://github.com/armon/libart) | 149.4 | 0.77 | 0.79 |
-| [cedar (reduced)](http://www.tkl.iis.u-tokyo.ac.jp/~ynaga/cedar/) | 266.7 | 1.03 | 0.55 |
-| [cedar (prefix)](http://www.tkl.iis.u-tokyo.ac.jp/~ynaga/cedar/) | 154.2 | 0.86 | 0.59 |
-| poplar::plain\_bonsai\_map | 86.3 | 0.72 | 0.61 |
-| poplar::compact\_bonsai\_map | **44.4** | 1.67 | 0.85 |
-| poplar::plain\_hash\_map | 63.3 | 0.65 | 0.73 |
-| poplar::compact\_hash\_map | **45.3** | 0.93 | 0.96 |
-| poplar::rrr\_hash\_map | **44.3** | 1.29 | 1.48 |
--->
-
 ## Todo
 
 - Support the deletion operation
 - Add comments to the codes
 - Create the API document
 
+## Licensing
+
+This library is free software provided under [MIT License](https://github.com/kampersanda/poplar-trie/blob/master/LICENSE).
+
+If you use the library, please cite the following paper:
+
+```tex
+@article{kanda2020dynamic,
+  title={Dynamic Path-decomposed Tries},
+  author={Kanda, Shunsuke and K{\"o}ppl, Dominik and Tabei, Yasuo and Morita, Kazuhiro and Fuketa, Masao},
+  journal={Journal of Experimental Algorithmics (JEA)},
+  volume={25},
+  number={1},
+  pages={1--28},
+  year={2020},
+  publisher={ACM}
+}
+```
+
 ## Related work
 
 - [compact\_sparse\_hash](https://github.com/tudocomp/compact_sparse_hash) is an efficient implementation of a compact associative array with integer keys.
 - [mBonsai](https://github.com/Poyias/mBonsai) is the original implementation of succinct dynamic tries.
 - [tudocomp](https://github.com/tudocomp/tudocomp) includes many dynamic trie implementations for LZ factorization.
- 
+
 ## Special thanks
 
 Thanks to [Dr. Dominik Köppl](https://github.com/koeppl) I was able to create the bijective hash function in `bijective_hash.hpp`.
-
