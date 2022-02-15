@@ -3,7 +3,7 @@ project(poplar_trie)
 
 option(POPLAR_FORCE_RELEASE "Force a release build" OFF)
 option(POPLAR_DISABLE_SSE4_2 "Disable SSE 4.2" OFF)
-option(POPLAR_VERBOSE "Emit diagnostic info" OFF)
+option(POPLAR_VERBOSE "Emit diagnostic info" ON)
 option(POPLAR_EXTRA_STATS "Compute extra statistics" OFF)
 option(POPLAR_ENABLE_TESTING "Enable testing" OFF)
 option(POPLAR_ENABLE_BENCHMARK "Enable benchmark" OFF)
